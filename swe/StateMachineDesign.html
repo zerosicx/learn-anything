@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>State Machine Design - Print Version</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    @page {
+      size: A4;
+      margin: 2cm;
+    }
+    
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: white;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 2cm;
+    }
+    
+    @media print {
+      body {
+        padding: 0;
+      }
+    }
+    
+    h1 {
+      font-size: 24pt;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+      color: #111;
+      border-bottom: 3px solid #4f46e5;
+      padding-bottom: 0.3em;
+    }
+    
+    .subtitle {
+      font-size: 14pt;
+      color: #555;
+      font-style: italic;
+      margin-bottom: 2em;
+    }
+    
+    h2 {
+      font-size: 16pt;
+      font-weight: bold;
+      margin-top: 1.5em;
+      margin-bottom: 0.75em;
+      color: #4f46e5;
+      page-break-after: avoid;
+    }
+    
+    h3 {
+      font-size: 13pt;
+      font-weight: bold;
+      margin-top: 1.25em;
+      margin-bottom: 0.5em;
+      color: #333;
+      page-break-after: avoid;
+    }
+    
+    h4 {
+      font-size: 11pt;
+      font-weight: bold;
+      margin-top: 1em;
+      margin-bottom: 0.4em;
+      color: #444;
+    }
+    
+    p {
+      margin-bottom: 0.75em;
+      text-align: justify;
+    }
+    
+    .chapter {
+      page-break-before: always;
+    }
+    
+    .chapter:first-of-type {
+      page-break-before: avoid;
+    }
+    
+    .toc {
+      background: #f8f9fa;
+      padding: 1.5em;
+      margin: 1.5em 0;
+      border-left: 4px solid #4f46e5;
+    }
+    
+    .toc h3 {
+      margin-top: 0;
+      color: #4f46e5;
+    }
+    
+    .toc ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .toc li {
+      margin: 0.4em 0;
+      padding-left: 1em;
+    }
+    
+    .toc li.chapter-item {
+      font-weight: bold;
+      padding-left: 0;
+      margin-top: 0.75em;
+    }
+    
+    .key-concept {
+      background: #f0f4ff;
+      border-left: 4px solid #4f46e5;
+      padding: 1em 1.25em;
+      margin: 1em 0;
+      page-break-inside: avoid;
+    }
+    
+    .key-concept strong {
+      color: #4f46e5;
+    }
+    
+    .warning {
+      background: #fef3cd;
+      border-left: 4px solid #f59e0b;
+      padding: 1em 1.25em;
+      margin: 1em 0;
+      page-break-inside: avoid;
+    }
+    
+    .tip {
+      background: #d1fae5;
+      border-left: 4px solid #10b981;
+      padding: 1em 1.25em;
+      margin: 1em 0;
+      page-break-inside: avoid;
+    }
+    
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1em;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 9pt;
+      line-height: 1.5;
+      margin: 1em 0;
+      page-break-inside: avoid;
+    }
+    
+    code {
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 9.5pt;
+      background: #f1f5f9;
+      padding: 0.15em 0.35em;
+      border-radius: 3px;
+    }
+    
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    
+    .diagram {
+      text-align: center;
+      margin: 1.5em 0;
+      page-break-inside: avoid;
+    }
+    
+    .diagram svg {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+      font-size: 10pt;
+      page-break-inside: avoid;
+    }
+    
+    th, td {
+      border: 1px solid #d1d5db;
+      padding: 0.5em 0.75em;
+      text-align: left;
+    }
+    
+    th {
+      background: #f3f4f6;
+      font-weight: bold;
+    }
+    
+    ul, ol {
+      margin: 0.75em 0;
+      padding-left: 1.5em;
+    }
+    
+    li {
+      margin: 0.35em 0;
+    }
+    
+    .question {
+      background: #fafafa;
+      border: 1px solid #e5e7eb;
+      padding: 1em;
+      margin: 1em 0;
+      page-break-inside: avoid;
+    }
+    
+    .question-number {
+      font-weight: bold;
+      color: #4f46e5;
+    }
+    
+    .options {
+      margin-top: 0.5em;
+      padding-left: 1.5em;
+    }
+    
+    .options li {
+      margin: 0.25em 0;
+    }
+    
+    .answer-key {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      padding: 1em;
+      margin-top: 0.5em;
+    }
+    
+    .framework-box {
+      border: 2px solid #4f46e5;
+      padding: 1.25em;
+      margin: 1.5em 0;
+      page-break-inside: avoid;
+    }
+    
+    .framework-box h4 {
+      color: #4f46e5;
+      margin-top: 0;
+    }
+    
+    .framework-box ol {
+      margin-bottom: 0;
+    }
+    
+    .bug-pattern {
+      border: 1px solid #fca5a5;
+      background: #fef2f2;
+      padding: 1em;
+      margin: 1em 0;
+      page-break-inside: avoid;
+    }
+    
+    .bug-pattern h4 {
+      color: #dc2626;
+      margin-top: 0;
+    }
+    
+    .fix {
+      background: #f0fdf4;
+      padding: 0.75em;
+      margin-top: 0.5em;
+      border-left: 3px solid #10b981;
+    }
+    
+    footer {
+      margin-top: 3em;
+      padding-top: 1em;
+      border-top: 1px solid #e5e7eb;
+      font-size: 9pt;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>State Machine Design</h1>
+    <p class="subtitle">Mental Models for Debugging Complex Systems</p>
+  </header>
+  
+  <nav class="toc">
+    <h3>Table of Contents</h3>
+    <ul>
+      <li class="chapter-item">Chapter 1: Mental Modelling &amp; System Archaeology</li>
+      <li>The Core Problem</li>
+      <li>Extraction Techniques</li>
+      <li>The "Print the Universe" Technique</li>
+      
+      <li class="chapter-item">Chapter 2: Core Concepts</li>
+      <li>States</li>
+      <li>Transitions</li>
+      <li>Guards</li>
+      <li>Context (Extended State)</li>
+      
+      <li class="chapter-item">Chapter 3: Applying This to Debugging</li>
+      <li>The Debugging Mindset</li>
+      <li>Common Bug Patterns</li>
+      <li>The Divergence Question Framework</li>
+      
+      <li class="chapter-item">Chapter 4: Implementation Patterns</li>
+      <li>Formal State Machine Libraries</li>
+      <li>Lightweight useReducer Pattern</li>
+      <li>Integrating with MobX</li>
+      
+      <li class="chapter-item">Chapter 5: Assessment</li>
+      <li>Multiple Choice Questions</li>
+      <li>Short Answer Questions</li>
+      <li>Answer Key</li>
+    </ul>
+  </nav>
+
+  <!-- CHAPTER 1 -->
+  <section class="chapter">
+    <h2>Chapter 1: Mental Modelling &amp; System Archaeology</h2>
+    
+    <h3>The Core Problem</h3>
+    <p>Complex systems often have <strong>implicit state machines</strong> buried in scattered booleans, useEffects, and conditional renders. Before you can debug effectively, you need to excavate these hidden structures and make them visible.</p>
+    
+    <p>The ability to look at tangled code and extract a coherent representation of its behaviour is one of the most valuable debugging superpowers you can develop. State machine thinking provides a framework for this, even when you're not literally using a state machine library.</p>
+
+    <h3>Example: Video Player State Machine</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 400 160" width="400" height="160">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+          </marker>
+        </defs>
+        <!-- States -->
+        <circle cx="50" cy="80" r="28" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+        <text x="50" y="84" text-anchor="middle" font-size="10" fill="#334155">Idle</text>
+        <polygon points="12,80 22,74 22,86" fill="#64748b"/>
+        
+        <circle cx="140" cy="80" r="28" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+        <text x="140" y="84" text-anchor="middle" font-size="10" fill="#334155">Loading</text>
+        
+        <circle cx="250" cy="50" r="28" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+        <text x="250" y="54" text-anchor="middle" font-size="10" fill="#334155">Playing</text>
+        
+        <circle cx="250" cy="110" r="28" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+        <text x="250" y="114" text-anchor="middle" font-size="10" fill="#334155">Paused</text>
+        
+        <circle cx="350" cy="80" r="32" fill="none" stroke="#64748b" stroke-width="2"/>
+        <circle cx="350" cy="80" r="26" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+        <text x="350" y="84" text-anchor="middle" font-size="10" fill="#334155">Error</text>
+        
+        <!-- Transitions -->
+        <path d="M78,80 L108,80" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="93" y="72" text-anchor="middle" font-size="8" fill="#64748b">load()</text>
+        
+        <path d="M165,68 Q195,40 222,50" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="190" y="42" text-anchor="middle" font-size="8" fill="#64748b">ready</text>
+        
+        <path d="M168,88 Q220,130 320,85" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="240" y="130" text-anchor="middle" font-size="8" fill="#64748b">fail</text>
+        
+        <path d="M258,78 L258,88" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="275" y="82" text-anchor="middle" font-size="8" fill="#64748b">pause()</text>
+        
+        <path d="M242,88 L242,72" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="225" y="82" text-anchor="middle" font-size="8" fill="#64748b">play()</text>
+      </svg>
+    </div>
+    <p>This diagram makes explicit what valid states exist and which transitions are permitted. A video cannot be both "playing" and "paused" simultaneously, and clicking "play" does nothing if we're still in the "loading" state.</p>
+
+    <h3>Extraction Techniques</h3>
+    <p>When reverse-engineering an existing system, follow these four steps:</p>
+    
+    <h4>1. Identify the Nouns</h4>
+    <p>Look for entities that have distinct modes or phases. In video editing, these might be: clips, playhead, timeline, selection, transport controls. Each noun is a candidate for having its own state machine.</p>
+    
+    <h4>2. Find the Verbs</h4>
+    <p>What actions cause changes? These become your transitions: play, pause, select, drag, drop, cut, split. List every user action and system event that can occur.</p>
+    
+    <h4>3. Map Impossible States</h4>
+    <p>Can a video be both playing AND paused? Can a clip be selected AND being dragged AND deleted? If your code allows combinations that shouldn't exist, you've found bugs waiting to happen. The number of possible states with <em>n</em> booleans is 2<sup>n</sup> — most of those combinations are usually invalid.</p>
+    
+    <h4>4. Trace the Happy Path</h4>
+    <p>Walk through the ideal user journey from start to finish. Then, at each step, ask: "What happens if the user deviates here? What if an error occurs? What if they do this action twice rapidly?"</p>
+
+    <div class="tip">
+      <h4>💡 The "Print the Universe" Technique</h4>
+      <p>When lost in a complex system, log every state change with a timestamp and stack trace. Pattern recognition across logs often reveals the hidden state machine faster than reading code. Look for sequences that repeat, states that shouldn't coexist, and transitions that seem to happen in the wrong order.</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 2 -->
+  <section class="chapter">
+    <h2>Chapter 2: Core Concepts</h2>
+    
+    <h3>States</h3>
+    <p>States are discrete, mutually exclusive modes your system can be in. You can only be in one state at a time (though hierarchical machines allow nested states).</p>
+    
+    <div class="key-concept">
+      <strong>Key Insight:</strong> Multiple boolean flags create exponential complexity. Three booleans = 8 possible combinations. A single state variable with three values = exactly 3 possibilities, all intentional.
+    </div>
+
+<pre><code>// ❌ Bad: Multiple booleans = 2⁴ = 16 possible combinations
+const [isLoading, setIsLoading] = useState(false);
+const [hasError, setHasError] = useState(false);
+const [hasData, setHasData] = useState(false);
+const [isStale, setIsStale] = useState(false);
+
+// ✅ Good: Single state = only valid combinations
+type State = 'idle' | 'loading' | 'success' | 'error';
+const [state, setState] = useState&lt;State&gt;('idle');</code></pre>
+
+    <h3>Transitions</h3>
+    <p>Transitions are events that cause state changes. Critically, a transition is only valid from specific states. This constraint is what prevents bugs.</p>
+
+<pre><code>// Transitions define WHAT can happen and WHEN
+const transitions = {
+  idle: { FETCH: 'loading' },
+  loading: { 
+    RESOLVE: 'success',
+    REJECT: 'error' 
+  },
+  error: { RETRY: 'loading' },
+  success: { RESET: 'idle' }
+};
+
+// Invalid transitions are simply ignored
+send('RESOLVE'); // Does nothing if state !== 'loading'</code></pre>
+
+    <h3>Guards</h3>
+    <p>Guards are conditions that must be true for a transition to occur. They let you add business logic without breaking the state model.</p>
+
+<pre><code>const transitions = {
+  error: {
+    RETRY: {
+      target: 'loading',
+      // Guard: only allow if we haven't exceeded retries
+      guard: (context) => context.retries < 3,
+      // Action: increment retry count when transition occurs
+      action: (context) => ({ 
+        ...context, 
+        retries: context.retries + 1 
+      })
+    }
+  }
+};
+
+// Transition blocked if guard returns false</code></pre>
+
+    <h3>Context (Extended State)</h3>
+    <p>Context is data that isn't part of the finite states but travels with the machine. Think: form values, API responses, counters, selected items. Context changes via actions attached to transitions, not through direct mutation.</p>
+
+<pre><code>interface Context {
+  data: User | null;
+  error: Error | null;
+  retries: number;
+  lastFetchTime: number;
+}
+
+// Context is updated via actions on transitions
+const machine = {
+  context: { data: null, error: null, retries: 0, lastFetchTime: 0 },
+  states: {
+    success: {
+      // Entry action runs when entering this state
+      entry: (ctx, event) => ({ 
+        ...ctx, 
+        data: event.payload,
+        lastFetchTime: Date.now()
+      })
+    }
+  }
+};</code></pre>
+
+    <table>
+      <tr>
+        <th>Concept</th>
+        <th>What It Is</th>
+        <th>Example</th>
+      </tr>
+      <tr>
+        <td><strong>State</strong></td>
+        <td>A discrete mode (finite, mutually exclusive)</td>
+        <td>'idle', 'loading', 'playing'</td>
+      </tr>
+      <tr>
+        <td><strong>Transition</strong></td>
+        <td>An event that moves between states</td>
+        <td>FETCH, PLAY, DROP</td>
+      </tr>
+      <tr>
+        <td><strong>Guard</strong></td>
+        <td>A condition for allowing a transition</td>
+        <td>retries < 3, isValid(data)</td>
+      </tr>
+      <tr>
+        <td><strong>Context</strong></td>
+        <td>Extended data travelling with the machine</td>
+        <td>{ user, error, retryCount }</td>
+      </tr>
+      <tr>
+        <td><strong>Action</strong></td>
+        <td>Side effect triggered by a transition</td>
+        <td>Log event, update context, fire API</td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- CHAPTER 3 -->
+  <section class="chapter">
+    <h2>Chapter 3: Applying This to Debugging</h2>
+    
+    <h3>The Debugging Mindset</h3>
+    <p>Most bugs are <strong>state bugs</strong> in disguise. The question isn't "what's wrong?" but rather "what state is the system <em>actually</em> in versus what state do I <em>expect</em> it to be in?"</p>
+    
+    <p>Once you frame debugging this way, the path forward becomes clearer: you need to find the exact moment where expected and actual state diverged, then identify what event caused that divergence.</p>
+
+    <h3>Common Bug Patterns</h3>
+    
+    <div class="bug-pattern">
+      <h4>🐛 Race Condition</h4>
+      <p><strong>Symptom:</strong> Stale data appears after navigation, or UI shows outdated information intermittently.</p>
+      <p><strong>Cause:</strong> Request A starts, then Request B starts. B resolves first and updates the UI. Then A resolves and overwrites B's data, even though A is now stale.</p>
+      <div class="fix">
+        <strong>Fix:</strong> Track request identity using an abort controller or request ID. Ignore responses that don't match the current request ID.
+      </div>
+    </div>
+    
+    <div class="bug-pattern">
+      <h4>🐛 Impossible State</h4>
+      <p><strong>Symptom:</strong> UI shows loading spinner AND error message simultaneously, or button appears both enabled and disabled.</p>
+      <p><strong>Cause:</strong> Multiple boolean flags can combine into states that shouldn't exist. Setting <code>isLoading = true</code> without clearing <code>hasError</code> creates an "impossible" combination.</p>
+      <div class="fix">
+        <strong>Fix:</strong> Replace booleans with a single discriminated union: <code>'idle' | 'loading' | 'error' | 'success'</code>. Make impossible states unrepresentable.
+      </div>
+    </div>
+    
+    <div class="bug-pattern">
+      <h4>🐛 Missing Transition</h4>
+      <p><strong>Symptom:</strong> Button click does nothing sometimes, or user gets "stuck" in a state with no way out.</p>
+      <p><strong>Cause:</strong> User can reach State C, but there's no transition defined to get back to idle or forward to completion.</p>
+      <div class="fix">
+        <strong>Fix:</strong> Audit all states systematically. Ensure every state either has an exit path or is explicitly marked as terminal. Add error recovery transitions.
+      </div>
+    </div>
+
+    <div class="framework-box">
+      <h4>The Divergence Question Framework</h4>
+      <p>When debugging, systematically ask these five questions:</p>
+      <ol>
+        <li><strong>What state do I EXPECT the system to be in right now?</strong><br/>Write it down explicitly before investigating.</li>
+        <li><strong>What state is it ACTUALLY in?</strong><br/>Log it, inspect it, don't assume. Add console.log or debugger statements.</li>
+        <li><strong>At what point did expected and actual DIVERGE?</strong><br/>Binary search through the timeline. When was it last correct?</li>
+        <li><strong>What event or transition caused the divergence?</strong><br/>What user action or system event happened at that moment?</li>
+        <li><strong>Was that transition supposed to be POSSIBLE from that state?</strong><br/>If yes, the transition logic is wrong. If no, something allowed an invalid transition.</li>
+      </ol>
+    </div>
+    
+    <div class="warning">
+      <h4>⚠️ Common Debugging Mistake</h4>
+      <p>Don't jump to "fixing" code before you can articulate exactly what state divergence occurred and why. Premature fixes often mask the real bug or introduce new ones.</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 4 -->
+  <section class="chapter">
+    <h2>Chapter 4: Implementation Patterns</h2>
+    
+    <h3>Formal State Machine Libraries</h3>
+    <p>Libraries like XState, Robot, or Stately provide full state machine implementations with visualisation tools, dev inspectors, and TypeScript support.</p>
+
+<pre><code>// Example using a formal state machine library
+const { createMachine, assign } = StateMachineLib;
+
+const timelineMachine = createMachine({
+  id: 'timeline',
+  initial: 'idle',
+  context: {
+    clips: [],
+    selectedClipId: null,
+    playheadPosition: 0,
+  },
+  states: {
+    idle: {
+      on: {
+        SELECT_CLIP: {
+          actions: assign({ 
+            selectedClipId: (_, event) => event.clipId 
+          })
+        },
+        PLAY: 'playing',
+        START_DRAG: 'dragging',
+      }
+    },
+    playing: {
+      on: {
+        PAUSE: 'idle',
+        TICK: {
+          actions: assign({
+            playheadPosition: (ctx) => ctx.playheadPosition + 1
+          })
+        }
+      }
+    },
+    dragging: {
+      on: {
+        DROP: { target: 'idle', actions: 'handleDrop' },
+        CANCEL: 'idle'
+      }
+    }
+  }
+});</code></pre>
+
+    <p><strong>When to use formal libraries:</strong></p>
+    <ul>
+      <li>Complex UI flows with many states (5+)</li>
+      <li>Need visual debugging tools (state machine inspectors)</li>
+      <li>Parallel or hierarchical (nested) states</li>
+      <li>Team needs shared, visual state documentation</li>
+    </ul>
+
+    <h3>Lightweight useReducer Pattern</h3>
+    <p>For simpler flows, React's useReducer provides state machine semantics without external dependencies.</p>
+
+<pre><code>type State = 
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: Data }
+  | { status: 'error'; error: Error };
+
+type Action = 
+  | { type: 'FETCH' }
+  | { type: 'RESOLVE'; data: Data }
+  | { type: 'REJECT'; error: Error }
+  | { type: 'RESET' };
+
+function reducer(state: State, action: Action): State {
+  // Switch on CURRENT STATE first, then on action
+  switch (state.status) {
+    case 'idle':
+      if (action.type === 'FETCH') return { status: 'loading' };
+      return state; // Ignore invalid transitions
+    
+    case 'loading':
+      if (action.type === 'RESOLVE') 
+        return { status: 'success', data: action.data };
+      if (action.type === 'REJECT') 
+        return { status: 'error', error: action.error };
+      return state;
+    
+    case 'error':
+      if (action.type === 'FETCH') return { status: 'loading' };
+      if (action.type === 'RESET') return { status: 'idle' };
+      return state;
+    
+    case 'success':
+      if (action.type === 'RESET') return { status: 'idle' };
+      return state;
+    
+    default:
+      return state;
+  }
+}</code></pre>
+
+    <p><strong>When to use useReducer:</strong></p>
+    <ul>
+      <li>Simpler flows (2–4 states)</li>
+      <li>Want to avoid external dependencies</li>
+      <li>TypeScript exhaustiveness checking is sufficient</li>
+      <li>Integrating with existing state management (MobX, Redux)</li>
+    </ul>
+
+    <h3>Integrating with MobX</h3>
+    <p>State machine thinking integrates beautifully with MobX stores. Use a single observable state property and derive everything else via computed.</p>
+
+<pre><code>class TimelineStore {
+  state: 'idle' | 'playing' | 'dragging' = 'idle';
+  playheadPosition = 0;
+  selectedClipId: string | null = null;
+  
+  constructor() {
+    makeAutoObservable(this);
+  }
+  
+  // Computed: derive UI state from machine state
+  get canPlay() {
+    return this.state === 'idle';
+  }
+  
+  get canDrag() {
+    return this.state === 'idle';
+  }
+  
+  get isDragging() {
+    return this.state === 'dragging';
+  }
+  
+  // Actions enforce valid transitions only
+  play() {
+    if (this.state !== 'idle') return; // Guard
+    this.state = 'playing';
+  }
+  
+  pause() {
+    if (this.state !== 'playing') return;
+    this.state = 'idle';
+  }
+  
+  startDrag(clipId: string) {
+    if (this.state !== 'idle') return;
+    this.selectedClipId = clipId;
+    this.state = 'dragging';
+  }
+  
+  drop() {
+    if (this.state !== 'dragging') return;
+    // Handle drop logic...
+    this.state = 'idle';
+  }
+}</code></pre>
+
+    <div class="tip">
+      <h4>💡 MobX + State Machine Best Practice</h4>
+      <p>Keep your state transitions in MobX actions, but think of each action as a guarded transition. Always check the current state before allowing the transition. This prevents impossible states without needing a separate library.</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 5 -->
+  <section class="chapter">
+    <h2>Chapter 5: Assessment</h2>
+    
+    <h3>Multiple Choice Questions</h3>
+    
+    <div class="question">
+      <p><span class="question-number">Q1.</span> What's the main advantage of using a single state variable over multiple booleans?</p>
+      <ol class="options" type="A">
+        <li>It's faster to render</li>
+        <li>It prevents impossible state combinations</li>
+        <li>It uses less memory</li>
+        <li>It's easier to type</li>
+      </ol>
+    </div>
+    
+    <div class="question">
+      <p><span class="question-number">Q2.</span> A guard in a state machine is used to:</p>
+      <ol class="options" type="A">
+        <li>Protect the machine from invalid input</li>
+        <li>Add conditions that must be true for a transition to occur</li>
+        <li>Prevent users from accessing certain states</li>
+        <li>Cache state for performance</li>
+      </ol>
+    </div>
+    
+    <div class="question">
+      <p><span class="question-number">Q3.</span> When debugging, what's the FIRST question you should ask?</p>
+      <ol class="options" type="A">
+        <li>What's the error message?</li>
+        <li>Who wrote this code?</li>
+        <li>What state do I expect vs what state is it actually in?</li>
+        <li>Is there a library that fixes this?</li>
+      </ol>
+    </div>
+    
+    <div class="question">
+      <p><span class="question-number">Q4.</span> Which bug pattern is characterised by "UI shows loading spinner AND error message"?</p>
+      <ol class="options" type="A">
+        <li>Race condition</li>
+        <li>Impossible state</li>
+        <li>Missing transition</li>
+        <li>Context leak</li>
+      </ol>
+    </div>
+    
+    <div class="question">
+      <p><span class="question-number">Q5.</span> In a MobX store using state machine patterns, transitions should be:</p>
+      <ol class="options" type="A">
+        <li>Direct assignments to the state property from anywhere</li>
+        <li>Guarded actions that check current state before transitioning</li>
+        <li>Handled by a separate transition service</li>
+        <li>Triggered only by React components</li>
+      </ol>
+    </div>
+
+    <h3>Short Answer Questions</h3>
+    
+    <div class="question">
+      <p><span class="question-number">Q6.</span> Explain the "Print the Universe" debugging technique in 2–3 sentences.</p>
+    </div>
+    
+    <div class="question">
+      <p><span class="question-number">Q7.</span> What is "context" in a state machine, and how does it differ from "state"? Give an example of each.</p>
+    </div>
+    
+    <div class="question">
+      <p><span class="question-number">Q8.</span> Describe a race condition bug and explain how state machine thinking helps prevent it.</p>
+    </div>
+    
+    <div class="question">
+      <p><span class="question-number">Q9.</span> When would you choose a formal state machine library over useReducer?</p>
+    </div>
+
+    <h3 style="page-break-before: always;">Answer Key</h3>
+    
+    <div class="answer-key">
+      <p><strong>Q1:</strong> B — It prevents impossible state combinations</p>
+      <p><strong>Q2:</strong> B — Add conditions that must be true for a transition to occur</p>
+      <p><strong>Q3:</strong> C — What state do I expect vs what state is it actually in?</p>
+      <p><strong>Q4:</strong> B — Impossible state</p>
+      <p><strong>Q5:</strong> B — Guarded actions that check current state before transitioning</p>
+      <p><strong>Q6:</strong> Log every state change with timestamps and stack traces. Pattern recognition across logs reveals the hidden state machine faster than reading code. Look for repeated sequences, coexisting states that shouldn't exist, and transitions in unexpected order.</p>
+      <p><strong>Q7:</strong> State is a discrete, finite mode (e.g., 'idle', 'loading', 'error'). Context is extended data that travels with the machine but isn't part of the finite states (e.g., { retryCount: 2, userData: {...} }). State determines what transitions are valid; context provides data for guards and actions.</p>
+      <p><strong>Q8:</strong> Request A starts, then B starts. B resolves first, then A resolves and overwrites B's newer data. State machines help by tracking "which request is current" in context and using guards to ignore stale responses.</p>
+      <p><strong>Q9:</strong> Use formal libraries when you have 5+ states, need visual debugging tools, require parallel or hierarchical states, or need shared documentation for a team. Use useReducer for simpler flows (2–4 states) or when avoiding dependencies.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>State Machine Design: Mental Models for Debugging Complex Systems</p>
+    <p>Created for learning purposes • Print-ready format</p>
+  </footer>
+</body>
+</html>
