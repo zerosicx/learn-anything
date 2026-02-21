@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gluten-Free & Low-Starch Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf6f0;
+    --sage: #7a9e7e;
+    --sage-light: #b5cfb7;
+    --sage-dark: #4a7050;
+    --terracotta: #c0614a;
+    --amber: #d4a843;
+    --charcoal: #2c2c2c;
+    --warm-white: #fffef9;
+    --red-light: #fde8e4;
+    --green-light: #e8f3e9;
+    --amber-light: #fdf4e0;
+    --border: #e2ddd5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--charcoal);
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--sage-dark);
+    color: var(--warm-white);
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -40px;
+    width: 140px; height: 140px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+  }
+
+  header p {
+    font-size: 0.95rem;
+    opacity: 0.8;
+    font-weight: 300;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 0.25rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .intro-note {
+    background: var(--amber-light);
+    border-left: 4px solid var(--amber);
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.25rem;
+    margin-bottom: 2rem;
+    font-size: 0.88rem;
+    color: #6b5a30;
+  }
+
+  .intro-note strong { color: #5a4a20; }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--sage-dark);
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--sage-light);
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--charcoal);
+    margin: 1.5rem 0 0.75rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    background: var(--warm-white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  thead tr {
+    background: var(--sage-dark);
+    color: var(--warm-white);
+  }
+
+  thead th {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    font-weight: 500;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f3f0ea; }
+
+  td {
+    padding: 0.75rem 1rem;
+    vertical-align: top;
+  }
+
+  td:first-child { font-weight: 500; }
+
+  .can { color: var(--sage-dark); }
+  .cannot { color: var(--terracotta); }
+  .caution { color: #9a7020; }
+
+  .pill {
+    display: inline-block;
+    border-radius: 12px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin-right: 0.25rem;
+  }
+
+  .pill-yes { background: var(--green-light); color: var(--sage-dark); }
+  .pill-no { background: var(--red-light); color: var(--terracotta); }
+  .pill-mod { background: var(--amber-light); color: #7a5a10; }
+
+  .swap-section {
+    background: var(--warm-white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border-top: 4px solid var(--sage);
+  }
+
+  .swap-section h3 { margin-top: 0; }
+
+  .swap-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    margin-top: 0.75rem;
+  }
+
+  .swap-original {
+    background: var(--red-light);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    color: #8a3020;
+  }
+
+  .swap-arrow {
+    font-size: 1.2rem;
+    color: var(--sage);
+    text-align: center;
+  }
+
+  .swap-new {
+    background: var(--green-light);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    color: var(--sage-dark);
+  }
+
+  .swap-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #999;
+    margin-bottom: 0.2rem;
+  }
+
+  .detox-tips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .tip-card {
+    background: var(--warm-white);
+    border-radius: 10px;
+    padding: 1.1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border-top: 3px solid var(--sage-light);
+  }
+
+  .tip-card .icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+  .tip-card h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--sage-dark); }
+  .tip-card p { font-size: 0.8rem; color: #666; line-height: 1.5; }
+
+  .legend {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    align-items: center;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.78rem;
+    color: #999;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 600px) {
+    .swap-grid { grid-template-columns: 1fr; }
+    .swap-arrow { transform: rotate(90deg); }
+    table { font-size: 0.8rem; }
+    td, th { padding: 0.6rem 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Gluten-Free & Low-Starch Reference Guide</h1>
+  <p>Your complete food map for resetting your liver, kidneys & gut</p>
+  <div class="badge-row">
+    <span class="badge">🌿 Gluten-Free</span>
+    <span class="badge">⚡ Low-Starch</span>
+    <span class="badge">🫀 Organ Detox Focus</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="intro-note">
+    <strong>Important:</strong> This guide is for general nutritional reference. If you have diagnosed conditions or are on medication, please consult a healthcare professional before making significant dietary changes. Detox benefits come from consistently choosing whole, minimally processed foods — not from any single "superfood."
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="pill pill-yes">✓ EAT FREELY</span> Gluten-free & low-starch</span>
+    <span class="legend-item"><span class="pill pill-mod">~ MODERATE</span> Gluten-free but higher starch/sugar</span>
+    <span class="legend-item"><span class="pill pill-no">✗ AVOID</span> Contains gluten and/or high starch</span>
+  </div>
+
+  <!-- SECTION 1: VEGETABLES -->
+  <h2>🥦 Vegetables</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Food</th>
+        <th>Status</th>
+        <th>Notes & Benefits</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Leafy greens (spinach, kale, rocket, chard)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Excellent liver support; high in chlorophyll and antioxidants</td></tr>
+      <tr><td>Broccoli, cauliflower, Brussels sprouts</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Cruciferous vegetables strongly support liver detoxification enzymes</td></tr>
+      <tr><td>Zucchini / courgette</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Low starch, versatile "rice" and "noodle" alternative</td></tr>
+      <tr><td>Cucumber, celery, capsicum/bell pepper</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Hydrating, anti-inflammatory, very low starch</td></tr>
+      <tr><td>Asparagus</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Natural diuretic — excellent for kidney detox</td></tr>
+      <tr><td>Beetroot / beet</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Supports bile flow and liver function; moderate sugar so don't overdo it</td></tr>
+      <tr><td>Onion, garlic, leek</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Prebiotic fibre for gut; garlic activates liver enzymes</td></tr>
+      <tr><td>Mushrooms</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Immune-supporting, gut-friendly, very low starch</td></tr>
+      <tr><td>Avocado</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Healthy fats support liver; helps produce glutathione (master antioxidant)</td></tr>
+      <tr><td>Tomatoes</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Rich in lycopene; anti-inflammatory</td></tr>
+      <tr><td>Corn / maize</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Gluten-free but high starch — limit serving size; avoid corn flour in quantity</td></tr>
+      <tr><td>Sweet potato</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Naturally GF but starchy; better than white potato, still limit portion</td></tr>
+      <tr><td>White potato</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>GF but very high starch; cooling after cooking increases resistant starch slightly</td></tr>
+      <tr><td>Peas</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>GF but moderate starch; fine in small amounts</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 2: FRUIT -->
+  <h2>🍓 Fruit</h2>
+  <table>
+    <thead>
+      <tr><th>Food</th><th>Status</th><th>Notes & Benefits</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Berries (blueberry, strawberry, raspberry, blackberry)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Low sugar, very high antioxidants — outstanding for liver & gut</td></tr>
+      <tr><td>Lemon & lime</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Stimulates bile production; alkalising; great for kidney detox in water</td></tr>
+      <tr><td>Grapefruit</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Contains naringenin which actively supports liver fat processing</td></tr>
+      <tr><td>Avocado (yes, it's a fruit!)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>See vegetables section above</td></tr>
+      <tr><td>Kiwi</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>High vitamin C, supports gut microbiome</td></tr>
+      <tr><td>Apple (with skin)</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Contains quercetin and pectin for gut health; moderate sugar — limit to 1/day</td></tr>
+      <tr><td>Pear</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Good fibre but moderate fructose — 1/day is fine</td></tr>
+      <tr><td>Mango, pineapple, papaya</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Digestive enzymes are helpful, but high in sugar — occasional treat in small portions</td></tr>
+      <tr><td>Banana</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>High sugar and starch (especially ripe); half a less-ripe banana occasionally is fine</td></tr>
+      <tr><td>Grapes, dates, figs</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Very high sugar content — similar burden to dessert on the liver</td></tr>
+      <tr><td>Fruit juice (all)</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Removes fibre; concentrated fructose spikes blood sugar and burdens the liver</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 3: GRAINS & STARCHES -->
+  <h2>🌾 Grains, Breads & Starches</h2>
+  <table>
+    <thead>
+      <tr><th>Food</th><th>Status</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Wheat (all forms: bread, pasta, flour, couscous)</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Contains gluten; spikes blood sugar; hard on a stressed gut</td></tr>
+      <tr><td>Rye, barley, spelt, kamut</td><td><span class="pill pill-no">✗ AVOID</span></td><td>All contain gluten</td></tr>
+      <tr><td>White rice</td><td><span class="pill pill-no">✗ AVOID</span></td><td>GF but very high GI starch — one of the main culprits for blood sugar spikes</td></tr>
+      <tr><td>Regular oats</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Often cross-contaminated with gluten; even GF oats are moderately starchy — avoid during reset</td></tr>
+      <tr><td>Bread (regular or GF store-bought)</td><td><span class="pill pill-no">✗ AVOID</span></td><td>GF breads often replace gluten with high-starch fillers (tapioca, potato starch, rice flour)</td></tr>
+      <tr><td>Brown rice</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>GF and slightly more nutritious than white, but still starchy — keep to ¼ cup cooked max</td></tr>
+      <tr><td>Quinoa</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>GF and a complete protein; moderate starch — good occasional base in small servings</td></tr>
+      <tr><td>Buckwheat</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Despite the name, completely GF and nutritious; moderate starch — use sparingly</td></tr>
+      <tr><td>Millet</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>GF and gut-friendly; moderate starch</td></tr>
+      <tr><td>Cassava / tapioca</td><td><span class="pill pill-no">✗ AVOID</span></td><td>GF but extremely high starch — often used in GF products to replace wheat, don't be fooled</td></tr>
+      <tr><td>Cauliflower rice / rice</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Excellent low-carb rice substitute; no starch, high fibre</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 4: PROTEIN -->
+  <h2>🥩 Protein</h2>
+  <table>
+    <thead>
+      <tr><th>Food</th><th>Status</th><th>Notes & Benefits</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Eggs</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Rich in choline — essential for liver health and fat metabolism</td></tr>
+      <tr><td>Wild-caught oily fish (salmon, sardines, mackerel)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Omega-3s reduce liver inflammation; excellent for gut lining repair</td></tr>
+      <tr><td>Chicken & turkey (unprocessed)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Lean protein, easy on digestion; choose grilled/baked over fried</td></tr>
+      <tr><td>Grass-fed beef & lamb (moderate)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Good protein and iron; don't overload — 1–2 servings per week during detox</td></tr>
+      <tr><td>Legumes (lentils, chickpeas, black beans)</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>GF and high in fibre/protein; moderate starch — great for gut microbiome, limit to ½ cup</td></tr>
+      <tr><td>Tofu & tempeh</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Generally GF (check label); good plant protein; tempeh especially gut-friendly (fermented)</td></tr>
+      <tr><td>Processed meats (sausage, deli meat, bacon)</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Often contain gluten fillers; high in sodium and nitrates — hard on liver & kidneys</td></tr>
+      <tr><td>Breaded or battered proteins</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Contain gluten and fried in inflammatory oils</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 5: DAIRY & ALTERNATIVES -->
+  <h2>🥛 Dairy & Alternatives</h2>
+  <table>
+    <thead>
+      <tr><th>Food</th><th>Status</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Plain full-fat yoghurt (unsweetened)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Probiotics support gut lining repair — one of the best gut foods</td></tr>
+      <tr><td>Kefir (plain)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Even richer in probiotics than yoghurt; excellent for gut microbiome reset</td></tr>
+      <tr><td>Hard cheeses (cheddar, parmesan, gouda)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Very low lactose; naturally GF — good protein and fat source</td></tr>
+      <tr><td>Unsweetened almond milk</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Low calorie, low starch dairy alternative</td></tr>
+      <tr><td>Unsweetened coconut milk/cream</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>MCTs support energy without blood sugar spikes</td></tr>
+      <tr><td>Regular milk</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Naturally GF; contains lactose (milk sugar) — limit if gut is sensitive</td></tr>
+      <tr><td>Oat milk</td><td><span class="pill pill-no">✗ AVOID</span></td><td>High in starch; may contain gluten if not certified GF</td></tr>
+      <tr><td>Sweetened yoghurts & flavoured dairy</td><td><span class="pill pill-no">✗ AVOID</span></td><td>High added sugar — exactly what you're detoxing from</td></tr>
+      <tr><td>Ice cream</td><td><span class="pill pill-no">✗ AVOID</span></td><td>High sugar and dairy fat combo — very taxing on the liver</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6: FATS & OILS -->
+  <h2>🫒 Fats & Oils</h2>
+  <table>
+    <thead>
+      <tr><th>Food</th><th>Status</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Extra virgin olive oil</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Anti-inflammatory; supports liver fat reduction — use as primary cooking/dressing oil</td></tr>
+      <tr><td>Coconut oil</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>MCTs are metabolised quickly; good for cooking at higher heat</td></tr>
+      <tr><td>Nuts (almonds, walnuts, macadamia — unsalted)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Walnuts in particular support liver health; healthy fats and protein</td></tr>
+      <tr><td>Seeds (chia, flax, pumpkin, sunflower)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Anti-inflammatory omega-3s; fibre for gut; chia/flax great as dessert thickeners</td></tr>
+      <tr><td>Vegetable/seed oils (canola, sunflower, soy)</td><td><span class="pill pill-no">✗ AVOID</span></td><td>High in omega-6; pro-inflammatory; linked to liver stress with excess consumption</td></tr>
+      <tr><td>Margarine / spreads</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Trans fats and processed oils — avoid entirely</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 7: DRINKS -->
+  <h2>🍵 Drinks</h2>
+  <table>
+    <thead>
+      <tr><th>Drink</th><th>Status</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Water (still or sparkling)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Aim for 2–3 litres/day — essential for kidney flushing</td></tr>
+      <tr><td>Green tea</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Rich in catechins that actively reduce liver fat and inflammation</td></tr>
+      <tr><td>Herbal teas (dandelion, milk thistle, ginger, peppermint)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Dandelion and milk thistle are specifically liver-supportive</td></tr>
+      <tr><td>Black coffee (unsweetened)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Shown in studies to reduce liver fibrosis risk — 1–2 cups/day is beneficial</td></tr>
+      <tr><td>Kombucha (low sugar)</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Probiotic-rich; check label for sugar content — under 5g per serve is ideal</td></tr>
+      <tr><td>Alcohol (all types)</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Direct liver toxin — avoid entirely during any liver reset programme</td></tr>
+      <tr><td>Soft drinks & energy drinks</td><td><span class="pill pill-no">✗ AVOID</span></td><td>High fructose corn syrup or artificial sweeteners — both stressful to liver/gut</td></tr>
+      <tr><td>Fruit juices & smoothies</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Even "natural" juice is concentrated sugar without fibre</td></tr>
+      <tr><td>Flavoured coffees / lattes with syrup</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Equivalent to dessert in sugar content</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 8: CONDIMENTS & SAUCES -->
+  <h2>🧂 Condiments & Sauces</h2>
+  <table>
+    <thead>
+      <tr><th>Item</th><th>Status</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Fresh herbs (parsley, basil, coriander, etc.)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Powerful anti-inflammatory and detox agents — use generously</td></tr>
+      <tr><td>Turmeric & ginger</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Outstanding anti-inflammatory; turmeric specifically protective for liver cells</td></tr>
+      <tr><td>Apple cider vinegar (raw, with "the mother")</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Helps balance gut pH; use as salad dressing or diluted in water</td></tr>
+      <tr><td>Tamari (gluten-free soy sauce)</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Check label says "100% soy, no wheat" — good regular soy sauce substitute</td></tr>
+      <tr><td>Regular soy sauce</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Contains wheat/gluten</td></tr>
+      <tr><td>Tomato passata / whole tinned tomatoes</td><td><span class="pill pill-yes">✓ EAT FREELY</span></td><td>Check no added sugar; a clean, nutritious sauce base</td></tr>
+      <tr><td>Most store-bought sauces (BBQ, sweet chilli, teriyaki)</td><td><span class="pill pill-no">✗ AVOID</span></td><td>Typically contain gluten, high fructose corn syrup, or both</td></tr>
+      <tr><td>Mayonnaise (plain, no additives)</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Usually GF; check label for seed oils and sugar</td></tr>
+      <tr><td>Salt (use sparingly)</td><td><span class="pill pill-mod">~ MODERATE</span></td><td>Excessive sodium burdens kidneys; opt for Himalayan or sea salt in moderation</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SWAPS SECTION -->
+  <h2>🔄 Smart Swaps — Your Weakness Foods</h2>
+  <p style="margin-bottom:1.5rem; font-size:0.9rem; color:#666;">Based on your history with sweet bread, desserts, and rice — here are satisfying, GF low-starch alternatives that won't derail your reset.</p>
+
+  <div class="swap-section">
+    <h3>🍞 Instead of Sweet Bread & Pastries</h3>
+    <div class="swap-grid">
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Sweet bread, brioche, croissants</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Almond flour banana muffins (sweetened with mashed banana only) or coconut flour flatbreads</div></div>
+
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Cinnamon rolls, sweet buns</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Baked pear with cinnamon, walnuts & a dollop of plain yoghurt</div></div>
+
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Toast with jam / Vegemite toast</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Seed crackers (pumpkin & flax) or cucumber slices with avocado & a pinch of sea salt</div></div>
+    </div>
+  </div>
+
+  <div class="swap-section">
+    <h3>🍰 Instead of Desserts</h3>
+    <div class="swap-grid">
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Cake, cheesecake, cookies</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Chia pudding made with coconut milk, topped with fresh berries — creamy, sweet, zero starch</div></div>
+
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Ice cream</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Blended frozen banana (1 ingredient "nice cream") or frozen coconut yoghurt bark with berries</div></div>
+
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Chocolate (milk/white)</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">85%+ dark chocolate (1–2 squares) — liver-friendly flavonoids; satisfies cravings without sugar flood</div></div>
+
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Puddings, custard, mousse</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Avocado chocolate mousse: blended avocado + cacao powder + a tiny drizzle of honey. Rich and creamy.</div></div>
+    </div>
+  </div>
+
+  <div class="swap-section">
+    <h3>🍚 Instead of Rice</h3>
+    <div class="swap-grid">
+      <div><div class="swap-label">Avoid</div><div class="swap-original">White / fried rice</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Cauliflower rice — pulse raw cauliflower in a food processor, sauté 3 mins. Add garlic & tamari for a near-identical experience.</div></div>
+
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Rice with curries & stir fries</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Spiralised zucchini noodles, shredded cabbage, or a small portion of quinoa</div></div>
+
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Rice congee / porridge</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Chia seed porridge or cauliflower congee cooked in bone broth — warming and gut-healing</div></div>
+    </div>
+  </div>
+
+  <div class="swap-section">
+    <h3>🍜 Instead of Pasta & Noodles</h3>
+    <div class="swap-grid">
+      <div><div class="swap-label">Avoid</div><div class="swap-original">Wheat pasta, ramen, udon</div></div>
+      <div class="swap-arrow">→</div>
+      <div><div class="swap-label">Try instead</div><div class="swap-new">Zucchini noodles (zoodles), kelp noodles, or shirataki/konjac noodles (essentially zero carb)</div></div>
+    </div>
+  </div>
+
+  <!-- DETOX TIPS -->
+  <h2>💚 Liver, Kidney & Gut Reset Tips</h2>
+  <div class="detox-tips">
+    <div class="tip-card">
+      <div class="icon">💧</div>
+      <h4>Hydrate aggressively</h4>
+      <p>2.5–3L of water daily is your #1 kidney detox tool. Start each morning with warm water + a squeeze of lemon.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">🌿</div>
+      <h4>Eat the rainbow (vegetables)</h4>
+      <p>Aim for 5+ different coloured vegetables per day. Variety feeds diverse gut bacteria and provides a wide range of liver-supporting phytonutrients.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">🍵</div>
+      <h4>Milk thistle & dandelion tea</h4>
+      <p>Both contain compounds (silymarin, inulin) with clinically observed liver-protective and digestive effects. 1–2 cups daily is ideal.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">🥚</div>
+      <h4>Prioritise choline</h4>
+      <p>Found in eggs, found in liver, salmon and sunflower seeds. Choline is essential for transporting fat out of the liver — critical when recovering from a high-sugar diet.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">🦠</div>
+      <h4>Rebuild your gut flora</h4>
+      <p>Daily plain yoghurt or kefir + fibre-rich vegetables (prebiotic). Avoid antibiotics unless absolutely necessary during this reset period.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">⏰</div>
+      <h4>Consider time-restricted eating</h4>
+      <p>Eating within a 10–12 hour window (e.g. 8am–6pm) gives your liver and gut a longer fasting rest period, which significantly supports regeneration.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">🚫</div>
+      <h4>Read labels on "GF" products</h4>
+      <p>Gluten-free doesn't mean healthy. Many GF breads, crackers and snacks are high in tapioca starch, rice flour and added sugar — equally bad for this reset.</p>
+    </div>
+    <div class="tip-card">
+      <div class="icon">📅</div>
+      <h4>Be patient — give it 4–8 weeks</h4>
+      <p>The liver has strong regenerative capacity, but meaningful change takes time. Consistency matters far more than perfection on any given day.</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  This guide is for general wellness reference only and does not constitute medical advice. Please consult a doctor or registered dietitian for personalised guidance.
+</footer>
+
+</body>
+</html>

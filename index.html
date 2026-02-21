@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn Anything</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf6f0;
+    --sage: #7a9e7e;
+    --sage-light: #b5cfb7;
+    --sage-dark: #4a7050;
+    --terracotta: #c0614a;
+    --amber: #d4a843;
+    --charcoal: #2c2c2c;
+    --warm-white: #fffef9;
+    --border: #e2ddd5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--charcoal);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--sage-dark);
+    color: var(--warm-white);
+    padding: 4rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -40px;
+    width: 140px; height: 140px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+  }
+
+  header p {
+    font-size: 1.05rem;
+    opacity: 0.85;
+    font-weight: 300;
+    max-width: 550px;
+    margin: 0 auto;
+  }
+
+  main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--sage-dark);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--sage-light);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .card {
+    background: var(--warm-white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  }
+
+  .card-header {
+    background: var(--sage);
+    padding: 1.25rem 1.5rem;
+    position: relative;
+  }
+
+  .card-header.food { background: var(--sage); }
+  .card-header.swe { background: var(--terracotta); }
+
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    color: var(--warm-white);
+    margin: 0;
+  }
+
+  .card-body {
+    padding: 1.25rem 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-description {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+    flex: 1;
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    display: inline-block;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--charcoal);
+    letter-spacing: 0.3px;
+  }
+
+  .tag.food { background: #e8f3e9; border-color: var(--sage-light); color: var(--sage-dark); }
+  .tag.swe { background: #fde8e4; border-color: #e8a090; color: var(--terracotta); }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #999;
+    font-size: 0.95rem;
+  }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.78rem;
+    color: #999;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 600px) {
+    .cards-grid {
+      grid-template-columns: 1fr;
+    }
+    header {
+      padding: 3rem 1.5rem 2rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Learn Anything</h1>
+  <p>A collection of guides and reference materials for continuous learning</p>
+</header>
+
+<main>
+
+  <h2 class="section-title">🍎 Food & Nutrition</h2>
+  <div class="cards-grid">
+    <a href="food/HealMyGut.html" class="card">
+      <div class="card-header food">
+        <div class="card-icon">🥦</div>
+        <h3 class="card-title">Gluten-Free & Low-Starch Guide</h3>
+      </div>
+      <div class="card-body">
+        <p class="card-description">A complete food reference for resetting your liver, kidneys & gut. Includes smart swaps for common cravings and detailed food status tables.</p>
+        <div class="card-meta">
+          <span class="tag food">Gluten-Free</span>
+          <span class="tag food">Low-Starch</span>
+          <span class="tag food">Detox</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <h2 class="section-title">💻 Software Engineering</h2>
+  <div class="cards-grid">
+    <a href="swe/StateMachineDesign.html" class="card">
+      <div class="card-header swe">
+        <div class="card-icon">⚙️</div>
+        <h3 class="card-title">State Machine Design</h3>
+      </div>
+      <div class="card-body">
+        <p class="card-description">A comprehensive guide to designing state machines for robust software systems. Covers patterns, best practices, and implementation strategies.</p>
+        <div class="card-meta">
+          <span class="tag swe">Architecture</span>
+          <span class="tag swe">Design Patterns</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  Learn Anything by Hannah — A personal knowledge repository by Hannah
+</footer>
+
+</body>
+</html>
