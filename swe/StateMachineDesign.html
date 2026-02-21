@@ -3,293 +3,390 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>State Machine Design - Print Version</title>
+  <title>State Machine Design</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --cream: #faf6f0;
+      --sage: #7a9e7e;
+      --sage-light: #b5cfb7;
+      --sage-dark: #4a7050;
+      --terracotta: #c0614a;
+      --amber: #d4a843;
+      --charcoal: #2c2c2c;
+      --warm-white: #fffef9;
+      --red-light: #fde8e4;
+      --green-light: #e8f3e9;
+      --amber-light: #fdf4e0;
+      --border: #e2ddd5;
     }
-    
-    @page {
-      size: A4;
-      margin: 2cm;
-    }
-    
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 11pt;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--charcoal);
       line-height: 1.6;
-      color: #1a1a1a;
-      background: white;
-      max-width: 210mm;
-      margin: 0 auto;
-      padding: 2cm;
     }
-    
-    @media print {
-      body {
-        padding: 0;
-      }
+
+    header {
+      background: var(--terracotta);
+      color: var(--warm-white);
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
     }
-    
-    h1 {
-      font-size: 24pt;
-      font-weight: bold;
-      margin-bottom: 0.5em;
-      color: #111;
-      border-bottom: 3px solid #4f46e5;
-      padding-bottom: 0.3em;
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
     }
-    
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: -40px;
+      width: 140px; height: 140px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+
     .subtitle {
-      font-size: 14pt;
-      color: #555;
-      font-style: italic;
-      margin-bottom: 2em;
+      font-size: 0.95rem;
+      opacity: 0.85;
+      font-weight: 300;
+      max-width: 500px;
+      margin: 0 auto;
     }
-    
+
+    .badge-row {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      padding: 0.25rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
     h2 {
-      font-size: 16pt;
-      font-weight: bold;
-      margin-top: 1.5em;
-      margin-bottom: 0.75em;
-      color: #4f46e5;
-      page-break-after: avoid;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--terracotta);
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #e8a090;
     }
-    
+
     h3 {
-      font-size: 13pt;
-      font-weight: bold;
-      margin-top: 1.25em;
-      margin-bottom: 0.5em;
-      color: #333;
-      page-break-after: avoid;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--charcoal);
+      margin: 1.5rem 0 0.75rem;
     }
-    
+
     h4 {
-      font-size: 11pt;
-      font-weight: bold;
-      margin-top: 1em;
-      margin-bottom: 0.4em;
-      color: #444;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 1rem 0 0.5rem;
+      color: var(--charcoal);
     }
-    
+
     p {
       margin-bottom: 0.75em;
-      text-align: justify;
     }
-    
+
     .chapter {
-      page-break-before: always;
+      margin-top: 3rem;
     }
-    
-    .chapter:first-of-type {
-      page-break-before: avoid;
-    }
-    
+
     .toc {
-      background: #f8f9fa;
-      padding: 1.5em;
-      margin: 1.5em 0;
-      border-left: 4px solid #4f46e5;
+      background: var(--warm-white);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      border-left: 4px solid var(--terracotta);
+      border-radius: 0 10px 10px 0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
-    
+
     .toc h3 {
       margin-top: 0;
-      color: #4f46e5;
+      color: var(--terracotta);
     }
-    
+
     .toc ul {
       list-style: none;
       padding-left: 0;
     }
-    
+
     .toc li {
       margin: 0.4em 0;
       padding-left: 1em;
+      font-size: 0.9rem;
     }
-    
+
     .toc li.chapter-item {
-      font-weight: bold;
+      font-weight: 600;
       padding-left: 0;
       margin-top: 0.75em;
+      color: var(--charcoal);
     }
-    
+
     .key-concept {
-      background: #f0f4ff;
-      border-left: 4px solid #4f46e5;
-      padding: 1em 1.25em;
-      margin: 1em 0;
-      page-break-inside: avoid;
+      background: var(--green-light);
+      border-left: 4px solid var(--sage);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
     }
-    
+
     .key-concept strong {
-      color: #4f46e5;
+      color: var(--sage-dark);
     }
-    
+
     .warning {
-      background: #fef3cd;
-      border-left: 4px solid #f59e0b;
-      padding: 1em 1.25em;
-      margin: 1em 0;
-      page-break-inside: avoid;
+      background: var(--amber-light);
+      border-left: 4px solid var(--amber);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
     }
-    
+
+    .warning h4 {
+      color: #6b5a30;
+      margin-top: 0;
+    }
+
     .tip {
-      background: #d1fae5;
-      border-left: 4px solid #10b981;
-      padding: 1em 1.25em;
-      margin: 1em 0;
-      page-break-inside: avoid;
+      background: var(--green-light);
+      border-left: 4px solid var(--sage);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
     }
-    
+
+    .tip h4 {
+      color: var(--sage-dark);
+      margin-top: 0;
+    }
+
     pre {
-      background: #1e293b;
-      color: #e2e8f0;
-      padding: 1em;
-      border-radius: 4px;
+      background: #2c2c2c;
+      color: #e8e8e8;
+      padding: 1.25rem;
+      border-radius: 10px;
       overflow-x: auto;
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 9pt;
-      line-height: 1.5;
-      margin: 1em 0;
-      page-break-inside: avoid;
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      margin: 1rem 0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
     }
-    
+
     code {
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 9.5pt;
-      background: #f1f5f9;
-      padding: 0.15em 0.35em;
-      border-radius: 3px;
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 0.85rem;
+      background: #f3f0ea;
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
     }
-    
+
     pre code {
       background: none;
       padding: 0;
     }
-    
+
     .diagram {
       text-align: center;
-      margin: 1.5em 0;
-      page-break-inside: avoid;
+      margin: 1.5rem 0;
+      background: var(--warm-white);
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
-    
+
     .diagram svg {
       max-width: 100%;
       height: auto;
     }
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 1em 0;
-      font-size: 10pt;
-      page-break-inside: avoid;
+      font-size: 0.875rem;
+      margin: 1rem 0 1.5rem;
+      background: var(--warm-white);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
-    
-    th, td {
-      border: 1px solid #d1d5db;
-      padding: 0.5em 0.75em;
+
+    thead tr {
+      background: var(--terracotta);
+      color: var(--warm-white);
+    }
+
+    thead th {
+      padding: 0.85rem 1rem;
       text-align: left;
+      font-weight: 500;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
-    
-    th {
-      background: #f3f4f6;
-      font-weight: bold;
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
     }
-    
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f3f0ea; }
+
+    td {
+      padding: 0.75rem 1rem;
+      vertical-align: top;
+    }
+
+    td:first-child { font-weight: 500; }
+
     ul, ol {
       margin: 0.75em 0;
       padding-left: 1.5em;
     }
-    
+
     li {
       margin: 0.35em 0;
     }
-    
+
     .question {
-      background: #fafafa;
-      border: 1px solid #e5e7eb;
-      padding: 1em;
-      margin: 1em 0;
-      page-break-inside: avoid;
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin: 1rem 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
-    
+
     .question-number {
-      font-weight: bold;
-      color: #4f46e5;
+      font-weight: 600;
+      color: var(--terracotta);
     }
-    
+
     .options {
       margin-top: 0.5em;
       padding-left: 1.5em;
     }
-    
+
     .options li {
       margin: 0.25em 0;
     }
-    
+
     .answer-key {
-      background: #f0fdf4;
-      border: 1px solid #86efac;
-      padding: 1em;
-      margin-top: 0.5em;
+      background: var(--green-light);
+      border: 1px solid var(--sage-light);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-top: 1rem;
     }
-    
+
+    .answer-key p {
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
     .framework-box {
-      border: 2px solid #4f46e5;
-      padding: 1.25em;
-      margin: 1.5em 0;
-      page-break-inside: avoid;
+      border: 2px solid var(--terracotta);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      background: var(--warm-white);
     }
-    
+
     .framework-box h4 {
-      color: #4f46e5;
+      color: var(--terracotta);
       margin-top: 0;
+      font-size: 1rem;
     }
-    
+
     .framework-box ol {
       margin-bottom: 0;
     }
-    
+
     .bug-pattern {
-      border: 1px solid #fca5a5;
-      background: #fef2f2;
-      padding: 1em;
-      margin: 1em 0;
-      page-break-inside: avoid;
+      border: 1px solid #e8a090;
+      background: var(--red-light);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin: 1rem 0;
     }
-    
+
     .bug-pattern h4 {
-      color: #dc2626;
+      color: var(--terracotta);
       margin-top: 0;
     }
-    
+
     .fix {
-      background: #f0fdf4;
-      padding: 0.75em;
-      margin-top: 0.5em;
-      border-left: 3px solid #10b981;
+      background: var(--green-light);
+      padding: 0.75rem 1rem;
+      margin-top: 0.75rem;
+      border-left: 3px solid var(--sage);
+      border-radius: 0 6px 6px 0;
     }
-    
+
     footer {
-      margin-top: 3em;
-      padding-top: 1em;
-      border-top: 1px solid #e5e7eb;
-      font-size: 9pt;
-      color: #6b7280;
       text-align: center;
+      padding: 1.5rem;
+      font-size: 0.78rem;
+      color: #999;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      main { padding: 1.5rem 1rem 3rem; }
+      pre { font-size: 0.75rem; padding: 1rem; }
+      table { font-size: 0.8rem; }
+      td, th { padding: 0.6rem 0.75rem; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>State Machine Design</h1>
-    <p class="subtitle">Mental Models for Debugging Complex Systems</p>
-  </header>
-  
+
+<header>
+  <h1>State Machine Design</h1>
+  <p class="subtitle">Mental Models for Debugging Complex Systems</p>
+  <div class="badge-row">
+    <span class="badge">⚙️ Architecture</span>
+    <span class="badge">🐛 Debugging</span>
+    <span class="badge">🧠 Mental Models</span>
+  </div>
+</header>
+
+<main>
+
   <nav class="toc">
     <h3>Table of Contents</h3>
     <ul>
@@ -335,42 +432,42 @@
       <svg viewBox="0 0 400 160" width="400" height="160">
         <defs>
           <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+            <path d="M0,0 L0,6 L9,3 z" fill="#c0614a"/>
           </marker>
         </defs>
         <!-- States -->
-        <circle cx="50" cy="80" r="28" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
-        <text x="50" y="84" text-anchor="middle" font-size="10" fill="#334155">Idle</text>
-        <polygon points="12,80 22,74 22,86" fill="#64748b"/>
+        <circle cx="50" cy="80" r="28" fill="#fffef9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="50" y="84" text-anchor="middle" font-size="10" font-family="DM Sans, sans-serif" fill="#2c2c2c">Idle</text>
+        <polygon points="12,80 22,74 22,86" fill="#4a7050"/>
         
-        <circle cx="140" cy="80" r="28" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
-        <text x="140" y="84" text-anchor="middle" font-size="10" fill="#334155">Loading</text>
+        <circle cx="140" cy="80" r="28" fill="#fffef9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="140" y="84" text-anchor="middle" font-size="10" font-family="DM Sans, sans-serif" fill="#2c2c2c">Loading</text>
         
-        <circle cx="250" cy="50" r="28" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
-        <text x="250" y="54" text-anchor="middle" font-size="10" fill="#334155">Playing</text>
+        <circle cx="250" cy="50" r="28" fill="#fffef9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="250" y="54" text-anchor="middle" font-size="10" font-family="DM Sans, sans-serif" fill="#2c2c2c">Playing</text>
         
-        <circle cx="250" cy="110" r="28" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
-        <text x="250" y="114" text-anchor="middle" font-size="10" fill="#334155">Paused</text>
+        <circle cx="250" cy="110" r="28" fill="#fffef9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="250" y="114" text-anchor="middle" font-size="10" font-family="DM Sans, sans-serif" fill="#2c2c2c">Paused</text>
         
-        <circle cx="350" cy="80" r="32" fill="none" stroke="#64748b" stroke-width="2"/>
-        <circle cx="350" cy="80" r="26" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
-        <text x="350" y="84" text-anchor="middle" font-size="10" fill="#334155">Error</text>
+        <circle cx="350" cy="80" r="32" fill="none" stroke="#c0614a" stroke-width="2"/>
+        <circle cx="350" cy="80" r="26" fill="#fde8e4" stroke="#c0614a" stroke-width="2"/>
+        <text x="350" y="84" text-anchor="middle" font-size="10" font-family="DM Sans, sans-serif" fill="#c0614a">Error</text>
         
         <!-- Transitions -->
-        <path d="M78,80 L108,80" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <text x="93" y="72" text-anchor="middle" font-size="8" fill="#64748b">load()</text>
+        <path d="M78,80 L108,80" fill="none" stroke="#c0614a" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="93" y="72" text-anchor="middle" font-size="8" font-family="DM Sans, sans-serif" fill="#c0614a">load()</text>
         
-        <path d="M165,68 Q195,40 222,50" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <text x="190" y="42" text-anchor="middle" font-size="8" fill="#64748b">ready</text>
+        <path d="M165,68 Q195,40 222,50" fill="none" stroke="#c0614a" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="190" y="42" text-anchor="middle" font-size="8" font-family="DM Sans, sans-serif" fill="#c0614a">ready</text>
         
-        <path d="M168,88 Q220,130 320,85" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <text x="240" y="130" text-anchor="middle" font-size="8" fill="#64748b">fail</text>
+        <path d="M168,88 Q220,130 320,85" fill="none" stroke="#c0614a" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="240" y="130" text-anchor="middle" font-size="8" font-family="DM Sans, sans-serif" fill="#c0614a">fail</text>
         
-        <path d="M258,78 L258,88" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <text x="275" y="82" text-anchor="middle" font-size="8" fill="#64748b">pause()</text>
+        <path d="M258,78 L258,88" fill="none" stroke="#c0614a" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="275" y="82" text-anchor="middle" font-size="8" font-family="DM Sans, sans-serif" fill="#c0614a">pause()</text>
         
-        <path d="M242,88 L242,72" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <text x="225" y="82" text-anchor="middle" font-size="8" fill="#64748b">play()</text>
+        <path d="M242,88 L242,72" fill="none" stroke="#c0614a" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="225" y="82" text-anchor="middle" font-size="8" font-family="DM Sans, sans-serif" fill="#c0614a">play()</text>
       </svg>
     </div>
     <p>This diagram makes explicit what valid states exist and which transitions are permitted. A video cannot be both "playing" and "paused" simultaneously, and clicking "play" does nothing if we're still in the "loading" state.</p>
@@ -480,36 +577,40 @@ const machine = {
 };</code></pre>
 
     <table>
-      <tr>
-        <th>Concept</th>
-        <th>What It Is</th>
-        <th>Example</th>
-      </tr>
-      <tr>
-        <td><strong>State</strong></td>
-        <td>A discrete mode (finite, mutually exclusive)</td>
-        <td>'idle', 'loading', 'playing'</td>
-      </tr>
-      <tr>
-        <td><strong>Transition</strong></td>
-        <td>An event that moves between states</td>
-        <td>FETCH, PLAY, DROP</td>
-      </tr>
-      <tr>
-        <td><strong>Guard</strong></td>
-        <td>A condition for allowing a transition</td>
-        <td>retries < 3, isValid(data)</td>
-      </tr>
-      <tr>
-        <td><strong>Context</strong></td>
-        <td>Extended data travelling with the machine</td>
-        <td>{ user, error, retryCount }</td>
-      </tr>
-      <tr>
-        <td><strong>Action</strong></td>
-        <td>Side effect triggered by a transition</td>
-        <td>Log event, update context, fire API</td>
-      </tr>
+      <thead>
+        <tr>
+          <th>Concept</th>
+          <th>What It Is</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>State</td>
+          <td>A discrete mode (finite, mutually exclusive)</td>
+          <td><code>'idle'</code>, <code>'loading'</code>, <code>'playing'</code></td>
+        </tr>
+        <tr>
+          <td>Transition</td>
+          <td>An event that moves between states</td>
+          <td><code>FETCH</code>, <code>PLAY</code>, <code>DROP</code></td>
+        </tr>
+        <tr>
+          <td>Guard</td>
+          <td>A condition for allowing a transition</td>
+          <td><code>retries < 3</code>, <code>isValid(data)</code></td>
+        </tr>
+        <tr>
+          <td>Context</td>
+          <td>Extended data travelling with the machine</td>
+          <td><code>{ user, error, retryCount }</code></td>
+        </tr>
+        <tr>
+          <td>Action</td>
+          <td>Side effect triggered by a transition</td>
+          <td>Log event, update context, fire API</td>
+        </tr>
+      </tbody>
     </table>
   </section>
 
@@ -821,9 +922,11 @@ function reducer(state: State, action: Action): State {
     </div>
   </section>
 
-  <footer>
-    <p>State Machine Design: Mental Models for Debugging Complex Systems</p>
-    <p>Created for learning purposes • Print-ready format</p>
-  </footer>
+</main>
+
+<footer>
+  State Machine Design — Part of Learn Anything by Hannah
+</footer>
+
 </body>
 </html>
