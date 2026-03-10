@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greedy — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Greedy</h1>
+  <p class="subtitle">Make the locally optimal choice at each step — and sometimes that's all you need for a globally optimal solution</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Optimisation</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. What is a Greedy Algorithm? ─── -->
+  <h2>What is a Greedy Algorithm?</h2>
+  <p>A greedy algorithm builds a solution piece by piece, always choosing the option that looks best <em>right now</em> without reconsidering earlier choices. Unlike dynamic programming, which explores all possibilities and picks the global optimum, greedy commits to each decision and never backtracks.</p>
+
+  <p>For a greedy approach to produce an optimal solution, the problem must satisfy two properties:</p>
+  <ol>
+    <li><strong>Greedy choice property:</strong> A globally optimal solution can be arrived at by making a locally optimal choice. Picking the best option at each step doesn't lock us out of the overall best answer.</li>
+    <li><strong>Optimal substructure:</strong> An optimal solution to the problem contains optimal solutions to its subproblems — the same property DP requires.</li>
+  </ol>
+
+  <p>When both properties hold, greedy is strictly better than DP: same result, simpler code, usually faster. The difficulty lies in <em>proving</em> greedy works for a given problem.</p>
+
+  <!-- ─── 2. When Does Greedy Work? ─── -->
+  <h2>When Does Greedy Work?</h2>
+  <p>Greedy algorithms work when the problem has a <em>matroid structure</em> — roughly, when you can safely commit to local decisions. In practice, you develop intuition by studying classic problems and recognising patterns.</p>
+
+  <p><strong>Greedy vs DP:</strong> Both require optimal substructure. The difference is that DP problems have <em>overlapping subproblems</em> where the greedy choice property fails — you need to consider multiple branches. Greedy problems let you prune to a single branch at each step.</p>
+
+  <table>
+    <thead>
+      <tr><th>Aspect</th><th>Greedy</th><th>Dynamic Programming</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Choices</td><td>One best choice per step</td><td>All choices explored</td></tr>
+      <tr><td>Backtracking</td><td>Never</td><td>Implicit via table</td></tr>
+      <tr><td>Correctness proof</td><td>Needs greedy choice proof</td><td>Bellman's principle</td></tr>
+      <tr><td>Typical time</td><td><span class="complexity ok">O(n log n)</span></td><td><span class="complexity ok">O(n²) or O(n·W)</span></td></tr>
+      <tr><td>When to use</td><td>Can prove local = global</td><td>Local ≠ global</td></tr>
+    </tbody>
+  </table>
+
+  <div class="key-concept">
+    <strong>Rule of thumb:</strong> If you can sort the input and make a single pass with a simple invariant, it's probably greedy. If you need to "try both taking and skipping" an element, it's DP.
+  </div>
+
+  <!-- ─── 3. Jump Game ─── -->
+  <h2>Jump Game</h2>
+  <p>Given an array where each element represents the maximum jump length from that position, determine if you can reach the last index. The greedy insight: track the <strong>farthest reachable index</strong> as you scan left to right. If you ever land on a position beyond your reach, you're stuck.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">canJump</span>(nums: <span class="tp">number</span>[]): <span class="tp">boolean</span> {
+  <span class="kw">let</span> maxReach = <span class="num">0</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; nums.length; i++) {
+    <span class="kw">if</span> (i &gt; maxReach) <span class="kw">return</span> <span class="kw">false</span>;
+    maxReach = Math.<span class="fn">max</span>(maxReach, i + nums[i]);
+  }
+
+  <span class="kw">return</span> <span class="kw">true</span>;
+}
+
+<span class="cm">// canJump([2, 3, 1, 1, 4])  → true   (0→1→4 or 0→2→3→4)</span>
+<span class="cm">// canJump([3, 2, 1, 0, 4])  → false  (stuck at index 3)</span></code></pre>
+
+  <p><strong>Why greedy works:</strong> We never need to decide <em>which</em> path to take — we only care whether the destination is reachable at all. Tracking the running maximum is enough because any position within reach can be visited.</p>
+
+  <!-- ─── 4. Jump Game II ─── -->
+  <h2>Jump Game II</h2>
+  <p>Same setup, but now find the <strong>minimum number of jumps</strong> to reach the end. Think of it as BFS over reachable ranges: each "level" is one jump, and we track the farthest position reachable in the current and next levels.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">jump</span>(nums: <span class="tp">number</span>[]): <span class="tp">number</span> {
+  <span class="kw">let</span> jumps = <span class="num">0</span>;
+  <span class="kw">let</span> currentEnd = <span class="num">0</span>;
+  <span class="kw">let</span> farthest = <span class="num">0</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; nums.length - <span class="num">1</span>; i++) {
+    farthest = Math.<span class="fn">max</span>(farthest, i + nums[i]);
+
+    <span class="kw">if</span> (i === currentEnd) {
+      jumps++;
+      currentEnd = farthest;
+    }
+  }
+
+  <span class="kw">return</span> jumps;
+}
+
+<span class="cm">// jump([2, 3, 1, 1, 4])  → 2  (0→1→4)</span>
+<span class="cm">// jump([2, 3, 0, 1, 4])  → 2  (0→1→4)</span></code></pre>
+
+  <div class="tip">
+    <h4>BFS analogy</h4>
+    <p><code>currentEnd</code> marks the boundary of the current BFS level. When we reach it, we "jump" to the next level whose boundary is <code>farthest</code>. Each level transition costs one jump. This guarantees the minimum because BFS explores all positions at distance k before any at distance k+1.</p>
+  </div>
+
+  <!-- ─── 5. Gas Station ─── -->
+  <h2>Gas Station</h2>
+  <p>There are <code>n</code> gas stations on a circular route. Station <code>i</code> has <code>gas[i]</code> fuel and costs <code>cost[i]</code> to reach the next station. Find the starting station index that lets you complete the circuit, or return -1 if impossible.</p>
+
+  <p><strong>Key insight:</strong> If the total gas ≥ total cost, a solution <em>must</em> exist. To find the starting point, track the running surplus. Whenever it goes negative, the start must be after the current station — reset and try the next one.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">canCompleteCircuit</span>(
+  gas: <span class="tp">number</span>[],
+  cost: <span class="tp">number</span>[]
+): <span class="tp">number</span> {
+  <span class="kw">let</span> totalSurplus = <span class="num">0</span>;
+  <span class="kw">let</span> currentSurplus = <span class="num">0</span>;
+  <span class="kw">let</span> start = <span class="num">0</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; gas.length; i++) {
+    <span class="kw">const</span> diff = gas[i] - cost[i];
+    totalSurplus += diff;
+    currentSurplus += diff;
+
+    <span class="kw">if</span> (currentSurplus &lt; <span class="num">0</span>) {
+      start = i + <span class="num">1</span>;
+      currentSurplus = <span class="num">0</span>;
+    }
+  }
+
+  <span class="kw">return</span> totalSurplus &gt;= <span class="num">0</span> ? start : -<span class="num">1</span>;
+}
+
+<span class="cm">// canCompleteCircuit([1,2,3,4,5], [3,4,5,1,2])  → 3</span>
+<span class="cm">// canCompleteCircuit([2,3,4], [3,4,3])           → -1</span></code></pre>
+
+  <div class="key-concept">
+    <strong>Why one pass works:</strong> If we fail at station <code>j</code> starting from <code>s</code>, then <em>every</em> station between <code>s</code> and <code>j</code> would also fail (they'd have even less fuel). So we can safely skip ahead to <code>j+1</code> as the new candidate start.
+  </div>
+
+  <!-- ─── 6. Hand of Straights ─── -->
+  <h2>Hand of Straights</h2>
+  <p>Given an array of integers (cards) and a group size <code>k</code>, determine if the cards can be rearranged into groups of <code>k</code> consecutive numbers. Greedy approach: always start a group from the smallest available card.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">isNStraightHand</span>(
+  hand: <span class="tp">number</span>[],
+  groupSize: <span class="tp">number</span>
+): <span class="tp">boolean</span> {
+  <span class="kw">if</span> (hand.length % groupSize !== <span class="num">0</span>) <span class="kw">return</span> <span class="kw">false</span>;
+
+  <span class="kw">const</span> counts = <span class="kw">new</span> <span class="fn">Map</span>&lt;<span class="tp">number</span>, <span class="tp">number</span>&gt;();
+  <span class="kw">for</span> (<span class="kw">const</span> card <span class="kw">of</span> hand) {
+    counts.<span class="fn">set</span>(card, (counts.<span class="fn">get</span>(card) ?? <span class="num">0</span>) + <span class="num">1</span>);
+  }
+
+  <span class="kw">const</span> sorted = [...counts.<span class="fn">keys</span>()].<span class="fn">sort</span>((a, b) => a - b);
+
+  <span class="kw">for</span> (<span class="kw">const</span> start <span class="kw">of</span> sorted) {
+    <span class="kw">const</span> count = counts.<span class="fn">get</span>(start)!;
+    <span class="kw">if</span> (count === <span class="num">0</span>) <span class="kw">continue</span>;
+
+    <span class="kw">for</span> (<span class="kw">let</span> j = <span class="num">0</span>; j &lt; groupSize; j++) {
+      <span class="kw">const</span> card = start + j;
+      <span class="kw">const</span> available = counts.<span class="fn">get</span>(card) ?? <span class="num">0</span>;
+      <span class="kw">if</span> (available &lt; count) <span class="kw">return</span> <span class="kw">false</span>;
+      counts.<span class="fn">set</span>(card, available - count);
+    }
+  }
+
+  <span class="kw">return</span> <span class="kw">true</span>;
+}
+
+<span class="cm">// isNStraightHand([1,2,3,6,2,3,4,7,8], 3)  → true  ([1,2,3],[2,3,4],[6,7,8])</span>
+<span class="cm">// isNStraightHand([1,2,3,4,5], 4)           → false</span></code></pre>
+
+  <p><strong>Why greedy works:</strong> The smallest card <em>must</em> be the start of some group — it can't be in the middle or end of a consecutive sequence because there's nothing smaller to start it. So we greedily build a group from it and repeat.</p>
+
+  <!-- ─── 7. Task Scheduler ─── -->
+  <h2>Task Scheduler</h2>
+  <p>Given tasks with a cooldown period <code>n</code> between identical tasks, find the minimum time to execute all tasks. The insight: the most frequent task dictates the structure. Place the most frequent tasks first, then fill the gaps.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">leastInterval</span>(
+  tasks: <span class="tp">string</span>[],
+  n: <span class="tp">number</span>
+): <span class="tp">number</span> {
+  <span class="kw">const</span> freq = <span class="kw">new</span> <span class="fn">Array</span>(<span class="num">26</span>).<span class="fn">fill</span>(<span class="num">0</span>);
+  <span class="kw">for</span> (<span class="kw">const</span> task <span class="kw">of</span> tasks) {
+    freq[task.<span class="fn">charCodeAt</span>(<span class="num">0</span>) - <span class="num">65</span>]++;
+  }
+
+  <span class="kw">const</span> maxFreq = Math.<span class="fn">max</span>(...freq);
+  <span class="kw">const</span> maxCount = freq.<span class="fn">filter</span>(f => f === maxFreq).length;
+
+  <span class="cm">// (maxFreq - 1) full chunks of size (n + 1), plus final partial chunk</span>
+  <span class="kw">const</span> minSlots = (maxFreq - <span class="num">1</span>) * (n + <span class="num">1</span>) + maxCount;
+
+  <span class="kw">return</span> Math.<span class="fn">max</span>(minSlots, tasks.length);
+}
+
+<span class="cm">// leastInterval(["A","A","A","B","B","B"], 2)  → 8</span>
+<span class="cm">// Schedule: A B _ A B _ A B  (8 slots)</span>
+<span class="cm">//</span>
+<span class="cm">// leastInterval(["A","A","A","B","B","B"], 0)  → 6</span>
+<span class="cm">// Schedule: A B A B A B  (no idle needed)</span></code></pre>
+
+  <div class="tip">
+    <h4>Visualising the formula</h4>
+    <p>Imagine a grid with <code>maxFreq</code> rows and <code>n+1</code> columns. Place the most frequent task in column 0 of every row. Fill remaining columns with other tasks. The idle slots are whatever gaps remain. If there are enough tasks to fill all gaps, the answer is simply <code>tasks.length</code>.</p>
+  </div>
+
+  <!-- ─── 8. When Greedy Fails ─── -->
+  <h2>When Greedy Fails</h2>
+
+  <div class="warning">
+    <h4>Counterexample: Coin Change</h4>
+    <p>With standard denominations (1, 5, 10, 25), greedy works: always pick the largest coin that fits. But with non-standard denominations, it fails.</p>
+    <p><strong>Example:</strong> Coins = [1, 3, 4], amount = 6.</p>
+    <ul>
+      <li><strong>Greedy:</strong> Pick 4, then 1, then 1 → 3 coins (4 + 1 + 1).</li>
+      <li><strong>Optimal:</strong> Pick 3, then 3 → 2 coins (3 + 3).</li>
+    </ul>
+    <p>The greedy choice (pick the biggest coin) doesn't have the greedy choice property here. You need DP to explore both "take 4" and "take 3" branches. This is why coin change is a classic DP problem.</p>
+  </div>
+
+  <!-- ─── 9. Complexity Table ─── -->
+  <h2>Complexity Summary</h2>
+
+  <table>
+    <thead>
+      <tr><th>Problem</th><th>Time</th><th>Space</th><th>Key Idea</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Jump Game</td><td><span class="complexity ok">O(n)</span></td><td><span class="complexity good">O(1)</span></td><td>Track max reachable index</td></tr>
+      <tr><td>Jump Game II</td><td><span class="complexity ok">O(n)</span></td><td><span class="complexity good">O(1)</span></td><td>BFS over jump ranges</td></tr>
+      <tr><td>Gas Station</td><td><span class="complexity ok">O(n)</span></td><td><span class="complexity good">O(1)</span></td><td>Reset start on negative surplus</td></tr>
+      <tr><td>Hand of Straights</td><td><span class="complexity ok">O(n log n)</span></td><td><span class="complexity ok">O(n)</span></td><td>Sort + greedily form groups from smallest</td></tr>
+      <tr><td>Task Scheduler</td><td><span class="complexity ok">O(n)</span></td><td><span class="complexity good">O(1)</span></td><td>Frequency counting, formula</td></tr>
+    </tbody>
+  </table>
+
+</main>
+
+<footer>
+  Greedy — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

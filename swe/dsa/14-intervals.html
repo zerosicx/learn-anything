@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intervals — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Intervals</h1>
+  <p class="subtitle">Sort first, sweep second — the universal pattern for merging, inserting, and scheduling intervals</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Sorting</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. Interval Problems ─── -->
+  <h2>Interval Problems</h2>
+  <p>An interval <code>[start, end]</code> represents a range on a number line — a meeting time, a process lifetime, a booking window. Interval problems ask you to merge overlapping ranges, count conflicts, or find gaps.</p>
+
+  <p>The universal first step is <strong>sort by start time</strong>. This converts a chaotic set of intervals into a sequence you can process left-to-right in a single sweep. Nearly every interval problem follows this pattern:</p>
+  <ol>
+    <li>Sort intervals by their start (or sometimes end).</li>
+    <li>Iterate once, maintaining some state (current merged interval, count of overlaps, etc.).</li>
+    <li>Make greedy decisions based on overlap detection: do intervals <code>a</code> and <code>b</code> overlap? Only if <code>a.end &gt;= b.start</code> (assuming sorted by start).</li>
+  </ol>
+
+  <!-- ─── 2. SVG Diagram ─── -->
+  <h2>Visualising Overlaps</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#999"/>
+        </marker>
+      </defs>
+      <!-- Number line -->
+      <line x1="40" y1="170" x2="660" y2="170" stroke="#999" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <g font-family="JetBrains Mono, monospace" font-size="10" fill="#999" text-anchor="middle">
+        <text x="60" y="188">0</text>
+        <text x="120" y="188">2</text>
+        <text x="180" y="188">4</text>
+        <text x="240" y="188">6</text>
+        <text x="300" y="188">8</text>
+        <text x="360" y="188">10</text>
+        <text x="420" y="188">12</text>
+        <text x="480" y="188">14</text>
+        <text x="540" y="188">16</text>
+        <text x="600" y="188">18</text>
+      </g>
+      <g font-family="JetBrains Mono, monospace" font-size="10" fill="#fff" text-anchor="middle">
+        <!-- Interval [1,3] -->
+        <rect x="90" y="20" width="60" height="26" rx="4" fill="#c0614a"/>
+        <text x="120" y="37">[1,3]</text>
+        <!-- Interval [2,6] — overlaps with [1,3] -->
+        <rect x="120" y="52" width="120" height="26" rx="4" fill="#c0614a" opacity="0.8"/>
+        <text x="180" y="69">[2,6]</text>
+        <!-- Interval [5,7] — overlaps with [2,6] -->
+        <rect x="190" y="84" width="60" height="26" rx="4" fill="#d4a843"/>
+        <text x="220" y="101" fill="#fff">[5,7]</text>
+        <!-- Interval [8,10] — no overlap -->
+        <rect x="300" y="20" width="60" height="26" rx="4" fill="#7a9e7e"/>
+        <text x="330" y="37">[8,10]</text>
+        <!-- Interval [15,18] — no overlap -->
+        <rect x="510" y="20" width="90" height="26" rx="4" fill="#7a9e7e"/>
+        <text x="555" y="37">[15,18]</text>
+      </g>
+      <!-- Overlap brace -->
+      <g font-family="DM Sans, sans-serif" font-size="10">
+        <path d="M90 115 Q90 130 150 130 Q210 130 250 130" stroke="#c0614a" fill="none" stroke-width="1.5"/>
+        <text x="170" y="148" text-anchor="middle" fill="#c0614a" font-weight="500">These three overlap → merge to [1,7]</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 3. Merge Intervals ─── -->
+  <h2>Merge Intervals</h2>
+  <p>Given a list of intervals, merge all overlapping intervals. Sort by start, then sweep through and extend the current interval whenever the next one overlaps.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">merge</span>(intervals: <span class="tp">number</span>[][]): <span class="tp">number</span>[][] {
+  intervals.<span class="fn">sort</span>((a, b) => a[<span class="num">0</span>] - b[<span class="num">0</span>]);
+  <span class="kw">const</span> merged: <span class="tp">number</span>[][] = [intervals[<span class="num">0</span>]];
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt; intervals.length; i++) {
+    <span class="kw">const</span> last = merged[merged.length - <span class="num">1</span>];
+    <span class="kw">const</span> curr = intervals[i];
+
+    <span class="kw">if</span> (curr[<span class="num">0</span>] &lt;= last[<span class="num">1</span>]) {
+      <span class="cm">// Overlapping — extend the end</span>
+      last[<span class="num">1</span>] = Math.<span class="fn">max</span>(last[<span class="num">1</span>], curr[<span class="num">1</span>]);
+    } <span class="kw">else</span> {
+      merged.<span class="fn">push</span>(curr);
+    }
+  }
+
+  <span class="kw">return</span> merged;
+}
+
+<span class="cm">// merge([[1,3],[2,6],[8,10],[15,18]])</span>
+<span class="cm">// → [[1,6],[8,10],[15,18]]</span></code></pre>
+
+  <h3>Step-by-Step Walkthrough</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 650 160" xmlns="http://www.w3.org/2000/svg" style="max-width:650px;">
+      <g font-family="DM Sans, sans-serif" font-size="10">
+        <text x="10" y="15" font-weight="500" fill="#2c2c2c">Sorted input:</text>
+        <g font-family="JetBrains Mono, monospace" font-size="11" text-anchor="middle">
+          <rect x="20" y="24" width="65" height="24" rx="4" fill="#faf6f0" stroke="#e2ddd5"/>
+          <text x="52" y="40">[1,3]</text>
+          <rect x="95" y="24" width="65" height="24" rx="4" fill="#faf6f0" stroke="#e2ddd5"/>
+          <text x="127" y="40">[2,6]</text>
+          <rect x="170" y="24" width="72" height="24" rx="4" fill="#faf6f0" stroke="#e2ddd5"/>
+          <text x="206" y="40">[8,10]</text>
+          <rect x="252" y="24" width="80" height="24" rx="4" fill="#faf6f0" stroke="#e2ddd5"/>
+          <text x="292" y="40">[15,18]</text>
+        </g>
+        <!-- Step 1 -->
+        <text x="10" y="75" font-weight="500" fill="#c0614a">1.</text>
+        <text x="22" y="75" fill="#2c2c2c">Start with [1,3]. Next is [2,6] — 2 ≤ 3, overlap! Extend to [1,6].</text>
+        <!-- Step 2 -->
+        <text x="10" y="100" font-weight="500" fill="#c0614a">2.</text>
+        <text x="22" y="100" fill="#2c2c2c">Current is [1,6]. Next is [8,10] — 8 &gt; 6, no overlap. Push [8,10].</text>
+        <!-- Step 3 -->
+        <text x="10" y="125" font-weight="500" fill="#c0614a">3.</text>
+        <text x="22" y="125" fill="#2c2c2c">Current is [8,10]. Next is [15,18] — 15 &gt; 10, no overlap. Push [15,18].</text>
+        <!-- Result -->
+        <text x="10" y="152" font-weight="500" fill="#4a7050">Result: [[1,6], [8,10], [15,18]]</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 4. Insert Interval ─── -->
+  <h2>Insert Interval</h2>
+  <p>Given a <em>sorted, non-overlapping</em> list of intervals and a new interval, insert it and merge if necessary. Partition into three groups: intervals entirely before, intervals that overlap, and intervals entirely after.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">insert</span>(
+  intervals: <span class="tp">number</span>[][],
+  newInterval: <span class="tp">number</span>[]
+): <span class="tp">number</span>[][] {
+  <span class="kw">const</span> result: <span class="tp">number</span>[][] = [];
+  <span class="kw">let</span> i = <span class="num">0</span>;
+
+  <span class="cm">// 1. Add all intervals that end before newInterval starts</span>
+  <span class="kw">while</span> (i &lt; intervals.length &amp;&amp; intervals[i][<span class="num">1</span>] &lt; newInterval[<span class="num">0</span>]) {
+    result.<span class="fn">push</span>(intervals[i]);
+    i++;
+  }
+
+  <span class="cm">// 2. Merge all overlapping intervals with newInterval</span>
+  <span class="kw">while</span> (i &lt; intervals.length &amp;&amp; intervals[i][<span class="num">0</span>] &lt;= newInterval[<span class="num">1</span>]) {
+    newInterval[<span class="num">0</span>] = Math.<span class="fn">min</span>(newInterval[<span class="num">0</span>], intervals[i][<span class="num">0</span>]);
+    newInterval[<span class="num">1</span>] = Math.<span class="fn">max</span>(newInterval[<span class="num">1</span>], intervals[i][<span class="num">1</span>]);
+    i++;
+  }
+  result.<span class="fn">push</span>(newInterval);
+
+  <span class="cm">// 3. Add remaining intervals</span>
+  <span class="kw">while</span> (i &lt; intervals.length) {
+    result.<span class="fn">push</span>(intervals[i]);
+    i++;
+  }
+
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// insert([[1,3],[6,9]], [2,5])  → [[1,5],[6,9]]</span>
+<span class="cm">// insert([[1,2],[3,5],[6,7],[8,10],[12,16]], [4,8])</span>
+<span class="cm">// → [[1,2],[3,10],[12,16]]</span></code></pre>
+
+  <!-- ─── 5. Non-Overlapping Intervals ─── -->
+  <h2>Non-Overlapping Intervals</h2>
+  <p>Given intervals, find the minimum number of intervals to <strong>remove</strong> so the rest don't overlap. Equivalent to: find the <strong>maximum</strong> number of non-overlapping intervals (classic activity selection).</p>
+
+  <p>Greedy strategy: sort by <em>end time</em>. Always keep the interval that finishes earliest — it leaves the most room for future intervals.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">eraseOverlapIntervals</span>(
+  intervals: <span class="tp">number</span>[][]
+): <span class="tp">number</span> {
+  intervals.<span class="fn">sort</span>((a, b) => a[<span class="num">1</span>] - b[<span class="num">1</span>]);
+
+  <span class="kw">let</span> kept = <span class="num">1</span>;
+  <span class="kw">let</span> lastEnd = intervals[<span class="num">0</span>][<span class="num">1</span>];
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt; intervals.length; i++) {
+    <span class="kw">if</span> (intervals[i][<span class="num">0</span>] &gt;= lastEnd) {
+      kept++;
+      lastEnd = intervals[i][<span class="num">1</span>];
+    }
+  }
+
+  <span class="kw">return</span> intervals.length - kept;
+}
+
+<span class="cm">// eraseOverlapIntervals([[1,2],[2,3],[3,4],[1,3]])  → 1  (remove [1,3])</span>
+<span class="cm">// eraseOverlapIntervals([[1,2],[1,2],[1,2]])        → 2</span></code></pre>
+
+  <div class="key-concept">
+    <strong>Activity Selection:</strong> This is the classic activity selection problem. Sort by end time, greedily pick non-conflicting activities. The proof: by choosing the earliest-ending activity, you never do worse than any other choice because it maximises the remaining time for future activities.
+  </div>
+
+  <!-- ─── 6. Meeting Rooms ─── -->
+  <h2>Meeting Rooms</h2>
+  <p>Given meeting time intervals, determine if a person can attend <strong>all</strong> meetings (i.e., no two overlap).</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">canAttendMeetings</span>(
+  intervals: <span class="tp">number</span>[][]
+): <span class="tp">boolean</span> {
+  intervals.<span class="fn">sort</span>((a, b) => a[<span class="num">0</span>] - b[<span class="num">0</span>]);
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt; intervals.length; i++) {
+    <span class="kw">if</span> (intervals[i][<span class="num">0</span>] &lt; intervals[i - <span class="num">1</span>][<span class="num">1</span>]) {
+      <span class="kw">return</span> <span class="kw">false</span>;
+    }
+  }
+
+  <span class="kw">return</span> <span class="kw">true</span>;
+}
+
+<span class="cm">// canAttendMeetings([[0,30],[5,10],[15,20]])  → false</span>
+<span class="cm">// canAttendMeetings([[7,10],[2,4]])            → true</span></code></pre>
+
+  <!-- ─── 7. Meeting Rooms II ─── -->
+  <h2>Meeting Rooms II</h2>
+  <p>Find the <strong>minimum number of conference rooms</strong> needed. Use a sweep line: track when meetings start and end as events. At any point in time, the number of active meetings is the number of rooms needed.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">minMeetingRooms</span>(
+  intervals: <span class="tp">number</span>[][]
+): <span class="tp">number</span> {
+  <span class="kw">const</span> starts = intervals.<span class="fn">map</span>(i => i[<span class="num">0</span>]).<span class="fn">sort</span>((a, b) => a - b);
+  <span class="kw">const</span> ends = intervals.<span class="fn">map</span>(i => i[<span class="num">1</span>]).<span class="fn">sort</span>((a, b) => a - b);
+
+  <span class="kw">let</span> rooms = <span class="num">0</span>;
+  <span class="kw">let</span> maxRooms = <span class="num">0</span>;
+  <span class="kw">let</span> s = <span class="num">0</span>, e = <span class="num">0</span>;
+
+  <span class="kw">while</span> (s &lt; starts.length) {
+    <span class="kw">if</span> (starts[s] &lt; ends[e]) {
+      rooms++;
+      maxRooms = Math.<span class="fn">max</span>(maxRooms, rooms);
+      s++;
+    } <span class="kw">else</span> {
+      rooms--;
+      e++;
+    }
+  }
+
+  <span class="kw">return</span> maxRooms;
+}
+
+<span class="cm">// minMeetingRooms([[0,30],[5,10],[15,20]])  → 2</span>
+<span class="cm">// minMeetingRooms([[7,10],[2,4]])            → 1</span></code></pre>
+
+  <div class="tip">
+    <h4>Sweep line technique</h4>
+    <p>Think of a vertical line sweeping left to right across the timeline. Each meeting start adds +1, each end adds -1. The maximum value at any point is the answer. Sorting starts and ends separately gives us O(n log n) time and O(n) space — simpler and faster than maintaining a min-heap.</p>
+  </div>
+
+  <!-- ─── 8. Interval Patterns Summary ─── -->
+  <h2>Interval Patterns Summary</h2>
+  <div class="pattern-box">
+    <h4>The Sort-Then-Sweep Template</h4>
+    <ol>
+      <li><strong>Sort</strong> by start time (or end time for activity selection).</li>
+      <li><strong>Initialise</strong> tracking state (current interval, count, etc.).</li>
+      <li><strong>Sweep</strong> left to right, comparing each interval against the tracked state.</li>
+      <li><strong>Overlap check:</strong> <code>curr.start &lt;= prev.end</code> means overlap.</li>
+      <li><strong>Merge:</strong> extend <code>prev.end = max(prev.end, curr.end)</code>.</li>
+      <li><strong>No overlap:</strong> push the current interval and update tracking.</li>
+    </ol>
+    <p style="margin-top:0.75rem;"><strong>When to sort by end instead of start:</strong> When you want to maximise the number of non-overlapping intervals (activity selection / minimum removals).</p>
+  </div>
+
+  <!-- ─── 9. Complexity Table ─── -->
+  <h2>Complexity Summary</h2>
+
+  <table>
+    <thead>
+      <tr><th>Problem</th><th>Time</th><th>Space</th><th>Key Idea</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Merge Intervals</td><td><span class="complexity ok">O(n log n)</span></td><td><span class="complexity ok">O(n)</span></td><td>Sort by start, extend on overlap</td></tr>
+      <tr><td>Insert Interval</td><td><span class="complexity ok">O(n)</span></td><td><span class="complexity ok">O(n)</span></td><td>Three-partition: before / overlap / after</td></tr>
+      <tr><td>Non-Overlapping</td><td><span class="complexity ok">O(n log n)</span></td><td><span class="complexity good">O(1)</span></td><td>Sort by end, activity selection</td></tr>
+      <tr><td>Meeting Rooms</td><td><span class="complexity ok">O(n log n)</span></td><td><span class="complexity good">O(1)</span></td><td>Sort by start, check adjacent pairs</td></tr>
+      <tr><td>Meeting Rooms II</td><td><span class="complexity ok">O(n log n)</span></td><td><span class="complexity ok">O(n)</span></td><td>Sweep line with sorted starts/ends</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─── 10. Interactive Visualisation ─── -->
+  <h2>Interactive: Merge Intervals</h2>
+  <p>Watch intervals on a number line get merged step by step. Click <strong>Merge Step</strong> to process the next interval, or <strong>Auto Merge</strong> to animate the full algorithm.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls">
+      <button class="viz-btn" id="iv-reset-btn">New Intervals</button>
+      <button class="viz-btn" id="iv-step-btn">Merge Step</button>
+      <button class="viz-btn secondary" id="iv-auto-btn">Auto Merge</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <svg id="iv-svg" viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" style="max-width:700px; min-height:200px;"></svg>
+    </div>
+    <p id="iv-status" style="font-size:0.82rem; color:#999; margin-top:0.75rem; margin-bottom:0;">Press "New Intervals" to generate a random set, then merge them.</p>
+  </div>
+
+  <script>
+  (function() {
+    const svg = document.getElementById('iv-svg');
+    const statusEl = document.getElementById('iv-status');
+    const resetBtn = document.getElementById('iv-reset-btn');
+    const stepBtn = document.getElementById('iv-step-btn');
+    const autoBtn = document.getElementById('iv-auto-btn');
+
+    const COLORS = ['#c0614a','#d4a843','#7a9e7e','#6b8cae','#9b7bb8','#c07a4a','#4a7050'];
+    const LINE_Y = 180;
+    const PAD_LEFT = 50;
+    const SCALE = 30;
+    let intervals = [];
+    let sorted = [];
+    let merged = [];
+    let stepIdx = 0;
+    let autoTimer = null;
+
+    function randIntervals() {
+      const n = 5 + Math.floor(Math.random() * 3);
+      const arr = [];
+      for (let i = 0; i < n; i++) {
+        const s = Math.floor(Math.random() * 16);
+        const e = s + 1 + Math.floor(Math.random() * 5);
+        arr.push([s, Math.min(e, 20)]);
+      }
+      return arr;
+    }
+
+    function render() {
+      const maxVal = Math.max(20, ...sorted.flat(), ...merged.flat()) + 1;
+      const width = PAD_LEFT * 2 + maxVal * SCALE;
+      svg.setAttribute('viewBox', `0 0 ${width} 220`);
+
+      let html = '';
+
+      html += `<line x1="${PAD_LEFT}" y1="${LINE_Y}" x2="${PAD_LEFT + maxVal * SCALE}" y2="${LINE_Y}" stroke="#999" stroke-width="1.5"/>`;
+      for (let t = 0; t <= maxVal; t += 2) {
+        const x = PAD_LEFT + t * SCALE;
+        html += `<line x1="${x}" y1="${LINE_Y - 4}" x2="${x}" y2="${LINE_Y + 4}" stroke="#999" stroke-width="1"/>`;
+        html += `<text x="${x}" y="${LINE_Y + 18}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#999">${t}</text>`;
+      }
+
+      sorted.forEach((iv, idx) => {
+        const x = PAD_LEFT + iv[0] * SCALE;
+        const w = (iv[1] - iv[0]) * SCALE;
+        const y = 20 + (idx % 4) * 30;
+        const processed = idx < stepIdx;
+        const current = idx === stepIdx - 1;
+        const opacity = processed ? 0.35 : 1;
+        const stroke = current ? '#2c2c2c' : 'none';
+        const sw = current ? 2 : 0;
+        html += `<rect x="${x}" y="${y}" width="${w}" height="22" rx="4" fill="${COLORS[idx % COLORS.length]}" opacity="${opacity}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        html += `<text x="${x + w / 2}" y="${y + 15}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#fff">[${iv[0]},${iv[1]}]</text>`;
+      });
+
+      merged.forEach((iv, idx) => {
+        const x = PAD_LEFT + iv[0] * SCALE;
+        const w = (iv[1] - iv[0]) * SCALE;
+        const y = LINE_Y - 38;
+        html += `<rect x="${x}" y="${y}" width="${w}" height="24" rx="5" fill="#4a7050" opacity="0.9"/>`;
+        html += `<text x="${x + w / 2}" y="${y + 16}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#fff" font-weight="500">[${iv[0]},${iv[1]}]</text>`;
+      });
+
+      if (merged.length > 0) {
+        html += `<text x="${PAD_LEFT}" y="${LINE_Y - 48}" font-family="DM Sans, sans-serif" font-size="10" fill="#4a7050" font-weight="500">Merged:</text>`;
+      }
+
+      svg.innerHTML = html;
+    }
+
+    function doStep() {
+      if (stepIdx >= sorted.length) {
+        statusEl.textContent = `Done! ${sorted.length} intervals merged into ${merged.length}.`;
+        statusEl.style.color = '#4a7050';
+        if (autoTimer) { clearInterval(autoTimer); autoTimer = null; autoBtn.textContent = 'Auto Merge'; }
+        return;
+      }
+
+      const curr = sorted[stepIdx];
+
+      if (merged.length === 0) {
+        merged.push([...curr]);
+        statusEl.textContent = `Start with [${curr[0]},${curr[1]}].`;
+        statusEl.style.color = '#2c2c2c';
+      } else {
+        const last = merged[merged.length - 1];
+        if (curr[0] <= last[1]) {
+          const oldEnd = last[1];
+          last[1] = Math.max(last[1], curr[1]);
+          statusEl.textContent = `[${curr[0]},${curr[1]}] overlaps [${last[0]},${oldEnd}] → extend to [${last[0]},${last[1]}].`;
+          statusEl.style.color = '#c0614a';
+        } else {
+          merged.push([...curr]);
+          statusEl.textContent = `[${curr[0]},${curr[1]}] has no overlap → new merged interval.`;
+          statusEl.style.color = '#4a7050';
+        }
+      }
+
+      stepIdx++;
+      render();
+    }
+
+    function reset() {
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; autoBtn.textContent = 'Auto Merge'; }
+      intervals = randIntervals();
+      sorted = [...intervals].sort((a, b) => a[0] - b[0]);
+      merged = [];
+      stepIdx = 0;
+      statusEl.textContent = `Generated ${sorted.length} intervals (sorted). Press "Merge Step" or "Auto Merge".`;
+      statusEl.style.color = '#999';
+      render();
+    }
+
+    resetBtn.addEventListener('click', reset);
+    stepBtn.addEventListener('click', doStep);
+    autoBtn.addEventListener('click', () => {
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        autoBtn.textContent = 'Auto Merge';
+      } else {
+        autoBtn.textContent = 'Pause';
+        autoTimer = setInterval(doStep, 900);
+      }
+    });
+
+    reset();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Intervals — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

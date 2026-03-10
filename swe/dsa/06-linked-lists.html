@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linked Lists — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Linked Lists</h1>
+  <p class="subtitle">Dynamic data structures built from nodes and pointers — trading random access for efficient insertion and deletion</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Pointers</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. What is a Linked List? ─── -->
+  <h2>What is a Linked List?</h2>
+  <p>A linked list is a linear data structure where each element (called a <strong>node</strong>) contains a value and a pointer to the next node. Unlike arrays, linked list nodes aren't stored contiguously in memory — each node can live anywhere, connected only by its pointer.</p>
+  <p>This pointer-based structure means insertion and deletion at any known position is O(1) — you just reroute pointers. But accessing the i-th element requires walking from the head, making random access O(n).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Operation</th>
+        <th>Array</th>
+        <th>Linked List</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Access by index</td>
+        <td><span class="complexity good">O(1)</span></td>
+        <td><span class="complexity ok">O(n)</span></td>
+      </tr>
+      <tr>
+        <td>Search</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity ok">O(n)</span></td>
+      </tr>
+      <tr>
+        <td>Insert at head</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Insert at tail</td>
+        <td><span class="complexity good">O(1)*</span></td>
+        <td><span class="complexity good">O(1)**</span></td>
+      </tr>
+      <tr>
+        <td>Delete at known node</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Memory</td>
+        <td>Contiguous, cache-friendly</td>
+        <td>Scattered, pointer overhead</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:0.8rem;color:#999;">* Amortised for dynamic arrays &nbsp;|&nbsp; ** With tail pointer</p>
+
+  <!-- ─── 2. Singly Linked List Diagram ─── -->
+  <div class="diagram">
+    <svg viewBox="0 0 650 100" xmlns="http://www.w3.org/2000/svg" style="max-width:650px;">
+      <defs>
+        <marker id="arrowLL" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#2c2c2c"/>
+        </marker>
+      </defs>
+      <g font-family="JetBrains Mono, monospace" font-size="12">
+        <!-- Head label -->
+        <text x="30" y="25" font-family="DM Sans" font-size="10" fill="#c0614a" font-weight="600">head</text>
+        <line x1="45" y1="28" x2="45" y2="38" stroke="#c0614a" stroke-width="1.5" marker-end="url(#arrowLL)"/>
+
+        <!-- Node 1 -->
+        <rect x="15" y="42" width="65" height="35" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <line x1="50" y1="42" x2="50" y2="77" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="32" y="64" text-anchor="middle">4</text>
+        <text x="57" y="60" font-size="8" fill="#999">next</text>
+        <line x1="80" y1="59" x2="120" y2="59" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowLL)"/>
+
+        <!-- Node 2 -->
+        <rect x="125" y="42" width="65" height="35" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <line x1="160" y1="42" x2="160" y2="77" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="142" y="64" text-anchor="middle">7</text>
+        <text x="167" y="60" font-size="8" fill="#999">next</text>
+        <line x1="190" y1="59" x2="230" y2="59" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowLL)"/>
+
+        <!-- Node 3 -->
+        <rect x="235" y="42" width="65" height="35" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <line x1="270" y1="42" x2="270" y2="77" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="252" y="64" text-anchor="middle">1</text>
+        <text x="277" y="60" font-size="8" fill="#999">next</text>
+        <line x1="300" y1="59" x2="340" y2="59" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowLL)"/>
+
+        <!-- Node 4 -->
+        <rect x="345" y="42" width="65" height="35" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <line x1="380" y1="42" x2="380" y2="77" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="362" y="64" text-anchor="middle">9</text>
+        <text x="387" y="60" font-size="8" fill="#999">next</text>
+        <line x1="410" y1="59" x2="450" y2="59" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowLL)"/>
+
+        <!-- null -->
+        <text x="460" y="64" font-family="DM Sans" font-size="12" fill="#999" font-style="italic">null</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 3. Singly Linked List Implementation ─── -->
+  <h2>Singly Linked List Implementation</h2>
+
+  <h3>ListNode</h3>
+  <pre><code><span class="kw">class</span> <span class="tp">ListNode</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">constructor</span>(
+    <span class="kw">public</span> val: <span class="tp">T</span>,
+    <span class="kw">public</span> next: <span class="tp">ListNode</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> = <span class="kw">null</span>
+  ) {}
+}</code></pre>
+
+  <h3>LinkedList class</h3>
+  <pre><code><span class="kw">class</span> <span class="tp">LinkedList</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">private</span> head: <span class="tp">ListNode</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> = <span class="kw">null</span>;
+  <span class="kw">private</span> size = <span class="num">0</span>;
+
+  <span class="fn">append</span>(val: <span class="tp">T</span>): <span class="kw">void</span> {
+    <span class="kw">const</span> node = <span class="kw">new</span> <span class="tp">ListNode</span>(val);
+    <span class="kw">if</span> (!<span class="kw">this</span>.head) {
+      <span class="kw">this</span>.head = node;
+    } <span class="kw">else</span> {
+      <span class="kw">let</span> curr = <span class="kw">this</span>.head;
+      <span class="kw">while</span> (curr.next) curr = curr.next;
+      curr.next = node;
+    }
+    <span class="kw">this</span>.size++;
+  }
+
+  <span class="fn">prepend</span>(val: <span class="tp">T</span>): <span class="kw">void</span> {
+    <span class="kw">this</span>.head = <span class="kw">new</span> <span class="tp">ListNode</span>(val, <span class="kw">this</span>.head);
+    <span class="kw">this</span>.size++;
+  }
+
+  <span class="fn">delete</span>(val: <span class="tp">T</span>): <span class="tp">boolean</span> {
+    <span class="kw">if</span> (!<span class="kw">this</span>.head) <span class="kw">return</span> <span class="kw">false</span>;
+
+    <span class="kw">if</span> (<span class="kw">this</span>.head.val === val) {
+      <span class="kw">this</span>.head = <span class="kw">this</span>.head.next;
+      <span class="kw">this</span>.size--;
+      <span class="kw">return</span> <span class="kw">true</span>;
+    }
+
+    <span class="kw">let</span> curr = <span class="kw">this</span>.head;
+    <span class="kw">while</span> (curr.next) {
+      <span class="kw">if</span> (curr.next.val === val) {
+        curr.next = curr.next.next;
+        <span class="kw">this</span>.size--;
+        <span class="kw">return</span> <span class="kw">true</span>;
+      }
+      curr = curr.next;
+    }
+    <span class="kw">return</span> <span class="kw">false</span>;
+  }
+
+  <span class="fn">find</span>(val: <span class="tp">T</span>): <span class="tp">ListNode</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> {
+    <span class="kw">let</span> curr = <span class="kw">this</span>.head;
+    <span class="kw">while</span> (curr) {
+      <span class="kw">if</span> (curr.val === val) <span class="kw">return</span> curr;
+      curr = curr.next;
+    }
+    <span class="kw">return</span> <span class="kw">null</span>;
+  }
+
+  <span class="fn">toArray</span>(): <span class="tp">T</span>[] {
+    <span class="kw">const</span> result: <span class="tp">T</span>[] = [];
+    <span class="kw">let</span> curr = <span class="kw">this</span>.head;
+    <span class="kw">while</span> (curr) {
+      result.<span class="fn">push</span>(curr.val);
+      curr = curr.next;
+    }
+    <span class="kw">return</span> result;
+  }
+
+  <span class="kw">get</span> <span class="fn">length</span>(): <span class="tp">number</span> { <span class="kw">return</span> <span class="kw">this</span>.size; }
+}</code></pre>
+
+  <!-- ─── 4. Doubly Linked List ─── -->
+  <h2>Doubly Linked List</h2>
+  <p>A doubly linked list adds a <code>prev</code> pointer to each node, enabling O(1) deletion without needing a reference to the preceding node and efficient traversal in both directions. The trade-off is extra memory per node.</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">constructor</span>(
+    <span class="kw">public</span> val: <span class="tp">T</span>,
+    <span class="kw">public</span> prev: <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> = <span class="kw">null</span>,
+    <span class="kw">public</span> next: <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> = <span class="kw">null</span>
+  ) {}
+}
+
+<span class="kw">class</span> <span class="tp">DoublyLinkedList</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">private</span> head: <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> = <span class="kw">null</span>;
+  <span class="kw">private</span> tail: <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> = <span class="kw">null</span>;
+  <span class="kw">private</span> size = <span class="num">0</span>;
+
+  <span class="fn">append</span>(val: <span class="tp">T</span>): <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt; {
+    <span class="kw">const</span> node = <span class="kw">new</span> <span class="tp">DoublyNode</span>(val);
+    <span class="kw">if</span> (!<span class="kw">this</span>.tail) {
+      <span class="kw">this</span>.head = <span class="kw">this</span>.tail = node;
+    } <span class="kw">else</span> {
+      node.prev = <span class="kw">this</span>.tail;
+      <span class="kw">this</span>.tail.next = node;
+      <span class="kw">this</span>.tail = node;
+    }
+    <span class="kw">this</span>.size++;
+    <span class="kw">return</span> node;
+  }
+
+  <span class="fn">prepend</span>(val: <span class="tp">T</span>): <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt; {
+    <span class="kw">const</span> node = <span class="kw">new</span> <span class="tp">DoublyNode</span>(val);
+    <span class="kw">if</span> (!<span class="kw">this</span>.head) {
+      <span class="kw">this</span>.head = <span class="kw">this</span>.tail = node;
+    } <span class="kw">else</span> {
+      node.next = <span class="kw">this</span>.head;
+      <span class="kw">this</span>.head.prev = node;
+      <span class="kw">this</span>.head = node;
+    }
+    <span class="kw">this</span>.size++;
+    <span class="kw">return</span> node;
+  }
+
+  <span class="fn">remove</span>(node: <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt;): <span class="kw">void</span> {
+    <span class="kw">if</span> (node.prev) node.prev.next = node.next;
+    <span class="kw">else</span> <span class="kw">this</span>.head = node.next;
+
+    <span class="kw">if</span> (node.next) node.next.prev = node.prev;
+    <span class="kw">else</span> <span class="kw">this</span>.tail = node.prev;
+
+    node.prev = node.next = <span class="kw">null</span>;
+    <span class="kw">this</span>.size--;
+  }
+
+  <span class="fn">moveToFront</span>(node: <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt;): <span class="kw">void</span> {
+    <span class="kw">this</span>.<span class="fn">remove</span>(node);
+    node.next = <span class="kw">this</span>.head;
+    <span class="kw">if</span> (<span class="kw">this</span>.head) <span class="kw">this</span>.head.prev = node;
+    <span class="kw">this</span>.head = node;
+    <span class="kw">if</span> (!<span class="kw">this</span>.tail) <span class="kw">this</span>.tail = node;
+    <span class="kw">this</span>.size++;
+  }
+
+  <span class="kw">get</span> <span class="fn">headNode</span>(): <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> { <span class="kw">return</span> <span class="kw">this</span>.head; }
+  <span class="kw">get</span> <span class="fn">tailNode</span>(): <span class="tp">DoublyNode</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> { <span class="kw">return</span> <span class="kw">this</span>.tail; }
+  <span class="kw">get</span> <span class="fn">length</span>(): <span class="tp">number</span> { <span class="kw">return</span> <span class="kw">this</span>.size; }
+}</code></pre>
+
+  <!-- ─── 5. Reverse a Linked List ─── -->
+  <h2>Reverse a Linked List</h2>
+  <p>Reversing a linked list is the quintessential pointer manipulation problem. There are two approaches: iterative (constant space) and recursive (O(n) call stack).</p>
+
+  <h3>Iterative</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">reverseList</span>(head: <span class="tp">ListNode</span>&lt;<span class="tp">number</span>&gt; | <span class="kw">null</span>): <span class="tp">ListNode</span>&lt;<span class="tp">number</span>&gt; | <span class="kw">null</span> {
+  <span class="kw">let</span> prev: <span class="tp">ListNode</span>&lt;<span class="tp">number</span>&gt; | <span class="kw">null</span> = <span class="kw">null</span>;
+  <span class="kw">let</span> curr = head;
+
+  <span class="kw">while</span> (curr) {
+    <span class="kw">const</span> next = curr.next;  <span class="cm">// Save next before we overwrite it</span>
+    curr.next = prev;         <span class="cm">// Reverse the pointer</span>
+    prev = curr;              <span class="cm">// Advance prev</span>
+    curr = next;              <span class="cm">// Advance curr</span>
+  }
+
+  <span class="kw">return</span> prev; <span class="cm">// prev is the new head</span>
+}</code></pre>
+
+  <h3>Recursive</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">reverseListRecursive</span>(head: <span class="tp">ListNode</span>&lt;<span class="tp">number</span>&gt; | <span class="kw">null</span>): <span class="tp">ListNode</span>&lt;<span class="tp">number</span>&gt; | <span class="kw">null</span> {
+  <span class="kw">if</span> (!head || !head.next) <span class="kw">return</span> head;
+
+  <span class="kw">const</span> newHead = <span class="fn">reverseListRecursive</span>(head.next);
+
+  <span class="cm">// head.next is the last node of the reversed sublist</span>
+  <span class="cm">// Make it point back to head</span>
+  head.next.next = head;
+  head.next = <span class="kw">null</span>;
+
+  <span class="kw">return</span> newHead;
+}</code></pre>
+
+  <div class="warning">
+    <h4>Pointer Manipulation Pitfall</h4>
+    <p>Always save <code>curr.next</code> before overwriting it. Once you set <code>curr.next = prev</code>, the original next reference is lost forever. This is the single most common linked list bug.</p>
+  </div>
+
+  <!-- ─── 6. Detect a Cycle ─── -->
+  <h2>Detect a Cycle — Floyd's Algorithm</h2>
+  <p>How do you detect if a linked list has a cycle? You can't just walk to the end and check for <code>null</code> — if there's a cycle, you'll loop forever. Floyd's cycle detection uses two pointers moving at different speeds: <strong>slow</strong> (1 step) and <strong>fast</strong> (2 steps). If there's a cycle, they will eventually meet. If there isn't, fast will reach <code>null</code>.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">hasCycle</span>(head: <span class="tp">ListNode</span>&lt;<span class="tp">number</span>&gt; | <span class="kw">null</span>): <span class="tp">boolean</span> {
+  <span class="kw">let</span> slow = head;
+  <span class="kw">let</span> fast = head;
+
+  <span class="kw">while</span> (fast &amp;&amp; fast.next) {
+    slow = slow!.next;
+    fast = fast.next.next;
+
+    <span class="kw">if</span> (slow === fast) <span class="kw">return</span> <span class="kw">true</span>;
+  }
+
+  <span class="kw">return</span> <span class="kw">false</span>;
+}</code></pre>
+
+  <div class="key-concept">
+    <strong>Why does this work?</strong> Think of the cycle as a circular track. Once both pointers enter the cycle, the fast pointer closes the gap by 1 position each step. Since the gap decreases by 1 every iteration, they must eventually collide — guaranteed within one full revolution of the cycle.
+  </div>
+
+  <div class="diagram">
+    <svg viewBox="0 0 550 180" xmlns="http://www.w3.org/2000/svg" style="max-width:550px;">
+      <defs>
+        <marker id="arrowCycle" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#2c2c2c"/>
+        </marker>
+      </defs>
+      <g font-family="JetBrains Mono, monospace" font-size="12">
+        <!-- Linear part -->
+        <rect x="20" y="50" width="50" height="32" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="45" y="71" text-anchor="middle">1</text>
+        <line x1="70" y1="66" x2="95" y2="66" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowCycle)"/>
+
+        <rect x="100" y="50" width="50" height="32" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="125" y="71" text-anchor="middle">2</text>
+        <line x1="150" y1="66" x2="175" y2="66" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowCycle)"/>
+
+        <!-- Cycle start -->
+        <rect x="180" y="50" width="50" height="32" rx="4" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="205" y="71" text-anchor="middle" fill="#4a7050" font-weight="700">3</text>
+        <line x1="230" y1="66" x2="265" y2="66" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowCycle)"/>
+
+        <rect x="270" y="50" width="50" height="32" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="295" y="71" text-anchor="middle">4</text>
+        <line x1="320" y1="72" x2="345" y2="100" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowCycle)"/>
+
+        <rect x="320" y="105" width="50" height="32" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="345" y="126" text-anchor="middle">5</text>
+        <line x1="320" y1="121" x2="265" y2="121" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowCycle)"/>
+
+        <rect x="215" y="105" width="50" height="32" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="240" y="126" text-anchor="middle">6</text>
+        <line x1="225" y1="105" x2="210" y2="82" stroke="#2c2c2c" stroke-width="1.5" marker-end="url(#arrowCycle)"/>
+
+        <!-- Labels -->
+        <text x="205" y="42" font-family="DM Sans" font-size="10" fill="#4a7050" text-anchor="middle" font-weight="600">cycle start</text>
+
+        <!-- Tortoise and hare -->
+        <text x="45" y="44" font-family="DM Sans" font-size="10" fill="#c0614a" text-anchor="middle">🐢 slow</text>
+        <text x="125" y="44" font-family="DM Sans" font-size="10" fill="#3a72b0" text-anchor="middle">🐇 fast</text>
+
+        <text x="275" y="165" font-family="DM Sans" font-size="11" fill="#999" text-anchor="middle">Cycle: 3 → 4 → 5 → 6 → 3</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 7. Merge Two Sorted Lists ─── -->
+  <h2>Merge Two Sorted Lists</h2>
+  <p>Given two sorted linked lists, merge them into one sorted list. Use a <strong>dummy head</strong> to simplify edge cases — you don't need to special-case which list provides the first node.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">mergeTwoLists</span>(
+  l1: <span class="tp">ListNode</span>&lt;<span class="tp">number</span>&gt; | <span class="kw">null</span>,
+  l2: <span class="tp">ListNode</span>&lt;<span class="tp">number</span>&gt; | <span class="kw">null</span>
+): <span class="tp">ListNode</span>&lt;<span class="tp">number</span>&gt; | <span class="kw">null</span> {
+  <span class="kw">const</span> dummy = <span class="kw">new</span> <span class="tp">ListNode</span>(<span class="num">0</span>);
+  <span class="kw">let</span> tail = dummy;
+
+  <span class="kw">while</span> (l1 &amp;&amp; l2) {
+    <span class="kw">if</span> (l1.val &lt;= l2.val) {
+      tail.next = l1;
+      l1 = l1.next;
+    } <span class="kw">else</span> {
+      tail.next = l2;
+      l2 = l2.next;
+    }
+    tail = tail.next;
+  }
+
+  tail.next = l1 ?? l2;
+  <span class="kw">return</span> dummy.next;
+}</code></pre>
+
+  <div class="tip">
+    <h4>The Dummy Head Pattern</h4>
+    <p>A dummy (sentinel) node at the start of a list eliminates null-checking for the first insertion. The real list starts at <code>dummy.next</code>. This pattern appears in almost every linked list construction problem.</p>
+  </div>
+
+  <!-- ─── 8. LRU Cache ─── -->
+  <h2>LRU Cache</h2>
+  <p>An LRU (Least Recently Used) cache evicts the least recently accessed entry when full. It combines two data structures: a <strong>doubly linked list</strong> for O(1) ordering (most-recent at head, least-recent at tail) and a <strong>HashMap</strong> for O(1) key lookup.</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">LRUNode</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">public</span> key: <span class="tp">number</span>,
+    <span class="kw">public</span> val: <span class="tp">number</span>,
+    <span class="kw">public</span> prev: <span class="tp">LRUNode</span> | <span class="kw">null</span> = <span class="kw">null</span>,
+    <span class="kw">public</span> next: <span class="tp">LRUNode</span> | <span class="kw">null</span> = <span class="kw">null</span>
+  ) {}
+}
+
+<span class="kw">class</span> <span class="tp">LRUCache</span> {
+  <span class="kw">private</span> capacity: <span class="tp">number</span>;
+  <span class="kw">private</span> map = <span class="kw">new</span> <span class="fn">Map</span>&lt;<span class="tp">number</span>, <span class="tp">LRUNode</span>&gt;();
+  <span class="cm">// Sentinel nodes avoid null checks</span>
+  <span class="kw">private</span> head = <span class="kw">new</span> <span class="tp">LRUNode</span>(<span class="num">0</span>, <span class="num">0</span>);
+  <span class="kw">private</span> tail = <span class="kw">new</span> <span class="tp">LRUNode</span>(<span class="num">0</span>, <span class="num">0</span>);
+
+  <span class="kw">constructor</span>(capacity: <span class="tp">number</span>) {
+    <span class="kw">this</span>.capacity = capacity;
+    <span class="kw">this</span>.head.next = <span class="kw">this</span>.tail;
+    <span class="kw">this</span>.tail.prev = <span class="kw">this</span>.head;
+  }
+
+  <span class="kw">private</span> <span class="fn">remove</span>(node: <span class="tp">LRUNode</span>): <span class="kw">void</span> {
+    node.prev!.next = node.next;
+    node.next!.prev = node.prev;
+  }
+
+  <span class="kw">private</span> <span class="fn">insertAfterHead</span>(node: <span class="tp">LRUNode</span>): <span class="kw">void</span> {
+    node.next = <span class="kw">this</span>.head.next;
+    node.prev = <span class="kw">this</span>.head;
+    <span class="kw">this</span>.head.next!.prev = node;
+    <span class="kw">this</span>.head.next = node;
+  }
+
+  <span class="fn">get</span>(key: <span class="tp">number</span>): <span class="tp">number</span> {
+    <span class="kw">const</span> node = <span class="kw">this</span>.map.<span class="fn">get</span>(key);
+    <span class="kw">if</span> (!node) <span class="kw">return</span> -<span class="num">1</span>;
+
+    <span class="kw">this</span>.<span class="fn">remove</span>(node);
+    <span class="kw">this</span>.<span class="fn">insertAfterHead</span>(node);
+    <span class="kw">return</span> node.val;
+  }
+
+  <span class="fn">put</span>(key: <span class="tp">number</span>, value: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>.map.<span class="fn">has</span>(key)) {
+      <span class="kw">this</span>.<span class="fn">remove</span>(<span class="kw">this</span>.map.<span class="fn">get</span>(key)!);
+    }
+
+    <span class="kw">const</span> node = <span class="kw">new</span> <span class="tp">LRUNode</span>(key, value);
+    <span class="kw">this</span>.map.<span class="fn">set</span>(key, node);
+    <span class="kw">this</span>.<span class="fn">insertAfterHead</span>(node);
+
+    <span class="kw">if</span> (<span class="kw">this</span>.map.size &gt; <span class="kw">this</span>.capacity) {
+      <span class="kw">const</span> lru = <span class="kw">this</span>.tail.prev!;
+      <span class="kw">this</span>.<span class="fn">remove</span>(lru);
+      <span class="kw">this</span>.map.<span class="fn">delete</span>(lru.key);
+    }
+  }
+}</code></pre>
+
+  <div class="key-concept">
+    <strong>Why doubly linked list + HashMap?</strong> The HashMap gives O(1) lookup by key. The doubly linked list gives O(1) removal and insertion to track recency order. Neither data structure alone can do both — arrays have O(n) removal, and hash maps don't maintain order.
+  </div>
+
+  <!-- ─── 9. Complexity Summary ─── -->
+  <h2>Complexity Summary</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Operation / Problem</th>
+        <th>Time</th>
+        <th>Space</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Singly LL: prepend</td>
+        <td><span class="complexity good">O(1)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Singly LL: append (no tail ptr)</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Singly LL: delete / find</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Doubly LL: remove given node</td>
+        <td><span class="complexity good">O(1)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Reverse a Linked List</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Detect Cycle (Floyd)</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Merge Two Sorted Lists</td>
+        <td><span class="complexity ok">O(n + m)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>LRU Cache: get / put</td>
+        <td><span class="complexity good">O(1)</span></td>
+        <td><span class="complexity ok">O(capacity)</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ─── 10. Interactive Visualisation ─── -->
+  <h2>Interactive: Linked List</h2>
+  <p>Build and manipulate a linked list. Append, prepend, or delete nodes and watch the pointer structure update in real time.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls">
+      <input type="number" id="ll-value" value="5" min="0" max="99" style="width:55px; padding:0.4rem; border:1px solid #e2ddd5; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; text-align:center;">
+      <button class="viz-btn" onclick="llAppend()">Append</button>
+      <button class="viz-btn secondary" onclick="llPrepend()">Prepend</button>
+      <button class="viz-btn secondary" onclick="llDelete()">Delete</button>
+      <button class="viz-btn secondary" onclick="llReset()">Reset</button>
+    </div>
+    <div id="ll-display" style="min-height:80px; display:flex; align-items:center; gap:0; flex-wrap:wrap; padding:1rem 0;"></div>
+    <p id="ll-status" style="font-size:0.82rem; color:#999; margin-top:0.5rem; margin-bottom:0;"></p>
+  </div>
+
+  <script>
+  (function() {
+    let nodes = [4, 7, 1, 9];
+    const display = document.getElementById('ll-display');
+    const status = document.getElementById('ll-status');
+    const valueInput = document.getElementById('ll-value');
+
+    function render() {
+      display.innerHTML = '';
+      if (nodes.length === 0) {
+        display.innerHTML = '<span style="color:#999; font-family:DM Sans; font-size:0.9rem;">Empty list — add a node</span>';
+        status.textContent = 'length = 0';
+        return;
+      }
+
+      nodes.forEach((val, i) => {
+        const nodeEl = document.createElement('div');
+        nodeEl.style.cssText = 'display:flex;align-items:center;gap:0;';
+
+        const box = document.createElement('div');
+        box.style.cssText = `
+          display:flex; align-items:center; gap:8px;
+          border:2px solid #2c2c2c; border-radius:6px;
+          padding:8px 12px; background:#faf6f0;
+          font-family:'JetBrains Mono',monospace; font-size:0.9rem;
+          font-weight:600; transition:all 0.3s ease;
+          animation: fadeIn 0.3s ease;
+        `;
+        if (i === 0) {
+          box.style.borderColor = '#c0614a';
+          box.style.background = '#fde8e4';
+        }
+        const valSpan = document.createElement('span');
+        valSpan.textContent = val;
+        const nextSpan = document.createElement('span');
+        nextSpan.style.cssText = 'font-size:0.65rem;color:#999;border-left:1px solid #ccc;padding-left:6px;';
+        nextSpan.textContent = i < nodes.length - 1 ? '→' : '∅';
+        box.appendChild(valSpan);
+        box.appendChild(nextSpan);
+        nodeEl.appendChild(box);
+
+        if (i < nodes.length - 1) {
+          const arrow = document.createElement('div');
+          arrow.style.cssText = 'width:24px;height:2px;background:#2c2c2c;position:relative;';
+          arrow.innerHTML = '<div style="position:absolute;right:-2px;top:-4px;border:solid #2c2c2c;border-width:0 2px 2px 0;padding:3px;transform:rotate(-45deg);"></div>';
+          nodeEl.appendChild(arrow);
+        }
+        display.appendChild(nodeEl);
+      });
+
+      status.textContent = `length = ${nodes.length}  |  values: [${nodes.join(' → ')}]`;
+    }
+
+    window.llAppend = function() {
+      const v = parseInt(valueInput.value) || 0;
+      nodes.push(v);
+      render();
+    };
+
+    window.llPrepend = function() {
+      const v = parseInt(valueInput.value) || 0;
+      nodes.unshift(v);
+      render();
+    };
+
+    window.llDelete = function() {
+      const v = parseInt(valueInput.value) || 0;
+      const idx = nodes.indexOf(v);
+      if (idx !== -1) {
+        nodes.splice(idx, 1);
+        status.style.color = '#4a7050';
+        render();
+        status.textContent += `  (deleted ${v})`;
+        setTimeout(() => { status.style.color = '#999'; }, 1500);
+      } else {
+        status.textContent = `Value ${v} not found in list`;
+        status.style.color = '#c0614a';
+        setTimeout(() => { status.style.color = '#999'; render(); }, 1500);
+      }
+    };
+
+    window.llReset = function() {
+      nodes = [4, 7, 1, 9];
+      render();
+    };
+
+    render();
+  })();
+  </script>
+
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+</main>
+
+<footer>
+  Linked Lists — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

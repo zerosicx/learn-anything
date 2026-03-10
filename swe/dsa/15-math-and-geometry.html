@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math &amp; Geometry — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Math &amp; Geometry</h1>
+  <p class="subtitle">Modular arithmetic, number theory, matrix transformations, and mathematical patterns in coding interviews</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Mathematics</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. Overview ─── -->
+  <h2>Mathematical Algorithms Overview</h2>
+  <p>Math problems in coding interviews test your ability to spot patterns, avoid brute force with number-theoretic shortcuts, and manipulate matrices. They rarely require advanced maths — mostly modular arithmetic, GCD, primes, and spatial reasoning.</p>
+  <p>The key skill is recognising when a mathematical property turns an O(n²) brute force into an O(n) or O(n log n) solution. These problems reward careful thought about invariants and structure over raw data-structure knowledge.</p>
+
+  <!-- ─── 2. Modular Arithmetic ─── -->
+  <h2>Modular Arithmetic</h2>
+  <p>Modular arithmetic is the mathematics of remainders. When problems involve large numbers or cyclic patterns, <code>mod</code> keeps values manageable and reveals structure.</p>
+
+  <h3>Key Properties</h3>
+  <ul>
+    <li><code>(a + b) % m = ((a % m) + (b % m)) % m</code></li>
+    <li><code>(a × b) % m = ((a % m) × (b % m)) % m</code></li>
+    <li><code>(a - b) % m = ((a % m) - (b % m) + m) % m</code> — add <code>m</code> to avoid negatives.</li>
+  </ul>
+
+  <pre><code><span class="cm">// Common mod patterns</span>
+
+<span class="cm">// Check if even/odd</span>
+<span class="kw">const</span> isEven = (n: <span class="tp">number</span>): <span class="tp">boolean</span> => n % <span class="num">2</span> === <span class="num">0</span>;
+
+<span class="cm">// Wrap around (circular array)</span>
+<span class="kw">const</span> nextIndex = (i: <span class="tp">number</span>, len: <span class="tp">number</span>): <span class="tp">number</span> =>
+  (i + <span class="num">1</span>) % len;
+
+<span class="cm">// Large number mod (for counting problems)</span>
+<span class="kw">const</span> MOD = <span class="num">1_000_000_007</span>;
+<span class="kw">function</span> <span class="fn">addMod</span>(a: <span class="tp">number</span>, b: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">return</span> ((a % MOD) + (b % MOD)) % MOD;
+}</code></pre>
+
+  <div class="tip">
+    <h4>Why 10⁹ + 7?</h4>
+    <p>Many problems ask for results modulo 1,000,000,007. This number is prime (enabling modular inverse), fits in a 32-bit signed integer, and <code>(10⁹ + 7)²</code> fits in a 64-bit integer — so you can safely multiply two mod values before taking mod again. In TypeScript/JavaScript, <code>Number.MAX_SAFE_INTEGER</code> is 2⁵³ - 1, which comfortably handles this.</p>
+  </div>
+
+  <!-- ─── 3. GCD and LCM ─── -->
+  <h2>GCD and LCM</h2>
+  <p>The <strong>Greatest Common Divisor</strong> (GCD) of two integers is the largest number that divides both. The <strong>Least Common Multiple</strong> (LCM) is the smallest number divisible by both. They're connected by: <code>LCM(a, b) = (a × b) / GCD(a, b)</code>.</p>
+
+  <h3>Euclidean Algorithm</h3>
+  <p>The Euclidean algorithm computes GCD in O(log(min(a, b))) time by repeatedly replacing the larger number with the remainder of dividing the two.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">gcd</span>(a: <span class="tp">number</span>, b: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">while</span> (b !== <span class="num">0</span>) {
+    [a, b] = [b, a % b];
+  }
+  <span class="kw">return</span> a;
+}
+
+<span class="kw">function</span> <span class="fn">lcm</span>(a: <span class="tp">number</span>, b: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">return</span> (a / <span class="fn">gcd</span>(a, b)) * b;
+}
+
+<span class="cm">// gcd(48, 18)  → 6</span>
+<span class="cm">// lcm(4, 6)    → 12</span>
+<span class="cm">// gcd(0, 5)    → 5</span></code></pre>
+
+  <div class="key-concept">
+    <strong>Why it works:</strong> If <code>d</code> divides both <code>a</code> and <code>b</code>, then <code>d</code> also divides <code>a % b</code> (since <code>a % b = a - k·b</code> for some integer k). So <code>gcd(a, b) = gcd(b, a % b)</code>. The remainder shrinks each step, eventually hitting 0, at which point the other value is the GCD.
+  </div>
+
+  <!-- ─── 4. Sieve of Eratosthenes ─── -->
+  <h2>Sieve of Eratosthenes</h2>
+  <p>Find all prime numbers up to <code>n</code>. Start by assuming every number ≥ 2 is prime. For each prime found, mark all its multiples as composite. Only need to sieve up to √n because any composite ≤ n has a factor ≤ √n.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">sieve</span>(n: <span class="tp">number</span>): <span class="tp">number</span>[] {
+  <span class="kw">const</span> isPrime = <span class="kw">new</span> <span class="fn">Array</span>(n + <span class="num">1</span>).<span class="fn">fill</span>(<span class="kw">true</span>);
+  isPrime[<span class="num">0</span>] = isPrime[<span class="num">1</span>] = <span class="kw">false</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">2</span>; i * i &lt;= n; i++) {
+    <span class="kw">if</span> (isPrime[i]) {
+      <span class="kw">for</span> (<span class="kw">let</span> j = i * i; j &lt;= n; j += i) {
+        isPrime[j] = <span class="kw">false</span>;
+      }
+    }
+  }
+
+  <span class="kw">return</span> isPrime.<span class="fn">reduce</span>&lt;<span class="tp">number</span>[]&gt;(
+    (primes, val, idx) => {
+      <span class="kw">if</span> (val) primes.<span class="fn">push</span>(idx);
+      <span class="kw">return</span> primes;
+    },
+    []
+  );
+}
+
+<span class="cm">// sieve(30)  → [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]</span>
+<span class="cm">// sieve(10)  → [2, 3, 5, 7]</span></code></pre>
+
+  <p><strong>Time:</strong> <span class="complexity ok">O(n log log n)</span> — nearly linear. <strong>Space:</strong> <span class="complexity ok">O(n)</span>. We start marking from <code>i²</code> (not <code>2i</code>) because smaller multiples have already been eliminated by smaller primes.</p>
+
+  <!-- ─── 5. Fast Exponentiation ─── -->
+  <h2>Power Function (Fast Exponentiation)</h2>
+  <p>Compute x<sup>n</sup> in O(log n) time using the binary exponentiation trick: square the base and halve the exponent at each step.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">myPow</span>(x: <span class="tp">number</span>, n: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">if</span> (n === <span class="num">0</span>) <span class="kw">return</span> <span class="num">1</span>;
+
+  <span class="kw">let</span> exp = Math.<span class="fn">abs</span>(n);
+  <span class="kw">let</span> result = <span class="num">1</span>;
+  <span class="kw">let</span> base = x;
+
+  <span class="kw">while</span> (exp &gt; <span class="num">0</span>) {
+    <span class="kw">if</span> (exp % <span class="num">2</span> === <span class="num">1</span>) {
+      result *= base;
+    }
+    base *= base;
+    exp = Math.<span class="fn">floor</span>(exp / <span class="num">2</span>);
+  }
+
+  <span class="kw">return</span> n &lt; <span class="num">0</span> ? <span class="num">1</span> / result : result;
+}
+
+<span class="cm">// myPow(2, 10)   → 1024</span>
+<span class="cm">// myPow(2, -2)   → 0.25</span>
+<span class="cm">// myPow(3, 5)    → 243</span></code></pre>
+
+  <div class="tip">
+    <h4>The idea</h4>
+    <p>Express the exponent in binary. For example, x¹³ = x⁸ · x⁴ · x¹ because 13 = 1101₂. Each iteration, we square the base (moving to the next binary position) and multiply into the result when the current bit is 1. This reduces O(n) multiplications to O(log n).</p>
+  </div>
+
+  <!-- ─── 6. Rotate Image ─── -->
+  <h2>Rotate Image (Matrix Rotation)</h2>
+  <p>Rotate an n×n matrix 90 degrees clockwise <strong>in-place</strong>. The trick: first transpose (swap rows and columns), then reverse each row. These two O(n²) passes achieve the rotation without extra space.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">rotate</span>(matrix: <span class="tp">number</span>[][]): <span class="tp">void</span> {
+  <span class="kw">const</span> n = matrix.length;
+
+  <span class="cm">// Step 1: Transpose (swap across main diagonal)</span>
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; n; i++) {
+    <span class="kw">for</span> (<span class="kw">let</span> j = i + <span class="num">1</span>; j &lt; n; j++) {
+      [matrix[i][j], matrix[j][i]] =
+        [matrix[j][i], matrix[i][j]];
+    }
+  }
+
+  <span class="cm">// Step 2: Reverse each row</span>
+  <span class="kw">for</span> (<span class="kw">const</span> row <span class="kw">of</span> matrix) {
+    row.<span class="fn">reverse</span>();
+  }
+}
+
+<span class="cm">// Input:  [[1,2,3],     After transpose: [[1,4,7],</span>
+<span class="cm">//          [4,5,6],                       [2,5,8],</span>
+<span class="cm">//          [7,8,9]]                       [3,6,9]]</span>
+<span class="cm">//</span>
+<span class="cm">// After reverse rows: [[7,4,1],</span>
+<span class="cm">//                      [8,5,2],</span>
+<span class="cm">//                      [9,6,3]]  ← 90° clockwise!</span></code></pre>
+
+  <h3>How It Works</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;">
+      <g font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">
+        <!-- Original -->
+        <text x="80" y="15" font-family="DM Sans" font-size="11" fill="#c0614a" font-weight="500">Original</text>
+        <g fill="#faf6f0" stroke="#e2ddd5">
+          <rect x="30" y="25" width="34" height="34" rx="3"/><text x="47" y="47" fill="#2c2c2c">1</text>
+          <rect x="64" y="25" width="34" height="34" rx="3"/><text x="81" y="47" fill="#2c2c2c">2</text>
+          <rect x="98" y="25" width="34" height="34" rx="3"/><text x="115" y="47" fill="#2c2c2c">3</text>
+          <rect x="30" y="59" width="34" height="34" rx="3"/><text x="47" y="81" fill="#2c2c2c">4</text>
+          <rect x="64" y="59" width="34" height="34" rx="3"/><text x="81" y="81" fill="#2c2c2c">5</text>
+          <rect x="98" y="59" width="34" height="34" rx="3"/><text x="115" y="81" fill="#2c2c2c">6</text>
+          <rect x="30" y="93" width="34" height="34" rx="3"/><text x="47" y="115" fill="#2c2c2c">7</text>
+          <rect x="64" y="93" width="34" height="34" rx="3"/><text x="81" y="115" fill="#2c2c2c">8</text>
+          <rect x="98" y="93" width="34" height="34" rx="3"/><text x="115" y="115" fill="#2c2c2c">9</text>
+        </g>
+
+        <!-- Arrow 1 -->
+        <text x="195" y="65" font-family="DM Sans" font-size="22" fill="#999">→</text>
+        <text x="195" y="85" font-family="DM Sans" font-size="9" fill="#999">transpose</text>
+
+        <!-- Transposed -->
+        <text x="320" y="15" font-family="DM Sans" font-size="11" fill="#d4a843" font-weight="500">Transposed</text>
+        <g fill="#fdf4e0" stroke="#d4a843">
+          <rect x="270" y="25" width="34" height="34" rx="3"/><text x="287" y="47" fill="#6b5a30">1</text>
+          <rect x="304" y="25" width="34" height="34" rx="3"/><text x="321" y="47" fill="#6b5a30">4</text>
+          <rect x="338" y="25" width="34" height="34" rx="3"/><text x="355" y="47" fill="#6b5a30">7</text>
+          <rect x="270" y="59" width="34" height="34" rx="3"/><text x="287" y="81" fill="#6b5a30">2</text>
+          <rect x="304" y="59" width="34" height="34" rx="3"/><text x="321" y="81" fill="#6b5a30">5</text>
+          <rect x="338" y="59" width="34" height="34" rx="3"/><text x="355" y="81" fill="#6b5a30">8</text>
+          <rect x="270" y="93" width="34" height="34" rx="3"/><text x="287" y="115" fill="#6b5a30">3</text>
+          <rect x="304" y="93" width="34" height="34" rx="3"/><text x="321" y="115" fill="#6b5a30">6</text>
+          <rect x="338" y="93" width="34" height="34" rx="3"/><text x="355" y="115" fill="#6b5a30">9</text>
+        </g>
+
+        <!-- Arrow 2 -->
+        <text x="435" y="65" font-family="DM Sans" font-size="22" fill="#999">→</text>
+        <text x="435" y="85" font-family="DM Sans" font-size="9" fill="#999">reverse rows</text>
+
+        <!-- Rotated -->
+        <text x="560" y="15" font-family="DM Sans" font-size="11" fill="#4a7050" font-weight="500">Rotated 90°</text>
+        <g fill="#e8f3e9" stroke="#7a9e7e">
+          <rect x="510" y="25" width="34" height="34" rx="3"/><text x="527" y="47" fill="#4a7050">7</text>
+          <rect x="544" y="25" width="34" height="34" rx="3"/><text x="561" y="47" fill="#4a7050">4</text>
+          <rect x="578" y="25" width="34" height="34" rx="3"/><text x="595" y="47" fill="#4a7050">1</text>
+          <rect x="510" y="59" width="34" height="34" rx="3"/><text x="527" y="81" fill="#4a7050">8</text>
+          <rect x="544" y="59" width="34" height="34" rx="3"/><text x="561" y="81" fill="#4a7050">5</text>
+          <rect x="578" y="59" width="34" height="34" rx="3"/><text x="595" y="81" fill="#4a7050">2</text>
+          <rect x="510" y="93" width="34" height="34" rx="3"/><text x="527" y="115" fill="#4a7050">9</text>
+          <rect x="544" y="93" width="34" height="34" rx="3"/><text x="561" y="115" fill="#4a7050">6</text>
+          <rect x="578" y="93" width="34" height="34" rx="3"/><text x="595" y="115" fill="#4a7050">3</text>
+        </g>
+      </g>
+      <text x="350" y="155" text-anchor="middle" font-family="DM Sans" font-size="10" fill="#999">Transpose swaps (i,j) ↔ (j,i). Reversing rows then gives the 90° clockwise rotation.</text>
+    </svg>
+  </div>
+
+  <!-- ─── 7. Spiral Matrix ─── -->
+  <h2>Spiral Matrix</h2>
+  <p>Traverse an m×n matrix in spiral order (right → down → left → up, shrinking the boundary each cycle). Maintain four boundaries and walk each edge in turn.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">spiralOrder</span>(matrix: <span class="tp">number</span>[][]): <span class="tp">number</span>[] {
+  <span class="kw">const</span> result: <span class="tp">number</span>[] = [];
+  <span class="kw">let</span> top = <span class="num">0</span>, bottom = matrix.length - <span class="num">1</span>;
+  <span class="kw">let</span> left = <span class="num">0</span>, right = matrix[<span class="num">0</span>].length - <span class="num">1</span>;
+
+  <span class="kw">while</span> (top &lt;= bottom &amp;&amp; left &lt;= right) {
+    <span class="cm">// Traverse right</span>
+    <span class="kw">for</span> (<span class="kw">let</span> col = left; col &lt;= right; col++)
+      result.<span class="fn">push</span>(matrix[top][col]);
+    top++;
+
+    <span class="cm">// Traverse down</span>
+    <span class="kw">for</span> (<span class="kw">let</span> row = top; row &lt;= bottom; row++)
+      result.<span class="fn">push</span>(matrix[row][right]);
+    right--;
+
+    <span class="cm">// Traverse left</span>
+    <span class="kw">if</span> (top &lt;= bottom) {
+      <span class="kw">for</span> (<span class="kw">let</span> col = right; col &gt;= left; col--)
+        result.<span class="fn">push</span>(matrix[bottom][col]);
+      bottom--;
+    }
+
+    <span class="cm">// Traverse up</span>
+    <span class="kw">if</span> (left &lt;= right) {
+      <span class="kw">for</span> (<span class="kw">let</span> row = bottom; row &gt;= top; row--)
+        result.<span class="fn">push</span>(matrix[row][left]);
+      left++;
+    }
+  }
+
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// spiralOrder([[1,2,3],[4,5,6],[7,8,9]])</span>
+<span class="cm">// → [1,2,3,6,9,8,7,4,5]</span></code></pre>
+
+  <!-- ─── 8. Happy Number ─── -->
+  <h2>Detect Happy Number</h2>
+  <p>A number is <strong>happy</strong> if replacing it with the sum of the squares of its digits eventually reaches 1. If it loops forever, it's not happy. Use Floyd's cycle detection (slow/fast pointers) to detect the loop without storing every visited number.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">isHappy</span>(n: <span class="tp">number</span>): <span class="tp">boolean</span> {
+  <span class="kw">function</span> <span class="fn">sumOfSquares</span>(num: <span class="tp">number</span>): <span class="tp">number</span> {
+    <span class="kw">let</span> sum = <span class="num">0</span>;
+    <span class="kw">while</span> (num &gt; <span class="num">0</span>) {
+      <span class="kw">const</span> digit = num % <span class="num">10</span>;
+      sum += digit * digit;
+      num = Math.<span class="fn">floor</span>(num / <span class="num">10</span>);
+    }
+    <span class="kw">return</span> sum;
+  }
+
+  <span class="kw">let</span> slow = n;
+  <span class="kw">let</span> fast = <span class="fn">sumOfSquares</span>(n);
+
+  <span class="kw">while</span> (fast !== <span class="num">1</span> &amp;&amp; slow !== fast) {
+    slow = <span class="fn">sumOfSquares</span>(slow);
+    fast = <span class="fn">sumOfSquares</span>(<span class="fn">sumOfSquares</span>(fast));
+  }
+
+  <span class="kw">return</span> fast === <span class="num">1</span>;
+}
+
+<span class="cm">// isHappy(19) → true   (19→82→68→100→1)</span>
+<span class="cm">// isHappy(2)  → false  (2→4→16→37→58→89→145→42→20→4 cycle)</span></code></pre>
+
+  <div class="key-concept">
+    <strong>Floyd's cycle detection here:</strong> The sequence of digit-sum-of-squares values forms a linked list that either terminates at 1 or enters a cycle. The slow pointer advances one step, the fast pointer two steps. If they meet, there's a cycle (not happy). If fast reaches 1, the number is happy. This uses O(1) space vs O(n) for a HashSet approach.
+  </div>
+
+  <!-- ─── 9. Complexity Table ─── -->
+  <h2>Complexity Summary</h2>
+
+  <table>
+    <thead>
+      <tr><th>Problem</th><th>Time</th><th>Space</th><th>Key Idea</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>GCD (Euclidean)</td><td><span class="complexity ok">O(log min(a,b))</span></td><td><span class="complexity good">O(1)</span></td><td>Repeated remainder</td></tr>
+      <tr><td>Sieve of Eratosthenes</td><td><span class="complexity ok">O(n log log n)</span></td><td><span class="complexity ok">O(n)</span></td><td>Mark multiples of primes</td></tr>
+      <tr><td>Fast Exponentiation</td><td><span class="complexity ok">O(log n)</span></td><td><span class="complexity good">O(1)</span></td><td>Square & halve</td></tr>
+      <tr><td>Rotate Image</td><td><span class="complexity ok">O(n²)</span></td><td><span class="complexity good">O(1)</span></td><td>Transpose + reverse rows</td></tr>
+      <tr><td>Spiral Matrix</td><td><span class="complexity ok">O(m × n)</span></td><td><span class="complexity ok">O(m × n)</span></td><td>Shrinking boundaries</td></tr>
+      <tr><td>Happy Number</td><td><span class="complexity ok">O(log n)</span></td><td><span class="complexity good">O(1)</span></td><td>Floyd's cycle detection</td></tr>
+    </tbody>
+  </table>
+
+</main>
+
+<footer>
+  Math &amp; Geometry — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

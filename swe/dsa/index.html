@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Structures & Algorithms — Learn Anything</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Data Structures & Algorithms</h1>
+  <p class="subtitle">A ground-up guide to DSA patterns in TypeScript, following the NeetCode roadmap</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">16 Chapters</span>
+    <span class="badge">Interactive</span>
+  </div>
+</header>
+
+<main>
+
+  <p>This guide teaches data structures and algorithms from first principles using TypeScript. Each chapter builds on the last, covering the core patterns you need for technical interviews and real-world engineering. Code examples are runnable, and visualisations help you build intuition for how each structure behaves.</p>
+
+  <h2 style="border-bottom-color: var(--sage-light); color: var(--sage-dark);">How to Use This Guide</h2>
+  <div class="tip">
+    <h4>Sequential or Jump Around</h4>
+    <p>Chapters are ordered by dependency — earlier topics are prerequisites for later ones. Use the navigation bar at the top of each page to jump between chapters, or use the arrows to go sequentially. Each chapter includes TypeScript implementations, complexity analysis, and visual explanations.</p>
+  </div>
+
+  <h2 style="border-bottom-color: var(--sage-light); color: var(--sage-dark);">Roadmap</h2>
+
+  <h3 class="section-label">Foundations</h3>
+  <div class="chapter-grid">
+    <a href="01-arrays-and-hashing.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 1</span><span class="title">Arrays & Hashing</span></div>
+      <div class="card-content">
+        <p class="card-desc">Dynamic arrays, hash maps, hash sets. The building blocks of almost every algorithm.</p>
+        <div class="card-tags"><span class="tag">Array</span><span class="tag">HashMap</span><span class="tag">HashSet</span></div>
+      </div>
+    </a>
+    <a href="02-two-pointers.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 2</span><span class="title">Two Pointers</span></div>
+      <div class="card-content">
+        <p class="card-desc">Converging and diverging pointer techniques for sorted arrays and strings.</p>
+        <div class="card-tags"><span class="tag">Pointers</span><span class="tag">Sorted Arrays</span></div>
+      </div>
+    </a>
+    <a href="03-stacks.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 3</span><span class="title">Stacks</span></div>
+      <div class="card-content">
+        <p class="card-desc">LIFO data structure, implementation, and monotonic stack patterns.</p>
+        <div class="card-tags"><span class="tag">Stack</span><span class="tag">LIFO</span><span class="tag">Monotonic</span></div>
+      </div>
+    </a>
+  </div>
+
+  <h3 class="section-label">Search & Sliding Patterns</h3>
+  <div class="chapter-grid">
+    <a href="04-binary-search.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 4</span><span class="title">Binary Search</span></div>
+      <div class="card-content">
+        <p class="card-desc">Divide and conquer search on sorted data. Variations and edge cases.</p>
+        <div class="card-tags"><span class="tag">Search</span><span class="tag">O(log n)</span></div>
+      </div>
+    </a>
+    <a href="05-sliding-window.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 5</span><span class="title">Sliding Window</span></div>
+      <div class="card-content">
+        <p class="card-desc">Fixed and variable-size window techniques for substring and subarray problems.</p>
+        <div class="card-tags"><span class="tag">Window</span><span class="tag">Subarray</span></div>
+      </div>
+    </a>
+  </div>
+
+  <h3 class="section-label">Linked Structures</h3>
+  <div class="chapter-grid">
+    <a href="06-linked-lists.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 6</span><span class="title">Linked Lists</span></div>
+      <div class="card-content">
+        <p class="card-desc">Singly and doubly linked lists. Pointer manipulation, fast/slow technique.</p>
+        <div class="card-tags"><span class="tag">Linked List</span><span class="tag">Pointers</span></div>
+      </div>
+    </a>
+  </div>
+
+  <h3 class="section-label">Tree Structures</h3>
+  <div class="chapter-grid">
+    <a href="07-trees.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 7</span><span class="title">Trees</span></div>
+      <div class="card-content">
+        <p class="card-desc">Binary trees, BSTs, traversals (DFS, BFS), and common tree patterns.</p>
+        <div class="card-tags"><span class="tag">Binary Tree</span><span class="tag">BST</span><span class="tag">DFS</span></div>
+      </div>
+    </a>
+    <a href="08-tries.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 8</span><span class="title">Tries</span></div>
+      <div class="card-content">
+        <p class="card-desc">Prefix trees for efficient string operations: autocomplete, spell check, word search.</p>
+        <div class="card-tags"><span class="tag">Trie</span><span class="tag">Prefix</span></div>
+      </div>
+    </a>
+    <a href="09-heap.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 9</span><span class="title">Heap / Priority Queue</span></div>
+      <div class="card-content">
+        <p class="card-desc">Min/max heaps, heap sort, and priority queue implementation from scratch.</p>
+        <div class="card-tags"><span class="tag">Heap</span><span class="tag">Priority Queue</span></div>
+      </div>
+    </a>
+  </div>
+
+  <h3 class="section-label">Recursive Patterns</h3>
+  <div class="chapter-grid">
+    <a href="10-backtracking.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 10</span><span class="title">Backtracking</span></div>
+      <div class="card-content">
+        <p class="card-desc">Systematic exploration of solution spaces: subsets, permutations, combinations.</p>
+        <div class="card-tags"><span class="tag">Recursion</span><span class="tag">Subsets</span></div>
+      </div>
+    </a>
+  </div>
+
+  <h3 class="section-label">Graph Algorithms</h3>
+  <div class="chapter-grid">
+    <a href="11-graphs.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 11</span><span class="title">Graphs</span></div>
+      <div class="card-content">
+        <p class="card-desc">Representations, BFS, DFS, topological sort, union-find, shortest path.</p>
+        <div class="card-tags"><span class="tag">Graph</span><span class="tag">BFS</span><span class="tag">DFS</span></div>
+      </div>
+    </a>
+  </div>
+
+  <h3 class="section-label">Optimisation Techniques</h3>
+  <div class="chapter-grid">
+    <a href="12-dynamic-programming.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 12</span><span class="title">Dynamic Programming</span></div>
+      <div class="card-content">
+        <p class="card-desc">Memoisation, tabulation, and the art of breaking problems into overlapping subproblems.</p>
+        <div class="card-tags"><span class="tag">DP</span><span class="tag">Memoisation</span></div>
+      </div>
+    </a>
+    <a href="13-greedy.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 13</span><span class="title">Greedy</span></div>
+      <div class="card-content">
+        <p class="card-desc">Locally optimal choices that lead to globally optimal solutions.</p>
+        <div class="card-tags"><span class="tag">Greedy</span><span class="tag">Optimisation</span></div>
+      </div>
+    </a>
+    <a href="14-intervals.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 14</span><span class="title">Intervals</span></div>
+      <div class="card-content">
+        <p class="card-desc">Merging, inserting, and scheduling with interval-based problems.</p>
+        <div class="card-tags"><span class="tag">Intervals</span><span class="tag">Sorting</span></div>
+      </div>
+    </a>
+  </div>
+
+  <h3 class="section-label">Mathematical & Bitwise</h3>
+  <div class="chapter-grid">
+    <a href="15-math-and-geometry.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 15</span><span class="title">Math & Geometry</span></div>
+      <div class="card-content">
+        <p class="card-desc">Modular arithmetic, GCD, primes, matrix rotation, and geometric algorithms.</p>
+        <div class="card-tags"><span class="tag">Math</span><span class="tag">Geometry</span></div>
+      </div>
+    </a>
+    <a href="16-bit-manipulation.html" class="chapter-card">
+      <div class="card-num"><span class="num">Chapter 16</span><span class="title">Bit Manipulation</span></div>
+      <div class="card-content">
+        <p class="card-desc">Bitwise operators, common tricks, and problems solvable at the bit level.</p>
+        <div class="card-tags"><span class="tag">Bitwise</span><span class="tag">XOR</span></div>
+      </div>
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  Data Structures & Algorithms — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

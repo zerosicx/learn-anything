@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Programming — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Dynamic Programming</h1>
+  <p class="subtitle">Break complex problems into overlapping subproblems, solve each once, and build optimal solutions from the ground up</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Optimisation</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. What is DP? ─── -->
+  <h2>What is Dynamic Programming?</h2>
+  <p>Dynamic programming (DP) is an algorithmic technique for solving problems that exhibit two properties:</p>
+  <ol>
+    <li><strong>Overlapping subproblems:</strong> The same smaller problems are solved repeatedly. (Fibonacci: fib(3) appears in both fib(5) and fib(4).)</li>
+    <li><strong>Optimal substructure:</strong> The optimal solution to the problem can be constructed from optimal solutions of its subproblems.</li>
+  </ol>
+
+  <p>DP eliminates redundant computation by storing results. There are two approaches:</p>
+  <ul>
+    <li><strong>Memoisation (top-down):</strong> Write the natural recursive solution, then cache results. Start from the big problem and recurse down.</li>
+    <li><strong>Tabulation (bottom-up):</strong> Fill a table iteratively from the smallest subproblems up to the answer. No recursion, no stack overflow risk.</li>
+  </ul>
+
+  <div class="key-concept">
+    <strong>DP vs Greedy:</strong> Greedy makes the locally optimal choice at each step and never looks back. DP considers <em>all</em> possible choices and picks the globally optimal one. If a greedy approach works (provably), use it — it's simpler. DP is for when greedy fails.
+  </div>
+
+  <!-- ─── 2. Fibonacci ─── -->
+  <h2>Fibonacci — The Classic Example</h2>
+  <p>The Fibonacci sequence perfectly illustrates why DP exists. The naive recursive solution recomputes the same values exponentially many times.</p>
+
+  <h3>Naive Recursive — O(2ⁿ)</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">fibNaive</span>(n: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> n;
+  <span class="kw">return</span> <span class="fn">fibNaive</span>(n - <span class="num">1</span>) + <span class="fn">fibNaive</span>(n - <span class="num">2</span>);
+}</code></pre>
+
+  <h3>Memoised (Top-Down) — O(n)</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">fibMemo</span>(
+  n: <span class="tp">number</span>,
+  memo: <span class="fn">Map</span>&lt;<span class="tp">number</span>, <span class="tp">number</span>&gt; = <span class="kw">new</span> <span class="fn">Map</span>()
+): <span class="tp">number</span> {
+  <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> n;
+  <span class="kw">if</span> (memo.<span class="fn">has</span>(n)) <span class="kw">return</span> memo.<span class="fn">get</span>(n)!;
+
+  <span class="kw">const</span> result = <span class="fn">fibMemo</span>(n - <span class="num">1</span>, memo) + <span class="fn">fibMemo</span>(n - <span class="num">2</span>, memo);
+  memo.<span class="fn">set</span>(n, result);
+  <span class="kw">return</span> result;
+}</code></pre>
+
+  <h3>Tabulated (Bottom-Up) — O(n) time, O(1) space</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">fibTab</span>(n: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> n;
+  <span class="kw">let</span> prev2 = <span class="num">0</span>, prev1 = <span class="num">1</span>;
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">2</span>; i &lt;= n; i++) {
+    <span class="kw">const</span> curr = prev1 + prev2;
+    prev2 = prev1;
+    prev1 = curr;
+  }
+  <span class="kw">return</span> prev1;
+}</code></pre>
+
+  <h3>Call Tree: Naive vs Memoised</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;">
+      <g font-family="JetBrains Mono, monospace" font-size="11" text-anchor="middle">
+        <!-- NAIVE side -->
+        <text x="170" y="16" font-family="DM Sans" font-size="11" fill="#c0614a" font-weight="500">NAIVE — redundant calls</text>
+
+        <line x1="170" y1="40" x2="100" y2="75" stroke="#e2ddd5" stroke-width="1.5"/>
+        <line x1="170" y1="40" x2="240" y2="75" stroke="#e2ddd5" stroke-width="1.5"/>
+        <line x1="100" y1="100" x2="60" y2="135" stroke="#e2ddd5" stroke-width="1.5"/>
+        <line x1="100" y1="100" x2="140" y2="135" stroke="#e2ddd5" stroke-width="1.5"/>
+        <line x1="240" y1="100" x2="200" y2="135" stroke="#e2ddd5" stroke-width="1.5"/>
+        <line x1="240" y1="100" x2="280" y2="135" stroke="#e2ddd5" stroke-width="1.5"/>
+        <line x1="60" y1="160" x2="35" y2="195" stroke="#e2ddd5" stroke-width="1.5"/>
+        <line x1="60" y1="160" x2="85" y2="195" stroke="#e2ddd5" stroke-width="1.5"/>
+        <line x1="200" y1="160" x2="175" y2="195" stroke="#e2ddd5" stroke-width="1.5"/>
+        <line x1="200" y1="160" x2="225" y2="195" stroke="#e2ddd5" stroke-width="1.5"/>
+
+        <!-- f(5) -->
+        <circle cx="170" cy="35" r="16" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="170" y="39">f(5)</text>
+        <!-- f(4) -->
+        <circle cx="100" cy="90" r="16" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="100" y="94">f(4)</text>
+        <!-- f(3) first -->
+        <circle cx="240" cy="90" r="16" fill="#fde8e4" stroke="#c0614a" stroke-width="2"/>
+        <text x="240" y="94" fill="#c0614a">f(3)</text>
+        <!-- f(3) again! -->
+        <circle cx="60" cy="150" r="16" fill="#fde8e4" stroke="#c0614a" stroke-width="2"/>
+        <text x="60" y="154" fill="#c0614a">f(3)</text>
+        <!-- f(2) -->
+        <circle cx="140" cy="150" r="14" fill="#fde8e4" stroke="#c0614a" stroke-width="2"/>
+        <text x="140" y="154" fill="#c0614a" font-size="10">f(2)</text>
+        <!-- f(2) again -->
+        <circle cx="200" cy="150" r="14" fill="#fde8e4" stroke="#c0614a" stroke-width="2"/>
+        <text x="200" y="154" fill="#c0614a" font-size="10">f(2)</text>
+        <!-- f(1) -->
+        <circle cx="280" cy="150" r="14" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="280" y="154" fill="#4a7050" font-size="10">f(1)</text>
+
+        <!-- Leaves -->
+        <circle cx="35" cy="205" r="12" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="35" y="209" fill="#4a7050" font-size="9">f(2)</text>
+        <circle cx="85" cy="205" r="12" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="85" y="209" fill="#4a7050" font-size="9">f(1)</text>
+        <circle cx="175" cy="205" r="12" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="175" y="209" fill="#4a7050" font-size="9">f(1)</text>
+        <circle cx="225" cy="205" r="12" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="225" y="209" fill="#4a7050" font-size="9">f(0)</text>
+
+        <text x="170" y="250" font-family="DM Sans" font-size="10" fill="#c0614a">f(3) computed twice, f(2) three times!</text>
+
+        <!-- Divider -->
+        <line x1="355" y1="10" x2="355" y2="260" stroke="#e2ddd5" stroke-width="1" stroke-dasharray="4"/>
+
+        <!-- MEMOISED side -->
+        <text x="530" y="16" font-family="DM Sans" font-size="11" fill="#4a7050" font-weight="500">MEMOISED — each computed once</text>
+
+        <line x1="530" y1="40" x2="460" y2="75" stroke="#7a9e7e" stroke-width="2"/>
+        <line x1="530" y1="40" x2="600" y2="75" stroke="#7a9e7e" stroke-width="2"/>
+        <line x1="460" y1="100" x2="420" y2="135" stroke="#7a9e7e" stroke-width="2"/>
+        <line x1="460" y1="100" x2="500" y2="135" stroke="#7a9e7e" stroke-width="2"/>
+        <line x1="420" y1="160" x2="395" y2="195" stroke="#7a9e7e" stroke-width="2"/>
+        <line x1="420" y1="160" x2="445" y2="195" stroke="#7a9e7e" stroke-width="2"/>
+
+        <!-- f(5) -->
+        <circle cx="530" cy="35" r="16" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="530" y="39" fill="#4a7050" font-weight="500">f(5)</text>
+        <!-- f(4) -->
+        <circle cx="460" cy="90" r="16" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="460" y="94" fill="#4a7050" font-weight="500">f(4)</text>
+        <!-- f(3) cached -->
+        <circle cx="600" cy="90" r="16" fill="#fdf4e0" stroke="#d4a843" stroke-width="2"/>
+        <text x="600" y="94" fill="#6b5a30" font-weight="500">f(3)</text>
+        <text x="600" y="117" font-family="DM Sans" font-size="8" fill="#d4a843">cached!</text>
+        <!-- f(3) -->
+        <circle cx="420" cy="150" r="16" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="420" y="154" fill="#4a7050" font-weight="500">f(3)</text>
+        <!-- f(2) cached -->
+        <circle cx="500" cy="150" r="14" fill="#fdf4e0" stroke="#d4a843" stroke-width="2"/>
+        <text x="500" y="154" fill="#6b5a30" font-weight="500" font-size="10">f(2)</text>
+        <text x="500" y="177" font-family="DM Sans" font-size="8" fill="#d4a843">cached!</text>
+
+        <!-- f(2) -->
+        <circle cx="395" cy="205" r="14" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="395" y="209" fill="#4a7050" font-size="10">f(2)</text>
+        <!-- f(1) -->
+        <circle cx="445" cy="205" r="14" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="445" y="209" fill="#4a7050" font-size="10">f(1)</text>
+
+        <text x="530" y="250" font-family="DM Sans" font-size="10" fill="#4a7050">Only n unique calls — O(n) total</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 3. Climbing Stairs ─── -->
+  <h2>Climbing Stairs</h2>
+  <p>You can climb 1 or 2 steps at a time. How many distinct ways to reach step n? This is Fibonacci in disguise: <code>ways(n) = ways(n-1) + ways(n-2)</code>.</p>
+
+  <h3>Memoised</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">climbStairsMemo</span>(n: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">const</span> memo = <span class="kw">new</span> <span class="fn">Map</span>&lt;<span class="tp">number</span>, <span class="tp">number</span>&gt;();
+
+  <span class="kw">function</span> <span class="fn">dp</span>(i: <span class="tp">number</span>): <span class="tp">number</span> {
+    <span class="kw">if</span> (i &lt;= <span class="num">1</span>) <span class="kw">return</span> <span class="num">1</span>;
+    <span class="kw">if</span> (memo.<span class="fn">has</span>(i)) <span class="kw">return</span> memo.<span class="fn">get</span>(i)!;
+    <span class="kw">const</span> result = <span class="fn">dp</span>(i - <span class="num">1</span>) + <span class="fn">dp</span>(i - <span class="num">2</span>);
+    memo.<span class="fn">set</span>(i, result);
+    <span class="kw">return</span> result;
+  }
+
+  <span class="kw">return</span> <span class="fn">dp</span>(n);
+}</code></pre>
+
+  <h3>Tabulated</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">climbStairsTab</span>(n: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return</span> <span class="num">1</span>;
+  <span class="kw">let</span> prev2 = <span class="num">1</span>, prev1 = <span class="num">1</span>;
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">2</span>; i &lt;= n; i++) {
+    <span class="kw">const</span> curr = prev1 + prev2;
+    prev2 = prev1;
+    prev1 = curr;
+  }
+  <span class="kw">return</span> prev1;
+}
+
+<span class="cm">// climbStairsTab(5)  → 8</span>
+<span class="cm">// (paths: 11111, 1112, 1121, 1211, 2111, 122, 212, 221)</span></code></pre>
+
+  <!-- ─── 4. Coin Change ─── -->
+  <h2>Coin Change</h2>
+  <p>Given coin denominations and a target amount, find the <strong>fewest coins</strong> needed. Classic 1D tabulation: for each amount from 1 to target, try every coin and take the minimum.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">coinChange</span>(coins: <span class="tp">number</span>[], amount: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">const</span> dp = <span class="kw">new</span> <span class="fn">Array</span>(amount + <span class="num">1</span>).<span class="fn">fill</span>(<span class="num">Infinity</span>);
+  dp[<span class="num">0</span>] = <span class="num">0</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= amount; i++) {
+    <span class="kw">for</span> (<span class="kw">const</span> coin <span class="kw">of</span> coins) {
+      <span class="kw">if</span> (coin &lt;= i) {
+        dp[i] = Math.<span class="fn">min</span>(dp[i], dp[i - coin] + <span class="num">1</span>);
+      }
+    }
+  }
+
+  <span class="kw">return</span> dp[amount] === <span class="num">Infinity</span> ? -<span class="num">1</span> : dp[amount];
+}
+
+<span class="cm">// coinChange([1, 5, 10, 25], 30)  → 2  (25 + 5)</span>
+<span class="cm">// coinChange([2], 3)              → -1 (impossible)</span></code></pre>
+
+  <p><strong>DP table walkthrough</strong> for coins = [1, 3, 4], amount = 6:</p>
+  <table>
+    <thead>
+      <tr><th>Amount</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Min coins</td>
+        <td><span class="complexity good">0</span></td>
+        <td><span class="complexity ok">1</span></td>
+        <td><span class="complexity ok">2</span></td>
+        <td><span class="complexity ok">1</span></td>
+        <td><span class="complexity ok">1</span></td>
+        <td><span class="complexity ok">2</span></td>
+        <td><span class="complexity ok">2</span></td>
+      </tr>
+      <tr>
+        <td>Best coin used</td>
+        <td>—</td>
+        <td>1</td>
+        <td>1</td>
+        <td>3</td>
+        <td>4</td>
+        <td>1+4</td>
+        <td>3+3</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="key-concept">
+    <strong>Recurrence:</strong> <code>dp[i] = min(dp[i - coin] + 1)</code> for all valid coins. Each cell says "the fewest coins to make amount i." We build from 0 up, so when we compute dp[6], all smaller amounts are already solved.
+  </div>
+
+  <!-- ─── 5. Longest Common Subsequence ─── -->
+  <h2>Longest Common Subsequence (LCS)</h2>
+  <p>Given two strings, find the length of their longest common subsequence (characters in order, not necessarily contiguous). This is a classic 2D DP problem.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">longestCommonSubsequence</span>(
+  text1: <span class="tp">string</span>,
+  text2: <span class="tp">string</span>
+): <span class="tp">number</span> {
+  <span class="kw">const</span> m = text1.length;
+  <span class="kw">const</span> n = text2.length;
+  <span class="kw">const</span> dp: <span class="tp">number</span>[][] = Array.<span class="fn">from</span>(
+    { length: m + <span class="num">1</span> },
+    () => <span class="kw">new</span> <span class="fn">Array</span>(n + <span class="num">1</span>).<span class="fn">fill</span>(<span class="num">0</span>)
+  );
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= m; i++) {
+    <span class="kw">for</span> (<span class="kw">let</span> j = <span class="num">1</span>; j &lt;= n; j++) {
+      <span class="kw">if</span> (text1[i - <span class="num">1</span>] === text2[j - <span class="num">1</span>]) {
+        dp[i][j] = dp[i - <span class="num">1</span>][j - <span class="num">1</span>] + <span class="num">1</span>;
+      } <span class="kw">else</span> {
+        dp[i][j] = Math.<span class="fn">max</span>(dp[i - <span class="num">1</span>][j], dp[i][j - <span class="num">1</span>]);
+      }
+    }
+  }
+
+  <span class="kw">return</span> dp[m][n];
+}
+
+<span class="cm">// longestCommonSubsequence("abcde", "ace")  → 3  ("ace")</span>
+<span class="cm">// longestCommonSubsequence("abc", "def")    → 0</span></code></pre>
+
+  <div class="tip">
+    <h4>Reading the 2D table</h4>
+    <p><code>dp[i][j]</code> = LCS length of <code>text1[0..i-1]</code> and <code>text2[0..j-1]</code>. If characters match, extend the diagonal. Otherwise, take the max of dropping a character from either string. Time: O(m·n). Space can be optimised to O(min(m,n)) by only keeping two rows.</p>
+  </div>
+
+  <!-- ─── 6. 0/1 Knapsack ─── -->
+  <h2>0/1 Knapsack</h2>
+  <p>Given items with weights and values, and a capacity limit, maximise total value without exceeding capacity. Each item is either taken or left — no fractions.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">knapsack</span>(
+  weights: <span class="tp">number</span>[],
+  values: <span class="tp">number</span>[],
+  capacity: <span class="tp">number</span>
+): <span class="tp">number</span> {
+  <span class="kw">const</span> n = weights.length;
+  <span class="kw">const</span> dp: <span class="tp">number</span>[][] = Array.<span class="fn">from</span>(
+    { length: n + <span class="num">1</span> },
+    () => <span class="kw">new</span> <span class="fn">Array</span>(capacity + <span class="num">1</span>).<span class="fn">fill</span>(<span class="num">0</span>)
+  );
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= n; i++) {
+    <span class="kw">for</span> (<span class="kw">let</span> w = <span class="num">0</span>; w &lt;= capacity; w++) {
+      <span class="cm">// Don't take item i</span>
+      dp[i][w] = dp[i - <span class="num">1</span>][w];
+
+      <span class="cm">// Take item i (if it fits)</span>
+      <span class="kw">if</span> (weights[i - <span class="num">1</span>] &lt;= w) {
+        dp[i][w] = Math.<span class="fn">max</span>(
+          dp[i][w],
+          dp[i - <span class="num">1</span>][w - weights[i - <span class="num">1</span>]] + values[i - <span class="num">1</span>]
+        );
+      }
+    }
+  }
+
+  <span class="kw">return</span> dp[n][capacity];
+}
+
+<span class="cm">// knapsack([2, 3, 4, 5], [3, 4, 5, 6], 8)  → 10  (items 2+3: weight 7, value 9… actually items 1+4: weight 7, value 9 or 2+3: wt 7, val 9)</span></code></pre>
+
+  <div class="key-concept">
+    <strong>The choice at each step:</strong> For item i with remaining capacity w, we choose the better of (1) skip item i → <code>dp[i-1][w]</code>, or (2) take item i → <code>dp[i-1][w - weight_i] + value_i</code>. The <code>i-1</code> row ensures each item is used at most once.
+  </div>
+
+  <!-- ─── 7. House Robber ─── -->
+  <h2>House Robber</h2>
+  <p>A robber can steal from houses along a street, but can't rob two adjacent houses (alarms). Maximise total loot. This is a clean 1D DP.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">rob</span>(nums: <span class="tp">number</span>[]): <span class="tp">number</span> {
+  <span class="kw">if</span> (nums.length === <span class="num">0</span>) <span class="kw">return</span> <span class="num">0</span>;
+  <span class="kw">if</span> (nums.length === <span class="num">1</span>) <span class="kw">return</span> nums[<span class="num">0</span>];
+
+  <span class="kw">let</span> prev2 = <span class="num">0</span>;  <span class="cm">// dp[i-2]</span>
+  <span class="kw">let</span> prev1 = <span class="num">0</span>;  <span class="cm">// dp[i-1]</span>
+
+  <span class="kw">for</span> (<span class="kw">const</span> num <span class="kw">of</span> nums) {
+    <span class="kw">const</span> curr = Math.<span class="fn">max</span>(
+      prev1,          <span class="cm">// skip this house</span>
+      prev2 + num     <span class="cm">// rob this house + best from 2 back</span>
+    );
+    prev2 = prev1;
+    prev1 = curr;
+  }
+
+  <span class="kw">return</span> prev1;
+}
+
+<span class="cm">// rob([2, 7, 9, 3, 1])  → 12  (rob houses 0+2+4: 2+9+1=12)</span>
+<span class="cm">// rob([1, 2, 3, 1])     → 4   (rob houses 0+2: 1+3=4)</span></code></pre>
+
+  <div class="tip">
+    <h4>Recurrence relation</h4>
+    <p><code>dp[i] = max(dp[i-1], dp[i-2] + nums[i])</code>. At each house, the robber decides: skip (keep the best from the previous house) or rob (current value + best from two houses back to avoid adjacency). Since we only need the last two values, O(1) space suffices.</p>
+  </div>
+
+  <!-- ─── 8. Recognising DP Problems ─── -->
+  <h2>Recognising DP Problems</h2>
+  <p>DP problems share common language. If you see these patterns in a problem statement, think DP:</p>
+
+  <div class="pattern-box">
+    <h4>DP Signal Phrases</h4>
+    <ul>
+      <li><strong>"Find the minimum/maximum..."</strong> → optimisation DP</li>
+      <li><strong>"Count the number of ways..."</strong> → counting DP</li>
+      <li><strong>"Is it possible to..."</strong> → feasibility DP (boolean table)</li>
+      <li><strong>"Longest/shortest subsequence..."</strong> → sequence DP (often 2D)</li>
+      <li><strong>"Partition into..."</strong> → subset-sum variant</li>
+    </ul>
+  </div>
+
+  <div class="warning">
+    <h4>DP vs Backtracking</h4>
+    <p>If the problem asks you to <em>enumerate all solutions</em> (e.g., "list all subsets"), DP alone won't help — you need backtracking. DP shines when you need <em>one optimal answer</em> or a <em>count</em>, not the actual configurations.</p>
+  </div>
+
+  <!-- ─── 9. Complexity Table ─── -->
+  <h2>Complexity Summary</h2>
+
+  <table>
+    <thead>
+      <tr><th>Problem</th><th>Time</th><th>Space</th><th>Technique</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Fibonacci</td><td><span class="complexity ok">O(n)</span></td><td><span class="complexity good">O(1)</span></td><td>1D tabulation, space-optimised</td></tr>
+      <tr><td>Climbing Stairs</td><td><span class="complexity ok">O(n)</span></td><td><span class="complexity good">O(1)</span></td><td>1D, same as Fibonacci</td></tr>
+      <tr><td>Coin Change</td><td><span class="complexity ok">O(n × amount)</span></td><td><span class="complexity ok">O(amount)</span></td><td>1D tabulation</td></tr>
+      <tr><td>LCS</td><td><span class="complexity ok">O(m × n)</span></td><td><span class="complexity ok">O(m × n)</span></td><td>2D tabulation</td></tr>
+      <tr><td>0/1 Knapsack</td><td><span class="complexity ok">O(n × W)</span></td><td><span class="complexity ok">O(n × W)</span></td><td>2D tabulation</td></tr>
+      <tr><td>House Robber</td><td><span class="complexity ok">O(n)</span></td><td><span class="complexity good">O(1)</span></td><td>1D, space-optimised</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─── 10. Interactive Visualisation ─── -->
+  <h2>Interactive: Fibonacci Memoisation</h2>
+  <p>Watch the call tree for <code>fib(n)</code> expand. Cached values are highlighted when reused instead of recomputed. The memo table updates alongside.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls">
+      <label style="font-size:0.82rem; font-weight:500;">n =
+        <select id="fib-n" style="padding:0.3rem 0.5rem; border:1px solid #e2ddd5; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem;">
+          <option value="4">4</option>
+          <option value="5" selected>5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+        </select>
+      </label>
+      <button class="viz-btn" id="fib-start-btn">Run Memoised</button>
+      <button class="viz-btn secondary" id="fib-step-btn" disabled>Step</button>
+      <button class="viz-btn secondary" id="fib-auto-btn" disabled>Auto Play</button>
+      <button class="viz-btn secondary" id="fib-reset-btn">Reset</button>
+    </div>
+    <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
+      <div style="flex:1; min-width:300px; text-align:center; overflow-x:auto;">
+        <svg id="fib-svg" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="max-width:600px; min-height:200px;"></svg>
+      </div>
+      <div style="flex:0 0 160px;">
+        <p style="font-size:0.82rem; font-weight:500; margin-bottom:0.5rem;">Memo table:</p>
+        <div id="fib-memo-display" style="font-family:'JetBrains Mono',monospace; font-size:0.82rem; line-height:2;"></div>
+      </div>
+    </div>
+    <p id="fib-status" style="font-size:0.82rem; color:#999; margin-top:0.75rem; margin-bottom:0;">Select n and press "Run Memoised" to begin.</p>
+  </div>
+
+  <script>
+  (function() {
+    const svg = document.getElementById('fib-svg');
+    const memoDisplay = document.getElementById('fib-memo-display');
+    const statusEl = document.getElementById('fib-status');
+    const nSelect = document.getElementById('fib-n');
+    const startBtn = document.getElementById('fib-start-btn');
+    const stepBtn = document.getElementById('fib-step-btn');
+    const autoBtn = document.getElementById('fib-auto-btn');
+    const resetBtn = document.getElementById('fib-reset-btn');
+
+    let steps = [];
+    let currentStep = 0;
+    let autoInterval = null;
+    let treeNodes = [];
+
+    function generateSteps(n) {
+      steps = [];
+      treeNodes = [];
+      const memo = {};
+      let nodeId = 0;
+
+      function fib(val, parentId) {
+        const id = nodeId++;
+        treeNodes.push({ id, val, parentId, cached: false, result: null });
+
+        if (val <= 1) {
+          memo[val] = val;
+          treeNodes[id].result = val;
+          steps.push({
+            type: 'base',
+            nodeId: id,
+            val,
+            result: val,
+            memo: { ...memo },
+            message: `fib(${val}) = ${val} (base case)`
+          });
+          return val;
+        }
+
+        if (memo[val] !== undefined) {
+          treeNodes[id].cached = true;
+          treeNodes[id].result = memo[val];
+          steps.push({
+            type: 'cached',
+            nodeId: id,
+            val,
+            result: memo[val],
+            memo: { ...memo },
+            message: `fib(${val}) = ${memo[val]} (cached!)`
+          });
+          return memo[val];
+        }
+
+        steps.push({
+          type: 'call',
+          nodeId: id,
+          val,
+          memo: { ...memo },
+          message: `Computing fib(${val})...`
+        });
+
+        const left = fib(val - 1, id);
+        const right = fib(val - 2, id);
+        const result = left + right;
+        memo[val] = result;
+        treeNodes[id].result = result;
+
+        steps.push({
+          type: 'computed',
+          nodeId: id,
+          val,
+          result,
+          memo: { ...memo },
+          message: `fib(${val}) = fib(${val-1}) + fib(${val-2}) = ${left} + ${right} = ${result}`
+        });
+
+        return result;
+      }
+
+      fib(n, -1);
+    }
+
+    function layoutTree() {
+      const positions = new Map();
+      let nextX = 0;
+
+      function layout(id) {
+        const node = treeNodes[id];
+        const children = treeNodes.filter(n => n.parentId === id).map(n => n.id);
+
+        if (children.length === 0) {
+          positions.set(id, { x: nextX, y: 0 });
+          nextX++;
+          return;
+        }
+
+        for (const childId of children) {
+          layout(childId);
+        }
+
+        let depth = 0;
+        let n = node;
+        while (n.parentId >= 0) {
+          depth++;
+          n = treeNodes[n.parentId];
+        }
+
+        const firstChild = positions.get(children[0]);
+        const lastChild = positions.get(children[children.length - 1]);
+        positions.set(id, {
+          x: (firstChild.x + lastChild.x) / 2,
+          y: 0
+        });
+      }
+
+      function setDepths(id, d) {
+        const pos = positions.get(id);
+        if (pos) pos.y = d;
+        const children = treeNodes.filter(n => n.parentId === id).map(n => n.id);
+        for (const c of children) setDepths(c, d + 1);
+      }
+
+      if (treeNodes.length > 0) {
+        layout(0);
+        setDepths(0, 0);
+      }
+
+      return positions;
+    }
+
+    function renderTree() {
+      if (steps.length === 0 || currentStep === 0) {
+        svg.innerHTML = '<text x="300" y="150" text-anchor="middle" font-family="DM Sans" font-size="13" fill="#999">Call tree will appear here</text>';
+        memoDisplay.innerHTML = '';
+        return;
+      }
+
+      const step = steps[Math.min(currentStep - 1, steps.length - 1)];
+
+      const visibleNodes = new Set();
+      for (let s = 0; s < currentStep && s < steps.length; s++) {
+        visibleNodes.add(steps[s].nodeId);
+      }
+
+      const positions = layoutTree();
+
+      const maxX = Math.max(0, ...[...positions.entries()].filter(([id]) => visibleNodes.has(id)).map(([, p]) => p.x));
+      const maxY = Math.max(0, ...[...positions.entries()].filter(([id]) => visibleNodes.has(id)).map(([, p]) => p.y));
+
+      const padX = 60;
+      const padY = 60;
+      const width = Math.max(400, (maxX + 1) * padX + 80);
+      const height = (maxY + 1) * padY + 60;
+      const offsetX = (width - maxX * padX) / 2;
+
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+      let html = '';
+
+      for (const id of visibleNodes) {
+        const node = treeNodes[id];
+        if (node.parentId >= 0 && visibleNodes.has(node.parentId)) {
+          const pPos = positions.get(node.parentId);
+          const cPos = positions.get(id);
+          if (pPos && cPos) {
+            html += `<line x1="${pPos.x * padX + offsetX}" y1="${pPos.y * padY + 30}" x2="${cPos.x * padX + offsetX}" y2="${cPos.y * padY + 30}" stroke="#e2ddd5" stroke-width="1.5"/>`;
+          }
+        }
+      }
+
+      for (const id of visibleNodes) {
+        const node = treeNodes[id];
+        const pos = positions.get(id);
+        if (!pos) continue;
+
+        const cx = pos.x * padX + offsetX;
+        const cy = pos.y * padY + 30;
+        const isCurrent = id === step.nodeId;
+
+        let fill, stroke, textFill;
+        if (isCurrent && step.type === 'cached') {
+          fill = '#fdf4e0'; stroke = '#d4a843'; textFill = '#6b5a30';
+        } else if (isCurrent && step.type === 'call') {
+          fill = '#c0614a'; stroke = '#c0614a'; textFill = '#fff';
+        } else if (isCurrent && (step.type === 'computed' || step.type === 'base')) {
+          fill = '#e8f3e9'; stroke = '#7a9e7e'; textFill = '#4a7050';
+        } else if (node.cached) {
+          fill = '#fdf4e0'; stroke = '#d4a843'; textFill = '#6b5a30';
+        } else if (node.result !== null) {
+          fill = '#e8f3e9'; stroke = '#7a9e7e'; textFill = '#4a7050';
+        } else {
+          fill = '#faf6f0'; stroke = '#2c2c2c'; textFill = '#2c2c2c';
+        }
+
+        const r = 18;
+        html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+        const label = `f(${node.val})`;
+        html += `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="${textFill}" font-weight="500">${label}</text>`;
+
+        if (node.result !== null) {
+          html += `<text x="${cx}" y="${cy + r + 14}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#999">= ${node.result}</text>`;
+        }
+        if (node.cached) {
+          html += `<text x="${cx + r + 2}" y="${cy - r + 4}" font-family="DM Sans" font-size="8" fill="#d4a843" text-anchor="start">cached</text>`;
+        }
+      }
+
+      svg.innerHTML = html;
+
+      const memo = step.memo;
+      const keys = Object.keys(memo).sort((a, b) => Number(a) - Number(b));
+      memoDisplay.innerHTML = keys.map(k => {
+        const isNew = currentStep > 1 && steps[currentStep - 2] && steps[currentStep - 2].memo[k] === undefined;
+        const bg = isNew ? '#e8f3e9' : '#faf6f0';
+        const border = isNew ? '#7a9e7e' : '#e2ddd5';
+        return `<span style="display:inline-block; background:${bg}; border:1px solid ${border}; border-radius:4px; padding:0.1rem 0.5rem; margin:0.1rem;">f(${k})=${memo[k]}</span>`;
+      }).join(' ');
+
+      statusEl.textContent = step.message;
+      statusEl.style.color = step.type === 'cached' ? '#d4a843' : step.type === 'call' ? '#c0614a' : '#4a7050';
+    }
+
+    function advance() {
+      if (currentStep >= steps.length) {
+        if (autoInterval) { clearInterval(autoInterval); autoInterval = null; autoBtn.textContent = 'Auto Play'; }
+        statusEl.textContent = `Done! fib(${nSelect.value}) computed with memoisation.`;
+        statusEl.style.color = '#4a7050';
+        stepBtn.disabled = true;
+        autoBtn.disabled = true;
+        return;
+      }
+      currentStep++;
+      renderTree();
+    }
+
+    startBtn.addEventListener('click', () => {
+      const n = parseInt(nSelect.value);
+      generateSteps(n);
+      currentStep = 0;
+      stepBtn.disabled = false;
+      autoBtn.disabled = false;
+      statusEl.textContent = 'Use Step or Auto Play to walk through the algorithm.';
+      statusEl.style.color = '#999';
+      renderTree();
+    });
+
+    stepBtn.addEventListener('click', advance);
+
+    autoBtn.addEventListener('click', () => {
+      if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+        autoBtn.textContent = 'Auto Play';
+      } else {
+        autoBtn.textContent = 'Pause';
+        autoInterval = setInterval(advance, 700);
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if (autoInterval) { clearInterval(autoInterval); autoInterval = null; }
+      currentStep = 0;
+      steps = [];
+      treeNodes = [];
+      stepBtn.disabled = true;
+      autoBtn.disabled = true;
+      autoBtn.textContent = 'Auto Play';
+      statusEl.textContent = 'Select n and press "Run Memoised" to begin.';
+      statusEl.style.color = '#999';
+      renderTree();
+    });
+
+    renderTree();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Dynamic Programming — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

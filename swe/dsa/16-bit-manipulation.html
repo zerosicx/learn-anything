@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bit Manipulation — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Bit Manipulation</h1>
+  <p class="subtitle">Operate directly on binary representations — XOR tricks, Brian Kernighan's algorithm, and problems solvable at the bit level</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Bitwise</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. Bitwise Operators ─── -->
+  <h2>Bitwise Operators</h2>
+  <p>Bitwise operators work on individual bits of a number's binary representation. They're the fastest operations a CPU can perform — single-clock-cycle instructions that can replace more expensive arithmetic in the right context.</p>
+
+  <table>
+    <thead>
+      <tr><th>Operator</th><th>Symbol</th><th>Description</th><th>Example (5 = 0101, 3 = 0011)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AND</td><td><code>&amp;</code></td><td>1 if both bits are 1</td><td><code>5 &amp; 3 = 1</code> (0001)</td></tr>
+      <tr><td>OR</td><td><code>|</code></td><td>1 if either bit is 1</td><td><code>5 | 3 = 7</code> (0111)</td></tr>
+      <tr><td>XOR</td><td><code>^</code></td><td>1 if bits differ</td><td><code>5 ^ 3 = 6</code> (0110)</td></tr>
+      <tr><td>NOT</td><td><code>~</code></td><td>Flip all bits</td><td><code>~5 = -6</code> (two's complement)</td></tr>
+      <tr><td>Left Shift</td><td><code>&lt;&lt;</code></td><td>Shift left, fill with 0s</td><td><code>5 &lt;&lt; 1 = 10</code> (1010)</td></tr>
+      <tr><td>Right Shift</td><td><code>&gt;&gt;</code></td><td>Shift right (arithmetic)</td><td><code>5 &gt;&gt; 1 = 2</code> (0010)</td></tr>
+      <tr><td>Unsigned Right Shift</td><td><code>&gt;&gt;&gt;</code></td><td>Shift right, fill with 0s</td><td><code>-1 &gt;&gt;&gt; 0 = 4294967295</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip">
+    <h4>TypeScript caveat</h4>
+    <p>JavaScript (and TypeScript) bitwise operators convert numbers to 32-bit signed integers before operating. This means bitwise operations on numbers > 2³¹-1 or < -2³¹ may give unexpected results. For most interview problems dealing with 32-bit integers, this is fine.</p>
+  </div>
+
+  <!-- ─── 2. Binary Representation ─── -->
+  <h2>Binary Representation</h2>
+  <p>Every integer is stored as a sequence of bits. Understanding binary is essential for bit manipulation problems. In a 32-bit signed integer, bit 31 is the sign bit (0 = positive, 1 = negative using two's complement).</p>
+
+  <pre><code><span class="cm">// View binary representation in TypeScript</span>
+<span class="kw">const</span> n = <span class="num">42</span>;
+console.<span class="fn">log</span>(<span class="str">"??"</span>, n.<span class="fn">toString</span>(<span class="num">2</span>));
+<span class="cm">// "101010"</span>
+
+<span class="cm">// Pad to see all 32 bits</span>
+<span class="kw">function</span> <span class="fn">toBin32</span>(n: <span class="tp">number</span>): <span class="tp">string</span> {
+  <span class="kw">return</span> (n &gt;&gt;&gt; <span class="num">0</span>).<span class="fn">toString</span>(<span class="num">2</span>).<span class="fn">padStart</span>(<span class="num">32</span>, <span class="str">'0'</span>);
+}
+
+console.<span class="fn">log</span>(<span class="str">"??"</span>, <span class="fn">toBin32</span>(<span class="num">42</span>));
+<span class="cm">// "00000000000000000000000000101010"</span>
+
+console.<span class="fn">log</span>(<span class="str">"??"</span>, <span class="fn">toBin32</span>(-<span class="num">1</span>));
+<span class="cm">// "11111111111111111111111111111111" (all 1s = -1 in two's complement)</span></code></pre>
+
+  <!-- ─── 3. Common Bit Tricks ─── -->
+  <h2>Common Bit Tricks</h2>
+  <p>These one-liners appear constantly in bit manipulation problems. Each exploits a specific property of binary arithmetic.</p>
+
+  <h3>Check Even / Odd</h3>
+  <pre><code><span class="kw">const</span> isOdd = (n: <span class="tp">number</span>): <span class="tp">boolean</span> => (n &amp; <span class="num">1</span>) === <span class="num">1</span>;
+<span class="cm">// Last bit is 1 for odd, 0 for even. Faster than n % 2.</span></code></pre>
+
+  <h3>Check Power of 2</h3>
+  <pre><code><span class="kw">const</span> isPowerOf2 = (n: <span class="tp">number</span>): <span class="tp">boolean</span> =>
+  n &gt; <span class="num">0</span> &amp;&amp; (n &amp; (n - <span class="num">1</span>)) === <span class="num">0</span>;
+<span class="cm">// Powers of 2 have exactly one set bit: 1000...0</span>
+<span class="cm">// n-1 flips all bits from that bit down: 0111...1</span>
+<span class="cm">// AND gives 0 only if there was exactly one set bit.</span></code></pre>
+
+  <h3>Swap Without Temp Variable</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">bitwiseSwap</span>(a: <span class="tp">number</span>, b: <span class="tp">number</span>): [<span class="tp">number</span>, <span class="tp">number</span>] {
+  a = a ^ b;
+  b = a ^ b;  <span class="cm">// b = (a^b)^b = a</span>
+  a = a ^ b;  <span class="cm">// a = (a^b)^a = b</span>
+  <span class="kw">return</span> [a, b];
+}
+<span class="cm">// XOR is its own inverse: x ^ x = 0, x ^ 0 = x</span></code></pre>
+
+  <h3>Toggle / Set / Clear a Specific Bit</h3>
+  <pre><code><span class="kw">const</span> setBit = (n: <span class="tp">number</span>, pos: <span class="tp">number</span>): <span class="tp">number</span> =>
+  n | (<span class="num">1</span> &lt;&lt; pos);
+
+<span class="kw">const</span> clearBit = (n: <span class="tp">number</span>, pos: <span class="tp">number</span>): <span class="tp">number</span> =>
+  n &amp; ~(<span class="num">1</span> &lt;&lt; pos);
+
+<span class="kw">const</span> toggleBit = (n: <span class="tp">number</span>, pos: <span class="tp">number</span>): <span class="tp">number</span> =>
+  n ^ (<span class="num">1</span> &lt;&lt; pos);
+
+<span class="kw">const</span> getBit = (n: <span class="tp">number</span>, pos: <span class="tp">number</span>): <span class="tp">number</span> =>
+  (n &gt;&gt; pos) &amp; <span class="num">1</span>;</code></pre>
+
+  <!-- ─── 4. Single Number ─── -->
+  <h2>Single Number</h2>
+  <p>Given an array where every element appears <strong>twice</strong> except one, find the unique element. XOR cancels out duplicates because <code>a ^ a = 0</code> and <code>a ^ 0 = a</code>.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">singleNumber</span>(nums: <span class="tp">number</span>[]): <span class="tp">number</span> {
+  <span class="kw">let</span> result = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">const</span> num <span class="kw">of</span> nums) {
+    result ^= num;
+  }
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// singleNumber([4, 1, 2, 1, 2])  → 4</span>
+<span class="cm">// Walkthrough: 0^4=4, 4^1=5, 5^2=7, 7^1=6, 6^2=4 ✓</span></code></pre>
+
+  <div class="key-concept">
+    <strong>XOR properties that make this work:</strong>
+    <ul>
+      <li><strong>Commutative:</strong> <code>a ^ b = b ^ a</code> — order doesn't matter.</li>
+      <li><strong>Associative:</strong> <code>(a ^ b) ^ c = a ^ (b ^ c)</code> — grouping doesn't matter.</li>
+      <li><strong>Self-inverse:</strong> <code>a ^ a = 0</code> — pairs cancel out.</li>
+      <li><strong>Identity:</strong> <code>a ^ 0 = a</code> — XOR with zero is identity.</li>
+    </ul>
+    <p>So XORing all elements groups pairs into <code>a ^ a = 0</code>, leaving only the unique element.</p>
+  </div>
+
+  <!-- ─── 5. Number of 1 Bits ─── -->
+  <h2>Number of 1 Bits</h2>
+  <p>Count the number of set bits (1s) in a number's binary representation. <strong>Brian Kernighan's algorithm:</strong> <code>n &amp; (n - 1)</code> clears the lowest set bit. Count how many times we can do this before reaching zero.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">hammingWeight</span>(n: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">let</span> count = <span class="num">0</span>;
+  <span class="kw">while</span> (n !== <span class="num">0</span>) {
+    n = n &amp; (n - <span class="num">1</span>);
+    count++;
+  }
+  <span class="kw">return</span> count;
+}
+
+<span class="cm">// hammingWeight(11)  → 3   (1011 has three 1-bits)</span>
+<span class="cm">// hammingWeight(128) → 1   (10000000)</span>
+<span class="cm">// hammingWeight(255) → 8   (11111111)</span></code></pre>
+
+  <div class="tip">
+    <h4>Why n &amp; (n-1) clears the lowest set bit</h4>
+    <p>Subtracting 1 from a number flips all bits from the lowest set bit downward. For example: <code>1010 - 1 = 1001</code>. ANDing with the original zeroes out that lowest 1-bit and everything below, while preserving everything above. Runs in O(k) where k is the number of set bits — faster than checking all 32 bits.</p>
+  </div>
+
+  <!-- ─── 6. Counting Bits ─── -->
+  <h2>Counting Bits</h2>
+  <p>For every number from 0 to n, count the number of 1-bits. The DP insight: <code>countBits[i] = countBits[i >> 1] + (i &amp; 1)</code>. Shifting right removes the last bit, and we add 1 if that last bit was set.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">countBits</span>(n: <span class="tp">number</span>): <span class="tp">number</span>[] {
+  <span class="kw">const</span> result = <span class="kw">new</span> <span class="fn">Array</span>(n + <span class="num">1</span>).<span class="fn">fill</span>(<span class="num">0</span>);
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= n; i++) {
+    result[i] = result[i &gt;&gt; <span class="num">1</span>] + (i &amp; <span class="num">1</span>);
+  }
+
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// countBits(5)  → [0, 1, 1, 2, 1, 2]</span>
+<span class="cm">//                  0  1  10 11 100 101</span>
+<span class="cm">// countBits(2)  → [0, 1, 1]</span></code></pre>
+
+  <p><strong>Time:</strong> <span class="complexity ok">O(n)</span>. <strong>Space:</strong> <span class="complexity ok">O(n)</span>. Each number's bit count is computed in O(1) from a previously computed value.</p>
+
+  <!-- ─── 7. Reverse Bits ─── -->
+  <h2>Reverse Bits</h2>
+  <p>Reverse all 32 bits of a given unsigned integer. Process bit by bit: extract the lowest bit, place it in the reversed position.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">reverseBits</span>(n: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">let</span> result = <span class="num">0</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="num">32</span>; i++) {
+    result = (result &lt;&lt; <span class="num">1</span>) | (n &amp; <span class="num">1</span>);
+    n &gt;&gt;&gt;= <span class="num">1</span>;
+  }
+
+  <span class="kw">return</span> result &gt;&gt;&gt; <span class="num">0</span>;
+}
+
+<span class="cm">// reverseBits(43261596)</span>
+<span class="cm">// Binary: 00000010100101000001111010011100</span>
+<span class="cm">// Reversed:00111001011110000010100101000000</span>
+<span class="cm">// → 964176192</span></code></pre>
+
+  <p>The <code>&gt;&gt;&gt; 0</code> at the end converts the result to an unsigned 32-bit integer, which matters when the reversed number would set the sign bit.</p>
+
+  <!-- ─── 8. Missing Number ─── -->
+  <h2>Missing Number</h2>
+  <p>Given an array containing <code>n</code> distinct numbers from the range <code>[0, n]</code>, find the one missing. XOR all numbers with all indices — duplicates cancel, leaving the missing number.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">missingNumber</span>(nums: <span class="tp">number</span>[]): <span class="tp">number</span> {
+  <span class="kw">let</span> xor = nums.length;
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; nums.length; i++) {
+    xor ^= i ^ nums[i];
+  }
+
+  <span class="kw">return</span> xor;
+}
+
+<span class="cm">// missingNumber([3, 0, 1])     → 2</span>
+<span class="cm">// missingNumber([9,6,4,2,3,5,7,0,1]) → 8</span>
+<span class="cm">// missingNumber([0])           → 1</span></code></pre>
+
+  <div class="tip">
+    <h4>Alternative: sum formula</h4>
+    <p>You could also use <code>n*(n+1)/2 - sum(nums)</code>. Both are O(n) time, O(1) space. The XOR approach avoids any risk of integer overflow (relevant in other languages; in JS both are safe for reasonable n).</p>
+  </div>
+
+  <!-- ─── 9. Bit Manipulation Cheat Sheet ─── -->
+  <h2>Bit Manipulation Cheat Sheet</h2>
+
+  <table>
+    <thead>
+      <tr><th>Trick</th><th>Expression</th><th>Why It Works</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Check odd</td><td><code>n &amp; 1</code></td><td>Lowest bit is 1 for odd numbers</td></tr>
+      <tr><td>Power of 2</td><td><code>n &amp; (n-1) === 0</code></td><td>Only one bit set</td></tr>
+      <tr><td>Clear lowest set bit</td><td><code>n &amp; (n-1)</code></td><td>n-1 flips from lowest set bit down</td></tr>
+      <tr><td>Isolate lowest set bit</td><td><code>n &amp; (-n)</code></td><td>Two's complement: -n = ~n + 1</td></tr>
+      <tr><td>Set bit at position k</td><td><code>n | (1 &lt;&lt; k)</code></td><td>OR with a mask</td></tr>
+      <tr><td>Clear bit at position k</td><td><code>n &amp; ~(1 &lt;&lt; k)</code></td><td>AND with inverted mask</td></tr>
+      <tr><td>Toggle bit at position k</td><td><code>n ^ (1 &lt;&lt; k)</code></td><td>XOR flips the target bit</td></tr>
+      <tr><td>Get bit at position k</td><td><code>(n &gt;&gt; k) &amp; 1</code></td><td>Shift bit to position 0, mask</td></tr>
+      <tr><td>Multiply by 2<sup>k</sup></td><td><code>n &lt;&lt; k</code></td><td>Shift left = multiply by powers of 2</td></tr>
+      <tr><td>Divide by 2<sup>k</sup></td><td><code>n &gt;&gt; k</code></td><td>Shift right = integer division by powers of 2</td></tr>
+      <tr><td>Swap two values</td><td><code>a^=b; b^=a; a^=b</code></td><td>XOR is self-inverse</td></tr>
+      <tr><td>All 1s mask (32-bit)</td><td><code>~0 or -1</code></td><td>NOT zero flips all bits to 1</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─── 10. Interactive Visualisation ─── -->
+  <h2>Interactive: Bitwise Operations</h2>
+  <p>Enter two 8-bit numbers and see the result of applying bitwise operators. Each bit cell shows 0 or 1, and the result updates live.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls" style="align-items:center;">
+      <label style="font-size:0.82rem; font-weight:500;">A:
+        <input id="bit-a" type="number" value="42" min="0" max="255" style="width:60px; padding:0.3rem 0.5rem; border:1px solid #e2ddd5; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem;">
+      </label>
+      <label style="font-size:0.82rem; font-weight:500;">B:
+        <input id="bit-b" type="number" value="27" min="0" max="255" style="width:60px; padding:0.3rem 0.5rem; border:1px solid #e2ddd5; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem;">
+      </label>
+      <select id="bit-op" style="padding:0.3rem 0.5rem; border:1px solid #e2ddd5; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem;">
+        <option value="and">AND (&amp;)</option>
+        <option value="or">OR (|)</option>
+        <option value="xor" selected>XOR (^)</option>
+        <option value="not">NOT (~A)</option>
+        <option value="shl">A &lt;&lt; 1</option>
+        <option value="shr">A &gt;&gt; 1</option>
+      </select>
+    </div>
+    <div id="bit-display" style="font-family:'JetBrains Mono',monospace; font-size:0.85rem;"></div>
+  </div>
+
+  <script>
+  (function() {
+    const inputA = document.getElementById('bit-a');
+    const inputB = document.getElementById('bit-b');
+    const opSelect = document.getElementById('bit-op');
+    const display = document.getElementById('bit-display');
+
+    function toBits(n, bits) {
+      const unsigned = n & ((1 << bits) - 1);
+      return Array.from({ length: bits }, (_, i) =>
+        (unsigned >> (bits - 1 - i)) & 1
+      );
+    }
+
+    function renderBitRow(label, bits, color, borderColor) {
+      const cells = bits.map(b => {
+        const bg = b === 1 ? color : '#faf6f0';
+        const fg = b === 1 ? '#fff' : '#999';
+        const bc = b === 1 ? borderColor : '#e2ddd5';
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:2px solid ${bc};border-radius:6px;background:${bg};color:${fg};font-weight:500;margin:0 1px;">${b}</span>`;
+      }).join('');
+      return `<div style="display:flex;align-items:center;gap:0.75rem;margin:0.4rem 0;">
+        <span style="width:90px;text-align:right;font-size:0.78rem;color:#999;font-weight:500;">${label}</span>
+        <div style="display:flex;gap:0;">${cells}</div>
+        <span style="font-size:0.82rem;color:#2c2c2c;font-weight:500;margin-left:0.5rem;">= ${bits.reduce((acc, b, i) => acc + b * Math.pow(2, bits.length - 1 - i), 0)}</span>
+      </div>`;
+    }
+
+    function update() {
+      const a = Math.max(0, Math.min(255, parseInt(inputA.value) || 0));
+      const b = Math.max(0, Math.min(255, parseInt(inputB.value) || 0));
+      const op = opSelect.value;
+      const BITS = 8;
+
+      let result, opSymbol, showB = true;
+      switch (op) {
+        case 'and': result = a & b; opSymbol = 'AND'; break;
+        case 'or':  result = a | b; opSymbol = 'OR'; break;
+        case 'xor': result = a ^ b; opSymbol = 'XOR'; break;
+        case 'not': result = (~a) & 0xFF; opSymbol = 'NOT'; showB = false; break;
+        case 'shl': result = (a << 1) & 0xFF; opSymbol = '<< 1'; showB = false; break;
+        case 'shr': result = a >> 1; opSymbol = '>> 1'; showB = false; break;
+      }
+
+      const bitsA = toBits(a, BITS);
+      const bitsB = toBits(b, BITS);
+      const bitsR = toBits(result, BITS);
+
+      let html = renderBitRow(`A (${a})`, bitsA, '#c0614a', '#c0614a');
+      if (showB) {
+        html += renderBitRow(`B (${b})`, bitsB, '#d4a843', '#d4a843');
+      }
+      html += `<div style="border-top:2px solid #e2ddd5;margin:0.5rem 0 0.4rem;width:fit-content;padding-left:98px;min-width:400px;"></div>`;
+      html += renderBitRow(`${opSymbol} (${result})`, bitsR, '#4a7050', '#7a9e7e');
+
+      display.innerHTML = html;
+    }
+
+    inputA.addEventListener('input', update);
+    inputB.addEventListener('input', update);
+    opSelect.addEventListener('change', update);
+    update();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Bit Manipulation — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

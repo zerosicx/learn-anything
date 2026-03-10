@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Binary Search — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Binary Search</h1>
+  <p class="subtitle">Halving the search space with every comparison — the logarithmic leap from O(n) to O(log n)</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">O(log n)</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. The Binary Search Algorithm ─── -->
+  <h2>The Binary Search Algorithm</h2>
+  <p>Binary search is deceptively simple: given a <strong>sorted</strong> collection, repeatedly halve the search space by comparing the target to the middle element. If the target is smaller, search the left half; if larger, search the right half. Each step eliminates half of the remaining candidates.</p>
+  <p>This halving is what gives binary search its O(log n) time complexity. For an array of 1 billion elements, binary search needs at most ~30 comparisons. Linear search would need up to 1 billion.</p>
+
+  <div class="key-concept">
+    <strong>Prerequisite:</strong> Binary search requires the data to be sorted (or at least monotonically partitioned). If you find yourself needing repeated searches on unsorted data, sort first — one O(n log n) sort enables unlimited O(log n) lookups.
+  </div>
+
+  <!-- ─── 2. Basic Binary Search ─── -->
+  <h2>Basic Binary Search</h2>
+  <p>The standard implementation: maintain a <code>low</code> and <code>high</code> boundary, compute <code>mid</code>, compare, and shrink the window.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">binarySearch</span>(nums: <span class="tp">number</span>[], target: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">let</span> low = <span class="num">0</span>;
+  <span class="kw">let</span> high = nums.length - <span class="num">1</span>;
+
+  <span class="kw">while</span> (low &lt;= high) {
+    <span class="cm">// Avoids integer overflow compared to (low + high) / 2</span>
+    <span class="kw">const</span> mid = low + <span class="fn">Math</span>.<span class="fn">floor</span>((high - low) / <span class="num">2</span>);
+
+    <span class="kw">if</span> (nums[mid] === target) {
+      <span class="kw">return</span> mid;
+    }
+
+    <span class="kw">if</span> (nums[mid] &lt; target) {
+      low = mid + <span class="num">1</span>;   <span class="cm">// Target is in the right half</span>
+    } <span class="kw">else</span> {
+      high = mid - <span class="num">1</span>;  <span class="cm">// Target is in the left half</span>
+    }
+  }
+
+  <span class="kw">return</span> -<span class="num">1</span>; <span class="cm">// Not found</span>
+}</code></pre>
+
+  <div class="warning">
+    <h4>The Off-by-One Minefield</h4>
+    <p>Binary search has famously subtle boundary conditions. The three critical decisions:</p>
+    <ul>
+      <li><strong>Loop condition:</strong> <code>low &lt;= high</code> (inclusive) vs <code>low &lt; high</code> (exclusive on right)</li>
+      <li><strong>Mid update:</strong> <code>mid + 1</code> and <code>mid - 1</code> — never use just <code>mid</code> as the new boundary, or you risk infinite loops</li>
+      <li><strong>Mid calculation:</strong> <code>low + Math.floor((high - low) / 2)</code> prevents overflow in languages with fixed-size integers</li>
+    </ul>
+  </div>
+
+  <!-- ─── 3. Search Space Visualisation ─── -->
+  <h2>Search Space Visualisation</h2>
+  <p>Each step halves the search space. Grey cells have been eliminated; amber is the current comparison; green is the found target.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 650 310" xmlns="http://www.w3.org/2000/svg" style="max-width:650px;">
+      <g font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">
+        <!-- Step labels -->
+        <text x="15" y="35" font-family="DM Sans" font-size="11" fill="#999" text-anchor="start">Step 1</text>
+        <text x="15" y="105" font-family="DM Sans" font-size="11" fill="#999" text-anchor="start">Step 2</text>
+        <text x="15" y="175" font-family="DM Sans" font-size="11" fill="#999" text-anchor="start">Step 3</text>
+
+        <!-- Array: [2, 5, 8, 12, 16, 23, 38, 42, 56]  target=8 -->
+
+        <!-- Step 1: full array, mid=4 → 16 > 8 → search left -->
+        <rect x="70"  y="20" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="92"  y="40">2</text>
+        <rect x="120" y="20" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="142" y="40">5</text>
+        <rect x="170" y="20" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="192" y="40">8</text>
+        <rect x="220" y="20" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="242" y="40">12</text>
+        <rect x="270" y="20" width="45" height="30" rx="4" fill="#fdf4e0" stroke="#d4a843" stroke-width="2"/>
+        <text x="292" y="40" fill="#6b5a30" font-weight="700">16</text>
+        <rect x="320" y="20" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="342" y="40">23</text>
+        <rect x="370" y="20" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="392" y="40">38</text>
+        <rect x="420" y="20" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="442" y="40">42</text>
+        <rect x="470" y="20" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="492" y="40">56</text>
+        <text x="568" y="35" font-family="DM Sans" font-size="10" fill="#d4a843" text-anchor="start">mid=4</text>
+        <text x="568" y="48" font-family="DM Sans" font-size="10" fill="#d4a843" text-anchor="start">16 &gt; 8 → go left</text>
+
+        <!-- Step 2: right half greyed, left half active, mid=1 → 5 < 8 → search right -->
+        <rect x="70"  y="90" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="92"  y="110">2</text>
+        <rect x="120" y="90" width="45" height="30" rx="4" fill="#fdf4e0" stroke="#d4a843" stroke-width="2"/>
+        <text x="142" y="110" fill="#6b5a30" font-weight="700">5</text>
+        <rect x="170" y="90" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="192" y="110">8</text>
+        <rect x="220" y="90" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="242" y="110">12</text>
+        <rect x="270" y="90" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="292" y="110" fill="#bbb">16</text>
+        <rect x="320" y="90" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="342" y="110" fill="#bbb">23</text>
+        <rect x="370" y="90" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="392" y="110" fill="#bbb">38</text>
+        <rect x="420" y="90" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="442" y="110" fill="#bbb">42</text>
+        <rect x="470" y="90" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="492" y="110" fill="#bbb">56</text>
+        <text x="568" y="105" font-family="DM Sans" font-size="10" fill="#d4a843" text-anchor="start">mid=1</text>
+        <text x="568" y="118" font-family="DM Sans" font-size="10" fill="#d4a843" text-anchor="start">5 &lt; 8 → go right</text>
+
+        <!-- Step 3: indices 0,1 greyed + 4-8 greyed. low=2, high=3, mid=2 → 8 = 8 → found! -->
+        <rect x="70"  y="160" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="92"  y="180" fill="#bbb">2</text>
+        <rect x="120" y="160" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="142" y="180" fill="#bbb">5</text>
+        <rect x="170" y="160" width="45" height="30" rx="4" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="192" y="180" fill="#4a7050" font-weight="700">8</text>
+        <rect x="220" y="160" width="45" height="30" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="242" y="180">12</text>
+        <rect x="270" y="160" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="292" y="180" fill="#bbb">16</text>
+        <rect x="320" y="160" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="342" y="180" fill="#bbb">23</text>
+        <rect x="370" y="160" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="392" y="180" fill="#bbb">38</text>
+        <rect x="420" y="160" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="442" y="180" fill="#bbb">42</text>
+        <rect x="470" y="160" width="45" height="30" rx="4" fill="#f0ede8" stroke="#ccc" stroke-width="1"/>
+        <text x="492" y="180" fill="#bbb">56</text>
+        <text x="568" y="175" font-family="DM Sans" font-size="10" fill="#4a7050" text-anchor="start">mid=2</text>
+        <text x="568" y="188" font-family="DM Sans" font-size="10" fill="#4a7050" text-anchor="start">Found at index 2!</text>
+
+        <!-- Summary -->
+        <text x="300" y="240" font-family="DM Sans" font-size="12" fill="#2c2c2c">9 elements → found in 3 comparisons (log₂9 ≈ 3.2)</text>
+        <text x="300" y="260" font-family="DM Sans" font-size="11" fill="#999">Target: 8 — note how the search narrowed left, then right</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 4. Binary Search Variations ─── -->
+  <h2>Binary Search Variations</h2>
+
+  <h3>Find First Occurrence</h3>
+  <p>Standard binary search finds <em>any</em> occurrence. To find the <strong>first</strong> (leftmost), continue searching left even after finding a match.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">findFirst</span>(nums: <span class="tp">number</span>[], target: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">let</span> low = <span class="num">0</span>;
+  <span class="kw">let</span> high = nums.length - <span class="num">1</span>;
+  <span class="kw">let</span> result = -<span class="num">1</span>;
+
+  <span class="kw">while</span> (low &lt;= high) {
+    <span class="kw">const</span> mid = low + <span class="fn">Math</span>.<span class="fn">floor</span>((high - low) / <span class="num">2</span>);
+
+    <span class="kw">if</span> (nums[mid] === target) {
+      result = mid;
+      high = mid - <span class="num">1</span>;  <span class="cm">// Keep searching left for earlier occurrence</span>
+    } <span class="kw">else if</span> (nums[mid] &lt; target) {
+      low = mid + <span class="num">1</span>;
+    } <span class="kw">else</span> {
+      high = mid - <span class="num">1</span>;
+    }
+  }
+
+  <span class="kw">return</span> result;
+}</code></pre>
+
+  <h3>Find Last Occurrence</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">findLast</span>(nums: <span class="tp">number</span>[], target: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">let</span> low = <span class="num">0</span>;
+  <span class="kw">let</span> high = nums.length - <span class="num">1</span>;
+  <span class="kw">let</span> result = -<span class="num">1</span>;
+
+  <span class="kw">while</span> (low &lt;= high) {
+    <span class="kw">const</span> mid = low + <span class="fn">Math</span>.<span class="fn">floor</span>((high - low) / <span class="num">2</span>);
+
+    <span class="kw">if</span> (nums[mid] === target) {
+      result = mid;
+      low = mid + <span class="num">1</span>;  <span class="cm">// Keep searching right for later occurrence</span>
+    } <span class="kw">else if</span> (nums[mid] &lt; target) {
+      low = mid + <span class="num">1</span>;
+    } <span class="kw">else</span> {
+      high = mid - <span class="num">1</span>;
+    }
+  }
+
+  <span class="kw">return</span> result;
+}</code></pre>
+
+  <h3>Search in Rotated Sorted Array</h3>
+  <p>A sorted array that's been rotated (e.g., <code>[4,5,6,7,0,1,2]</code>) has two sorted halves. At each step, determine which half is sorted and whether the target lies within it.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">searchRotated</span>(nums: <span class="tp">number</span>[], target: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">let</span> low = <span class="num">0</span>;
+  <span class="kw">let</span> high = nums.length - <span class="num">1</span>;
+
+  <span class="kw">while</span> (low &lt;= high) {
+    <span class="kw">const</span> mid = low + <span class="fn">Math</span>.<span class="fn">floor</span>((high - low) / <span class="num">2</span>);
+
+    <span class="kw">if</span> (nums[mid] === target) <span class="kw">return</span> mid;
+
+    <span class="cm">// Left half is sorted</span>
+    <span class="kw">if</span> (nums[low] &lt;= nums[mid]) {
+      <span class="kw">if</span> (nums[low] &lt;= target &amp;&amp; target &lt; nums[mid]) {
+        high = mid - <span class="num">1</span>;
+      } <span class="kw">else</span> {
+        low = mid + <span class="num">1</span>;
+      }
+    }
+    <span class="cm">// Right half is sorted</span>
+    <span class="kw">else</span> {
+      <span class="kw">if</span> (nums[mid] &lt; target &amp;&amp; target &lt;= nums[high]) {
+        low = mid + <span class="num">1</span>;
+      } <span class="kw">else</span> {
+        high = mid - <span class="num">1</span>;
+      }
+    }
+  }
+
+  <span class="kw">return</span> -<span class="num">1</span>;
+}
+
+<span class="cm">// searchRotated([4,5,6,7,0,1,2], 0) → 4</span></code></pre>
+
+  <!-- ─── 5. Search a 2D Matrix ─── -->
+  <h2>Search a 2D Matrix</h2>
+  <p>Given an m×n matrix where each row is sorted and the first element of each row is greater than the last element of the previous row, search for a target value. The key insight: treat the 2D matrix as a virtual 1D sorted array.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">searchMatrix</span>(matrix: <span class="tp">number</span>[][], target: <span class="tp">number</span>): <span class="tp">boolean</span> {
+  <span class="kw">const</span> m = matrix.length;
+  <span class="kw">const</span> n = matrix[<span class="num">0</span>].length;
+  <span class="kw">let</span> low = <span class="num">0</span>;
+  <span class="kw">let</span> high = m * n - <span class="num">1</span>;
+
+  <span class="kw">while</span> (low &lt;= high) {
+    <span class="kw">const</span> mid = low + <span class="fn">Math</span>.<span class="fn">floor</span>((high - low) / <span class="num">2</span>);
+
+    <span class="cm">// Convert 1D index to 2D coordinates</span>
+    <span class="kw">const</span> row = <span class="fn">Math</span>.<span class="fn">floor</span>(mid / n);
+    <span class="kw">const</span> col = mid % n;
+    <span class="kw">const</span> value = matrix[row][col];
+
+    <span class="kw">if</span> (value === target) <span class="kw">return</span> <span class="kw">true</span>;
+
+    <span class="kw">if</span> (value &lt; target) {
+      low = mid + <span class="num">1</span>;
+    } <span class="kw">else</span> {
+      high = mid - <span class="num">1</span>;
+    }
+  }
+
+  <span class="kw">return</span> <span class="kw">false</span>;
+}
+
+<span class="cm">// searchMatrix([[1,3,5],[10,11,13],[23,30,34]], 13) → true</span>
+<span class="cm">// Virtual 1D: [1,3,5,10,11,13,23,30,34]</span>
+<span class="cm">// Index 5 → row=5/3=1, col=5%3=2 → matrix[1][2] = 13 ✓</span></code></pre>
+
+  <div class="key-concept">
+    <strong>1D ↔ 2D mapping:</strong> For a matrix with <code>n</code> columns, a virtual index <code>i</code> maps to <code>row = Math.floor(i / n)</code> and <code>col = i % n</code>. This trick appears in many matrix problems.
+  </div>
+
+  <!-- ─── 6. Binary Search on Answer ─── -->
+  <h2>Binary Search on Answer</h2>
+  <p>A powerful but less obvious application: instead of searching for an element in an array, binary search the <strong>answer space</strong>. If you can frame a problem as "what is the minimum/maximum value X such that condition(X) is true?", and condition(X) is monotonic, you can binary search X.</p>
+
+  <h3>Koko Eating Bananas</h3>
+  <p>Koko has piles of bananas and h hours to eat them all. She picks a speed k (bananas per hour) and eats one pile at a time, taking <code>ceil(pile / k)</code> hours per pile. Find the minimum k so she finishes within h hours.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">minEatingSpeed</span>(piles: <span class="tp">number</span>[], h: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="cm">// The answer is somewhere between 1 and max(piles)</span>
+  <span class="kw">let</span> low = <span class="num">1</span>;
+  <span class="kw">let</span> high = <span class="fn">Math</span>.<span class="fn">max</span>(...piles);
+
+  <span class="kw">while</span> (low &lt; high) {
+    <span class="kw">const</span> mid = low + <span class="fn">Math</span>.<span class="fn">floor</span>((high - low) / <span class="num">2</span>);
+
+    <span class="kw">if</span> (<span class="fn">canFinish</span>(piles, mid, h)) {
+      high = mid;      <span class="cm">// mid works, try slower</span>
+    } <span class="kw">else</span> {
+      low = mid + <span class="num">1</span>;   <span class="cm">// mid too slow, go faster</span>
+    }
+  }
+
+  <span class="kw">return</span> low;
+}
+
+<span class="kw">function</span> <span class="fn">canFinish</span>(piles: <span class="tp">number</span>[], speed: <span class="tp">number</span>, hours: <span class="tp">number</span>): <span class="tp">boolean</span> {
+  <span class="kw">let</span> total = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">const</span> pile <span class="kw">of</span> piles) {
+    total += <span class="fn">Math</span>.<span class="fn">ceil</span>(pile / speed);
+  }
+  <span class="kw">return</span> total &lt;= hours;
+}
+
+<span class="cm">// minEatingSpeed([3, 6, 7, 11], 8) → 4</span>
+<span class="cm">// At speed 4: ceil(3/4)+ceil(6/4)+ceil(7/4)+ceil(11/4)</span>
+<span class="cm">//           = 1 + 2 + 2 + 3 = 8 hours ✓</span></code></pre>
+
+  <div class="tip">
+    <h4>How to Spot "Binary Search on Answer"</h4>
+    <p>Look for problems that ask for a minimum or maximum value and where you can write a <code>canAchieve(x)</code> function that returns true/false. If <code>canAchieve</code> flips from false to true (or true to false) at some threshold, binary search finds that threshold.</p>
+  </div>
+
+  <!-- ─── 7. Complexity Summary ─── -->
+  <h2>Complexity Summary</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Problem</th>
+        <th>Time</th>
+        <th>Space</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Basic Binary Search</td>
+        <td><span class="complexity good">O(log n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Find First/Last Occurrence</td>
+        <td><span class="complexity good">O(log n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Search Rotated Array</td>
+        <td><span class="complexity good">O(log n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Search 2D Matrix</td>
+        <td><span class="complexity good">O(log(m·n))</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Koko Eating Bananas</td>
+        <td><span class="complexity ok">O(n log m)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ─── 8. Interactive Visualisation ─── -->
+  <h2>Interactive: Binary Search</h2>
+  <p>Enter a target value and step through binary search. Watch the search space shrink as low, mid, and high pointers narrow in on the target. Amber = current comparison, grey = eliminated, green = found.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls">
+      <label style="font-size:0.82rem; display:flex; align-items:center; gap:0.4rem;">
+        Target:
+        <input type="number" id="bs-target" value="42" min="0" max="99" style="width:60px; padding:0.4rem; border:1px solid #e2ddd5; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; text-align:center;">
+      </label>
+      <button class="viz-btn" onclick="bsStep()">Step</button>
+      <button class="viz-btn secondary" onclick="bsReset()">Reset</button>
+    </div>
+    <div class="viz-display" id="bs-display" style="padding: 1.8rem 0 0.5rem; position:relative;"></div>
+    <p id="bs-status" style="font-size:0.82rem; color:#999; margin-top:0.75rem; margin-bottom:0;"></p>
+  </div>
+
+  <script>
+  (function() {
+    const DATA = [2, 5, 8, 12, 16, 23, 38, 42, 56, 67, 78, 91];
+    let low, high, mid, found, done, eliminated;
+    const display = document.getElementById('bs-display');
+    const status = document.getElementById('bs-status');
+    const targetInput = document.getElementById('bs-target');
+
+    function getTarget() { return parseInt(targetInput.value) || 42; }
+
+    function render() {
+      display.innerHTML = '';
+      DATA.forEach((val, i) => {
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;';
+
+        const label = document.createElement('div');
+        label.style.cssText = 'font-size:0.68rem;font-weight:600;min-height:16px;';
+        if (found && i === mid) {
+          label.textContent = 'FOUND';
+          label.style.color = '#4a7050';
+        } else if (!done && i === mid) {
+          label.textContent = 'mid';
+          label.style.color = '#d4a843';
+        } else if (!done && i === low) {
+          label.textContent = 'low';
+          label.style.color = '#c0614a';
+        } else if (!done && i === high) {
+          label.textContent = 'high';
+          label.style.color = '#3a72b0';
+        } else {
+          label.textContent = '';
+        }
+        wrapper.appendChild(label);
+
+        const cell = document.createElement('div');
+        cell.className = 'array-cell';
+
+        if (found && i === mid) {
+          cell.classList.add('found');
+        } else if (!done && i === mid) {
+          cell.classList.add('compared');
+        } else if (eliminated.has(i)) {
+          cell.style.opacity = '0.25';
+          cell.style.borderColor = '#ccc';
+        }
+        cell.textContent = val;
+
+        const idx = document.createElement('span');
+        idx.className = 'cell-index';
+        idx.textContent = i;
+        cell.appendChild(idx);
+        wrapper.appendChild(cell);
+        display.appendChild(wrapper);
+      });
+
+      const target = getTarget();
+      if (found) {
+        status.textContent = `Found ${target} at index ${mid}!`;
+        status.style.color = '#4a7050';
+      } else if (done) {
+        status.textContent = `${target} not found in the array.`;
+        status.style.color = '#c0614a';
+      } else if (mid !== undefined) {
+        const cmp = DATA[mid] < target
+          ? `${DATA[mid]} < ${target} → search right half`
+          : DATA[mid] > target
+          ? `${DATA[mid]} > ${target} → search left half`
+          : '';
+        status.textContent = `low=${low} high=${high} mid=${mid} | arr[${mid}]=${DATA[mid]}  ${cmp}`;
+        status.style.color = '#999';
+      } else {
+        status.textContent = `low=${low} high=${high} — click Step to begin`;
+        status.style.color = '#999';
+      }
+    }
+
+    function reset() {
+      low = 0;
+      high = DATA.length - 1;
+      mid = undefined;
+      found = false;
+      done = false;
+      eliminated = new Set();
+      render();
+    }
+
+    window.bsStep = function() {
+      if (found || done) return;
+      const target = getTarget();
+
+      if (mid !== undefined) {
+        if (DATA[mid] < target) {
+          for (let i = low; i <= mid; i++) eliminated.add(i);
+          low = mid + 1;
+        } else if (DATA[mid] > target) {
+          for (let i = mid; i <= high; i++) eliminated.add(i);
+          high = mid - 1;
+        }
+      }
+
+      if (low > high) {
+        done = true;
+        mid = undefined;
+        render();
+        return;
+      }
+
+      mid = low + Math.floor((high - low) / 2);
+      if (DATA[mid] === target) {
+        found = true;
+      }
+      render();
+    };
+
+    window.bsReset = reset;
+    targetInput.addEventListener('change', reset);
+    reset();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Binary Search — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

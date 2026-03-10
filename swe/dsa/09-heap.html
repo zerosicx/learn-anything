@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heap / Priority Queue — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Heap / Priority Queue</h1>
+  <p class="subtitle">Efficiently access the minimum or maximum element — the backbone of priority queues, scheduling, and top-K problems</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Priority</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. What is a Heap? ─── -->
+  <h2>What is a Heap?</h2>
+  <p>A <strong>heap</strong> is a <em>complete binary tree</em> stored as an array, where every parent satisfies a heap ordering property relative to its children. In a <strong>min-heap</strong>, every parent is ≤ its children; in a <strong>max-heap</strong>, every parent is ≥ its children.</p>
+
+  <p>"Complete binary tree" means every level is fully filled except possibly the last, which is filled left to right. This property lets us store the tree flat in an array with no wasted space — no pointers needed.</p>
+
+  <div class="key-concept">
+    <strong>Parent/child index formulas (0-indexed):</strong>
+    <ul>
+      <li><strong>Parent of i:</strong> <code>Math.floor((i - 1) / 2)</code></li>
+      <li><strong>Left child of i:</strong> <code>2 * i + 1</code></li>
+      <li><strong>Right child of i:</strong> <code>2 * i + 2</code></li>
+    </ul>
+    These formulas are all you need to navigate the tree without any node/pointer objects.
+  </div>
+
+  <p>Why does this matter? A heap gives you O(1) access to the min (or max) element while supporting O(log n) insertion and removal. This makes it the natural choice whenever you need to repeatedly ask "what's the most urgent item?" — task schedulers, Dijkstra's algorithm, median-finding, and merge-K-sorted-anything problems.</p>
+
+  <!-- ─── 2. Heap Diagram ─── -->
+  <h2>Heap Structure</h2>
+  <p>Here's a min-heap shown both as a tree and its underlying array. Notice how the array fills level-by-level, left to right.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;">
+      <g font-family="JetBrains Mono, monospace" font-size="13" text-anchor="middle">
+        <!-- Tree side label -->
+        <text x="180" y="16" font-family="DM Sans" font-size="11" fill="#999" font-weight="500">TREE VIEW</text>
+
+        <!-- Tree edges -->
+        <line x1="180" y1="45" x2="100" y2="100" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="180" y1="45" x2="260" y2="100" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="100" y1="130" x2="60" y2="185" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="100" y1="130" x2="140" y2="185" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="260" y1="130" x2="220" y2="185" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="260" y1="130" x2="300" y2="185" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="60" y1="215" x2="40" y2="260" stroke="#e2ddd5" stroke-width="2"/>
+
+        <!-- Root: 1 -->
+        <circle cx="180" cy="40" r="18" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="180" y="45" fill="#4a7050" font-weight="600">1</text>
+        <text x="180" y="68" font-size="9" fill="#999">i=0</text>
+
+        <!-- Level 1 -->
+        <circle cx="100" cy="115" r="18" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="100" y="120">3</text>
+        <text x="100" y="143" font-size="9" fill="#999">i=1</text>
+
+        <circle cx="260" cy="115" r="18" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="260" y="120">5</text>
+        <text x="260" y="143" font-size="9" fill="#999">i=2</text>
+
+        <!-- Level 2 -->
+        <circle cx="60" cy="200" r="18" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="60" y="205">7</text>
+        <text x="60" y="228" font-size="9" fill="#999">i=3</text>
+
+        <circle cx="140" cy="200" r="18" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="140" y="205">9</text>
+        <text x="140" y="228" font-size="9" fill="#999">i=4</text>
+
+        <circle cx="220" cy="200" r="18" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="220" y="205">8</text>
+        <text x="220" y="228" font-size="9" fill="#999">i=5</text>
+
+        <circle cx="300" cy="200" r="18" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="300" y="205">10</text>
+        <text x="300" y="228" font-size="9" fill="#999">i=6</text>
+
+        <!-- Level 3 (partial) -->
+        <circle cx="40" cy="270" r="16" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="40" y="275" font-size="12">12</text>
+        <text x="40" y="296" font-size="9" fill="#999">i=7</text>
+
+        <!-- Divider -->
+        <line x1="370" y1="20" x2="370" y2="290" stroke="#e2ddd5" stroke-width="1" stroke-dasharray="4"/>
+
+        <!-- Array side label -->
+        <text x="540" y="16" font-family="DM Sans" font-size="11" fill="#999" font-weight="500">ARRAY VIEW</text>
+
+        <!-- Array cells -->
+        <rect x="400" y="30" width="42" height="38" rx="4" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="421" y="55" fill="#4a7050" font-weight="600">1</text>
+        <text x="421" y="82" font-size="9" fill="#999">0</text>
+
+        <rect x="446" y="30" width="42" height="38" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="467" y="55">3</text>
+        <text x="467" y="82" font-size="9" fill="#999">1</text>
+
+        <rect x="492" y="30" width="42" height="38" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="513" y="55">5</text>
+        <text x="513" y="82" font-size="9" fill="#999">2</text>
+
+        <rect x="538" y="30" width="42" height="38" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="559" y="55">7</text>
+        <text x="559" y="82" font-size="9" fill="#999">3</text>
+
+        <rect x="584" y="30" width="42" height="38" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="605" y="55">9</text>
+        <text x="605" y="82" font-size="9" fill="#999">4</text>
+
+        <rect x="630" y="30" width="42" height="38" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="651" y="55">8</text>
+        <text x="651" y="82" font-size="9" fill="#999">5</text>
+
+        <!-- Second row of array -->
+        <rect x="400" y="100" width="42" height="38" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="421" y="125">10</text>
+        <text x="421" y="152" font-size="9" fill="#999">6</text>
+
+        <rect x="446" y="100" width="42" height="38" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="467" y="125">12</text>
+        <text x="467" y="152" font-size="9" fill="#999">7</text>
+
+        <!-- Arrows showing parent/child -->
+        <text x="540" y="185" font-family="DM Sans" font-size="10" fill="#c0614a" text-anchor="start">parent(i) = ⌊(i−1)/2⌋</text>
+        <text x="540" y="205" font-family="DM Sans" font-size="10" fill="#c0614a" text-anchor="start">left(i) = 2i + 1</text>
+        <text x="540" y="225" font-family="DM Sans" font-size="10" fill="#c0614a" text-anchor="start">right(i) = 2i + 2</text>
+
+        <!-- Example arrow -->
+        <text x="540" y="260" font-family="DM Sans" font-size="10" fill="#999" text-anchor="start">e.g. parent(5) = ⌊4/2⌋ = 2 → value 5</text>
+        <text x="540" y="280" font-family="DM Sans" font-size="10" fill="#999" text-anchor="start">left(1) = 3 → value 7</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 3. MinHeap Implementation ─── -->
+  <h2>Implementing a MinHeap in TypeScript</h2>
+  <p>The two core operations are <strong>bubble up</strong> (after insertion) and <strong>bubble down</strong> (after extraction). Every other operation builds on these.</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">MinHeap</span> {
+  <span class="kw">private</span> data: <span class="tp">number</span>[] = [];
+
+  <span class="kw">get</span> <span class="fn">size</span>(): <span class="tp">number</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.data.length;
+  }
+
+  <span class="fn">peek</span>(): <span class="tp">number</span> | <span class="tp">undefined</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.data[<span class="num">0</span>];
+  }
+
+  <span class="fn">insert</span>(val: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">this</span>.data.<span class="fn">push</span>(val);
+    <span class="kw">this</span>.<span class="fn">bubbleUp</span>(<span class="kw">this</span>.data.length - <span class="num">1</span>);
+  }
+
+  <span class="fn">extractMin</span>(): <span class="tp">number</span> | <span class="tp">undefined</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>.data.length === <span class="num">0</span>) <span class="kw">return undefined</span>;
+    <span class="kw">const</span> min = <span class="kw">this</span>.data[<span class="num">0</span>];
+    <span class="kw">const</span> last = <span class="kw">this</span>.data.<span class="fn">pop</span>()!;
+    <span class="kw">if</span> (<span class="kw">this</span>.data.length > <span class="num">0</span>) {
+      <span class="kw">this</span>.data[<span class="num">0</span>] = last;
+      <span class="kw">this</span>.<span class="fn">bubbleDown</span>(<span class="num">0</span>);
+    }
+    <span class="kw">return</span> min;
+  }
+
+  <span class="kw">private</span> <span class="fn">bubbleUp</span>(i: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">while</span> (i > <span class="num">0</span>) {
+      <span class="kw">const</span> parent = Math.<span class="fn">floor</span>((i - <span class="num">1</span>) / <span class="num">2</span>);
+      <span class="kw">if</span> (<span class="kw">this</span>.data[i] >= <span class="kw">this</span>.data[parent]) <span class="kw">break</span>;
+      [<span class="kw">this</span>.data[i], <span class="kw">this</span>.data[parent]] = [<span class="kw">this</span>.data[parent], <span class="kw">this</span>.data[i]];
+      i = parent;
+    }
+  }
+
+  <span class="kw">private</span> <span class="fn">bubbleDown</span>(i: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">const</span> n = <span class="kw">this</span>.data.length;
+    <span class="kw">while</span> (<span class="kw">true</span>) {
+      <span class="kw">let</span> smallest = i;
+      <span class="kw">const</span> left = <span class="num">2</span> * i + <span class="num">1</span>;
+      <span class="kw">const</span> right = <span class="num">2</span> * i + <span class="num">2</span>;
+
+      <span class="kw">if</span> (left &lt; n &amp;&amp; <span class="kw">this</span>.data[left] &lt; <span class="kw">this</span>.data[smallest]) smallest = left;
+      <span class="kw">if</span> (right &lt; n &amp;&amp; <span class="kw">this</span>.data[right] &lt; <span class="kw">this</span>.data[smallest]) smallest = right;
+      <span class="kw">if</span> (smallest === i) <span class="kw">break</span>;
+
+      [<span class="kw">this</span>.data[i], <span class="kw">this</span>.data[smallest]] = [<span class="kw">this</span>.data[smallest], <span class="kw">this</span>.data[i]];
+      i = smallest;
+    }
+  }
+}</code></pre>
+
+  <div class="tip">
+    <h4>Bubble Up vs Bubble Down</h4>
+    <p><strong>Bubble up</strong> moves a node upward by swapping with its parent until the heap property holds — used after insertion at the bottom. <strong>Bubble down</strong> moves a node downward by swapping with its smallest child — used after placing the last element at the root during extraction. Both are O(log n) since the tree height is log n.</p>
+  </div>
+
+  <!-- ─── 4. MaxHeap ─── -->
+  <h2>MaxHeap</h2>
+  <p>A max-heap is identical to a min-heap with the comparison flipped. Rather than duplicating the entire class, we can parameterise with a comparator — but for clarity, here's the minimal change:</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">MaxHeap</span> {
+  <span class="kw">private</span> data: <span class="tp">number</span>[] = [];
+
+  <span class="fn">insert</span>(val: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">this</span>.data.<span class="fn">push</span>(val);
+    <span class="kw">this</span>.<span class="fn">bubbleUp</span>(<span class="kw">this</span>.data.length - <span class="num">1</span>);
+  }
+
+  <span class="fn">extractMax</span>(): <span class="tp">number</span> | <span class="tp">undefined</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>.data.length === <span class="num">0</span>) <span class="kw">return undefined</span>;
+    <span class="kw">const</span> max = <span class="kw">this</span>.data[<span class="num">0</span>];
+    <span class="kw">const</span> last = <span class="kw">this</span>.data.<span class="fn">pop</span>()!;
+    <span class="kw">if</span> (<span class="kw">this</span>.data.length > <span class="num">0</span>) {
+      <span class="kw">this</span>.data[<span class="num">0</span>] = last;
+      <span class="kw">this</span>.<span class="fn">bubbleDown</span>(<span class="num">0</span>);
+    }
+    <span class="kw">return</span> max;
+  }
+
+  <span class="kw">private</span> <span class="fn">bubbleUp</span>(i: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">while</span> (i > <span class="num">0</span>) {
+      <span class="kw">const</span> parent = Math.<span class="fn">floor</span>((i - <span class="num">1</span>) / <span class="num">2</span>);
+      <span class="kw">if</span> (<span class="kw">this</span>.data[i] &lt;= <span class="kw">this</span>.data[parent]) <span class="kw">break</span>; <span class="cm">// ← flipped</span>
+      [<span class="kw">this</span>.data[i], <span class="kw">this</span>.data[parent]] = [<span class="kw">this</span>.data[parent], <span class="kw">this</span>.data[i]];
+      i = parent;
+    }
+  }
+
+  <span class="kw">private</span> <span class="fn">bubbleDown</span>(i: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">const</span> n = <span class="kw">this</span>.data.length;
+    <span class="kw">while</span> (<span class="kw">true</span>) {
+      <span class="kw">let</span> largest = i;
+      <span class="kw">const</span> left = <span class="num">2</span> * i + <span class="num">1</span>;
+      <span class="kw">const</span> right = <span class="num">2</span> * i + <span class="num">2</span>;
+
+      <span class="kw">if</span> (left &lt; n &amp;&amp; <span class="kw">this</span>.data[left] > <span class="kw">this</span>.data[largest]) largest = left;
+      <span class="kw">if</span> (right &lt; n &amp;&amp; <span class="kw">this</span>.data[right] > <span class="kw">this</span>.data[largest]) largest = right;
+      <span class="kw">if</span> (largest === i) <span class="kw">break</span>;
+
+      [<span class="kw">this</span>.data[i], <span class="kw">this</span>.data[largest]] = [<span class="kw">this</span>.data[largest], <span class="kw">this</span>.data[i]];
+      i = largest;
+    }
+  }
+}</code></pre>
+
+  <div class="warning">
+    <h4>Generic Heap</h4>
+    <p>In production code, use a single <code>Heap&lt;T&gt;</code> class that accepts a <code>comparator: (a: T, b: T) =&gt; number</code>. Pass <code>(a, b) =&gt; a - b</code> for min-heap, <code>(a, b) =&gt; b - a</code> for max-heap. This avoids code duplication and supports custom types.</p>
+  </div>
+
+  <!-- ─── 5. Heap Sort ─── -->
+  <h2>Heap Sort</h2>
+  <p>Heap sort works in two phases: build a max-heap from the input, then repeatedly extract the max and place it at the end. It achieves O(n log n) worst-case time and O(1) extra space (in-place).</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">heapSort</span>(arr: <span class="tp">number</span>[]): <span class="tp">number</span>[] {
+  <span class="kw">const</span> n = arr.length;
+
+  <span class="kw">function</span> <span class="fn">siftDown</span>(i: <span class="tp">number</span>, size: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">while</span> (<span class="kw">true</span>) {
+      <span class="kw">let</span> largest = i;
+      <span class="kw">const</span> left = <span class="num">2</span> * i + <span class="num">1</span>;
+      <span class="kw">const</span> right = <span class="num">2</span> * i + <span class="num">2</span>;
+      <span class="kw">if</span> (left &lt; size &amp;&amp; arr[left] > arr[largest]) largest = left;
+      <span class="kw">if</span> (right &lt; size &amp;&amp; arr[right] > arr[largest]) largest = right;
+      <span class="kw">if</span> (largest === i) <span class="kw">break</span>;
+      [arr[i], arr[largest]] = [arr[largest], arr[i]];
+      i = largest;
+    }
+  }
+
+  <span class="cm">// Phase 1: Build max-heap (bottom-up)</span>
+  <span class="kw">for</span> (<span class="kw">let</span> i = Math.<span class="fn">floor</span>(n / <span class="num">2</span>) - <span class="num">1</span>; i >= <span class="num">0</span>; i--) {
+    <span class="fn">siftDown</span>(i, n);
+  }
+
+  <span class="cm">// Phase 2: Extract max repeatedly</span>
+  <span class="kw">for</span> (<span class="kw">let</span> end = n - <span class="num">1</span>; end > <span class="num">0</span>; end--) {
+    [arr[<span class="num">0</span>], arr[end]] = [arr[end], arr[<span class="num">0</span>]];
+    <span class="fn">siftDown</span>(<span class="num">0</span>, end);
+  }
+
+  <span class="kw">return</span> arr;
+}
+
+<span class="cm">// heapSort([4, 10, 3, 5, 1])  → [1, 3, 4, 5, 10]</span></code></pre>
+
+  <div class="key-concept">
+    <strong>Why build the heap bottom-up?</strong> Calling siftDown from the last non-leaf node backwards is O(n), not O(n log n). Leaf nodes (roughly half the array) need no work. Nodes one level up need at most 1 swap. This "heapify" trick is faster than inserting n elements one by one.
+  </div>
+
+  <!-- ─── 6. Top K Elements ─── -->
+  <h2>Top K Elements Pattern</h2>
+  <p>Finding the k largest elements in an array is a classic heap problem. The key insight: maintain a <strong>min-heap of size k</strong>. For every new element, if it's larger than the heap's minimum, swap it in. At the end, the heap contains exactly the k largest elements.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">topKLargest</span>(nums: <span class="tp">number</span>[], k: <span class="tp">number</span>): <span class="tp">number</span>[] {
+  <span class="kw">const</span> heap = <span class="kw">new</span> <span class="tp">MinHeap</span>();
+
+  <span class="kw">for</span> (<span class="kw">const</span> num <span class="kw">of</span> nums) {
+    heap.<span class="fn">insert</span>(num);
+    <span class="kw">if</span> (heap.size > k) {
+      heap.<span class="fn">extractMin</span>(); <span class="cm">// evict smallest — only k largest remain</span>
+    }
+  }
+
+  <span class="kw">const</span> result: <span class="tp">number</span>[] = [];
+  <span class="kw">while</span> (heap.size > <span class="num">0</span>) {
+    result.<span class="fn">push</span>(heap.<span class="fn">extractMin</span>()!);
+  }
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// topKLargest([3, 1, 5, 12, 2, 11], 3)  → [5, 11, 12]</span></code></pre>
+
+  <div class="tip">
+    <h4>Why min-heap for largest?</h4>
+    <p>It sounds backwards, but the min-heap acts as a gatekeeper. Its root is the <em>smallest of the k largest</em> seen so far. Any new element must beat that threshold to enter the top-k club. Time: O(n log k). Space: O(k).</p>
+  </div>
+
+  <!-- ─── 7. Merge K Sorted Lists ─── -->
+  <h2>Merge K Sorted Lists</h2>
+  <p>Given k sorted arrays, merge them into one sorted array. Use a min-heap to always pick the globally smallest among the k current heads.</p>
+
+  <pre><code><span class="kw">interface</span> <span class="tp">HeapEntry</span> {
+  val: <span class="tp">number</span>;
+  listIdx: <span class="tp">number</span>;
+  elemIdx: <span class="tp">number</span>;
+}
+
+<span class="kw">function</span> <span class="fn">mergeKSorted</span>(lists: <span class="tp">number</span>[][]): <span class="tp">number</span>[] {
+  <span class="kw">const</span> result: <span class="tp">number</span>[] = [];
+
+  <span class="cm">// Simple heap using array + comparator</span>
+  <span class="kw">const</span> heap: <span class="tp">HeapEntry</span>[] = [];
+
+  <span class="kw">function</span> <span class="fn">push</span>(entry: <span class="tp">HeapEntry</span>): <span class="kw">void</span> {
+    heap.<span class="fn">push</span>(entry);
+    <span class="kw">let</span> i = heap.length - <span class="num">1</span>;
+    <span class="kw">while</span> (i > <span class="num">0</span>) {
+      <span class="kw">const</span> p = Math.<span class="fn">floor</span>((i - <span class="num">1</span>) / <span class="num">2</span>);
+      <span class="kw">if</span> (heap[i].val >= heap[p].val) <span class="kw">break</span>;
+      [heap[i], heap[p]] = [heap[p], heap[i]];
+      i = p;
+    }
+  }
+
+  <span class="kw">function</span> <span class="fn">pop</span>(): <span class="tp">HeapEntry</span> {
+    <span class="kw">const</span> top = heap[<span class="num">0</span>];
+    <span class="kw">const</span> last = heap.<span class="fn">pop</span>()!;
+    <span class="kw">if</span> (heap.length > <span class="num">0</span>) {
+      heap[<span class="num">0</span>] = last;
+      <span class="kw">let</span> i = <span class="num">0</span>;
+      <span class="kw">while</span> (<span class="kw">true</span>) {
+        <span class="kw">let</span> s = i, l = <span class="num">2</span>*i+<span class="num">1</span>, r = <span class="num">2</span>*i+<span class="num">2</span>;
+        <span class="kw">if</span> (l &lt; heap.length &amp;&amp; heap[l].val &lt; heap[s].val) s = l;
+        <span class="kw">if</span> (r &lt; heap.length &amp;&amp; heap[r].val &lt; heap[s].val) s = r;
+        <span class="kw">if</span> (s === i) <span class="kw">break</span>;
+        [heap[i], heap[s]] = [heap[s], heap[i]];
+        i = s;
+      }
+    }
+    <span class="kw">return</span> top;
+  }
+
+  <span class="cm">// Seed heap with first element from each list</span>
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; lists.length; i++) {
+    <span class="kw">if</span> (lists[i].length > <span class="num">0</span>) {
+      <span class="fn">push</span>({ val: lists[i][<span class="num">0</span>], listIdx: i, elemIdx: <span class="num">0</span> });
+    }
+  }
+
+  <span class="kw">while</span> (heap.length > <span class="num">0</span>) {
+    <span class="kw">const</span> { val, listIdx, elemIdx } = <span class="fn">pop</span>();
+    result.<span class="fn">push</span>(val);
+    <span class="kw">if</span> (elemIdx + <span class="num">1</span> &lt; lists[listIdx].length) {
+      <span class="fn">push</span>({ val: lists[listIdx][elemIdx + <span class="num">1</span>], listIdx, elemIdx: elemIdx + <span class="num">1</span> });
+    }
+  }
+
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// mergeKSorted([[1,4,7], [2,5,8], [3,6,9]])</span>
+<span class="cm">// → [1, 2, 3, 4, 5, 6, 7, 8, 9]</span></code></pre>
+
+  <div class="key-concept">
+    <strong>Complexity:</strong> With k lists and n total elements, the heap never exceeds size k. Each of the n elements is pushed and popped once → O(n log k) time, O(k) space.
+  </div>
+
+  <!-- ─── 8. Complexity Table ─── -->
+  <h2>Complexity Summary</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Operation</th>
+        <th>Time</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>peek (min/max)</td>
+        <td><span class="complexity good">O(1)</span></td>
+        <td>Root of the array</td>
+      </tr>
+      <tr>
+        <td>insert</td>
+        <td><span class="complexity ok">O(log n)</span></td>
+        <td>Append + bubble up</td>
+      </tr>
+      <tr>
+        <td>extractMin/Max</td>
+        <td><span class="complexity ok">O(log n)</span></td>
+        <td>Swap root with last + bubble down</td>
+      </tr>
+      <tr>
+        <td>heapify (build)</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td>Bottom-up sift down</td>
+      </tr>
+      <tr>
+        <td>heap sort</td>
+        <td><span class="complexity ok">O(n log n)</span></td>
+        <td>Build + n extractions</td>
+      </tr>
+      <tr>
+        <td>top-k</td>
+        <td><span class="complexity ok">O(n log k)</span></td>
+        <td>Heap of size k</td>
+      </tr>
+      <tr>
+        <td>merge k sorted</td>
+        <td><span class="complexity ok">O(n log k)</span></td>
+        <td>n total elements, heap of size k</td>
+      </tr>
+      <tr>
+        <td>Space</td>
+        <td><span class="complexity good">O(n)</span></td>
+        <td>Array-backed, no pointers</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ─── 9. Interactive Visualisation ─── -->
+  <h2>Interactive: Min-Heap Operations</h2>
+  <p>Insert random numbers and extract the minimum. Watch the bubble-up and bubble-down process animate through the tree.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls">
+      <button class="viz-btn" id="heap-insert-btn">Insert Random</button>
+      <button class="viz-btn secondary" id="heap-extract-btn">Extract Min</button>
+      <button class="viz-btn secondary" id="heap-reset-btn">Reset</button>
+    </div>
+    <div style="text-align:center; padding:0.5rem 0; overflow-x:auto;">
+      <svg id="heap-svg" viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg" style="max-width:600px; min-height:200px;"></svg>
+    </div>
+    <p id="heap-status" style="font-size:0.82rem; color:#999; margin-top:0.5rem; margin-bottom:0;">Heap: [5, 12, 8, 15, 20, 10]</p>
+  </div>
+
+  <script>
+  (function() {
+    const svg = document.getElementById('heap-svg');
+    const status = document.getElementById('heap-status');
+    let heap = [5, 12, 8, 15, 20, 10];
+    let highlighted = new Set();
+    let animating = false;
+
+    function swap(i, j) {
+      [heap[i], heap[j]] = [heap[j], heap[i]];
+    }
+
+    function getPositions(n) {
+      const positions = [];
+      const levels = Math.ceil(Math.log2(n + 1));
+      const height = Math.max(280, levels * 70);
+      const width = 600;
+      for (let i = 0; i < n; i++) {
+        const level = Math.floor(Math.log2(i + 1));
+        const posInLevel = i - (Math.pow(2, level) - 1);
+        const nodesInLevel = Math.pow(2, level);
+        const spacing = width / (nodesInLevel + 1);
+        positions.push({
+          x: spacing * (posInLevel + 1),
+          y: 40 + level * 65
+        });
+      }
+      return positions;
+    }
+
+    function render() {
+      const n = heap.length;
+      if (n === 0) {
+        svg.innerHTML = '<text x="300" y="40" text-anchor="middle" font-family="DM Sans" font-size="13" fill="#999">Empty heap — insert a value</text>';
+        status.textContent = 'Heap: []';
+        return;
+      }
+
+      const positions = getPositions(n);
+      const maxLevel = Math.floor(Math.log2(n));
+      const svgH = Math.max(200, (maxLevel + 1) * 65 + 60);
+      svg.setAttribute('viewBox', `0 0 600 ${svgH}`);
+
+      let html = '';
+
+      for (let i = 0; i < n; i++) {
+        const parent = Math.floor((i - 1) / 2);
+        if (i > 0) {
+          const p = positions[parent];
+          const c = positions[i];
+          html += `<line x1="${p.x}" y1="${p.y}" x2="${c.x}" y2="${c.y}" stroke="#e2ddd5" stroke-width="2"/>`;
+        }
+      }
+
+      for (let i = 0; i < n; i++) {
+        const pos = positions[i];
+        const isHL = highlighted.has(i);
+        const fill = isHL ? '#c0614a' : (i === 0 ? '#e8f3e9' : '#faf6f0');
+        const stroke = isHL ? '#c0614a' : (i === 0 ? '#7a9e7e' : '#2c2c2c');
+        const textFill = isHL ? '#fff' : (i === 0 ? '#4a7050' : '#2c2c2c');
+
+        html += `<circle cx="${pos.x}" cy="${pos.y}" r="20" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+        html += `<text x="${pos.x}" y="${pos.y + 5}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" fill="${textFill}" font-weight="${i === 0 ? 600 : 400}">${heap[i]}</text>`;
+      }
+
+      svg.innerHTML = html;
+      status.textContent = `Heap: [${heap.join(', ')}]`;
+      status.style.color = '#999';
+    }
+
+    async function animateBubbleUp(i) {
+      animating = true;
+      highlighted.clear();
+      highlighted.add(i);
+      render();
+      await sleep(400);
+
+      while (i > 0) {
+        const parent = Math.floor((i - 1) / 2);
+        highlighted.clear();
+        highlighted.add(i);
+        highlighted.add(parent);
+        render();
+        await sleep(500);
+
+        if (heap[i] >= heap[parent]) break;
+
+        swap(i, parent);
+        highlighted.clear();
+        highlighted.add(parent);
+        render();
+        await sleep(400);
+        i = parent;
+      }
+
+      highlighted.clear();
+      render();
+      animating = false;
+    }
+
+    async function animateBubbleDown(i) {
+      animating = true;
+      highlighted.clear();
+      highlighted.add(i);
+      render();
+      await sleep(400);
+
+      const n = heap.length;
+      while (true) {
+        let smallest = i;
+        const left = 2 * i + 1;
+        const right = 2 * i + 2;
+        if (left < n && heap[left] < heap[smallest]) smallest = left;
+        if (right < n && heap[right] < heap[smallest]) smallest = right;
+
+        highlighted.clear();
+        highlighted.add(i);
+        if (left < n) highlighted.add(left);
+        if (right < n) highlighted.add(right);
+        render();
+        await sleep(500);
+
+        if (smallest === i) break;
+
+        swap(i, smallest);
+        highlighted.clear();
+        highlighted.add(smallest);
+        render();
+        await sleep(400);
+        i = smallest;
+      }
+
+      highlighted.clear();
+      render();
+      animating = false;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    document.getElementById('heap-insert-btn').addEventListener('click', async () => {
+      if (animating) return;
+      const val = Math.floor(Math.random() * 50) + 1;
+      heap.push(val);
+      status.textContent = `Inserting ${val}...`;
+      status.style.color = '#c0614a';
+      await animateBubbleUp(heap.length - 1);
+    });
+
+    document.getElementById('heap-extract-btn').addEventListener('click', async () => {
+      if (animating || heap.length === 0) return;
+      const min = heap[0];
+      status.textContent = `Extracting min (${min})...`;
+      status.style.color = '#c0614a';
+
+      const last = heap.pop();
+      if (heap.length > 0) {
+        heap[0] = last;
+        await animateBubbleDown(0);
+      } else {
+        highlighted.clear();
+        render();
+      }
+    });
+
+    document.getElementById('heap-reset-btn').addEventListener('click', () => {
+      if (animating) return;
+      heap = [5, 12, 8, 15, 20, 10];
+      highlighted.clear();
+      render();
+    });
+
+    render();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Heap / Priority Queue — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sliding Window — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Sliding Window</h1>
+  <p class="subtitle">Efficiently processing contiguous subarrays and substrings by maintaining a moving window over the data</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Pattern</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. The Sliding Window Technique ─── -->
+  <h2>The Sliding Window Technique</h2>
+  <p>Many problems ask you to find or compute something over <strong>contiguous subarrays</strong> or <strong>substrings</strong>. The brute-force approach — checking every possible subarray — runs in O(n²) or worse. The sliding window technique reduces this to O(n) by maintaining a window that slides across the data, reusing computation from the previous position.</p>
+  <p>The key insight: when the window moves one position right, you only need to add one new element and remove one old element, rather than recomputing from scratch.</p>
+
+  <div class="key-concept">
+    <strong>When to use sliding window:</strong> The problem involves a contiguous sequence (subarray or substring), and you need to find a maximum, minimum, longest, shortest, or count that satisfies some condition. If "contiguous" is a requirement, sliding window is likely the right pattern.
+  </div>
+
+  <h3>Fixed vs Variable Window</h3>
+  <p>There are two flavours of sliding window:</p>
+  <ul>
+    <li><strong>Fixed-size window:</strong> The window length is given (e.g., "find max sum of k consecutive elements"). You slide a window of exactly size k across the array.</li>
+    <li><strong>Variable-size window:</strong> The window grows and shrinks to satisfy a condition (e.g., "find the smallest subarray with sum ≥ target"). You expand the right boundary to include more, then contract the left boundary to find the optimum.</li>
+  </ul>
+
+  <!-- ─── 2. Fixed-Size Window ─── -->
+  <h2>Fixed-Size Window</h2>
+  <p>The simplest variant: find the maximum sum of any subarray of exactly size <code>k</code>. Instead of summing k elements for each starting position (O(nk)), maintain a running sum and update it as the window slides.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">maxSumSubarray</span>(nums: <span class="tp">number</span>[], k: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">if</span> (nums.length &lt; k) <span class="kw">return</span> <span class="num">0</span>;
+
+  <span class="cm">// Build the first window</span>
+  <span class="kw">let</span> windowSum = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; k; i++) {
+    windowSum += nums[i];
+  }
+
+  <span class="kw">let</span> maxSum = windowSum;
+
+  <span class="cm">// Slide: add the next element, remove the leftmost</span>
+  <span class="kw">for</span> (<span class="kw">let</span> i = k; i &lt; nums.length; i++) {
+    windowSum += nums[i] - nums[i - k];
+    maxSum = <span class="fn">Math</span>.<span class="fn">max</span>(maxSum, windowSum);
+  }
+
+  <span class="kw">return</span> maxSum;
+}
+
+<span class="cm">// maxSumSubarray([2, 1, 5, 1, 3, 2], 3) → 9 (subarray [5, 1, 3])</span></code></pre>
+
+  <p>Each iteration does O(1) work — one addition and one subtraction — making the total time O(n).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 620 200" xmlns="http://www.w3.org/2000/svg" style="max-width:620px;">
+      <g font-family="JetBrains Mono, monospace" font-size="13" text-anchor="middle">
+        <!-- Array cells -->
+        <rect x="60"  y="60" width="50" height="40" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="85"  y="85">2</text>
+        <rect x="115" y="60" width="50" height="40" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="140" y="85">1</text>
+        <rect x="170" y="60" width="50" height="40" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="195" y="85">5</text>
+        <rect x="225" y="60" width="50" height="40" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="250" y="85">1</text>
+        <rect x="280" y="60" width="50" height="40" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="305" y="85">3</text>
+        <rect x="335" y="60" width="50" height="40" rx="4" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="360" y="85">2</text>
+
+        <!-- Window positions (k=3) -->
+        <rect x="58"  y="58" width="164" height="44" rx="6" fill="none" stroke="#c0614a" stroke-width="2" stroke-dasharray="6,3" opacity="0.4"/>
+        <text x="140" y="50" font-size="10" fill="#c0614a" font-family="DM Sans">sum = 8</text>
+
+        <rect x="113" y="58" width="164" height="44" rx="6" fill="none" stroke="#c0614a" stroke-width="2" stroke-dasharray="6,3" opacity="0.6"/>
+        <text x="195" y="125" font-size="10" fill="#c0614a" font-family="DM Sans">sum = 7</text>
+
+        <rect x="168" y="58" width="164" height="44" rx="6" fill="none" stroke="#e8a090" stroke-width="2.5" opacity="0.85"/>
+        <text x="250" y="50" font-size="10" fill="#4a7050" font-weight="700" font-family="DM Sans">sum = 9 ✓ max</text>
+
+        <rect x="223" y="58" width="164" height="44" rx="6" fill="none" stroke="#c0614a" stroke-width="2" stroke-dasharray="6,3" opacity="0.4"/>
+        <text x="305" y="125" font-size="10" fill="#c0614a" font-family="DM Sans">sum = 6</text>
+
+        <!-- Arrow showing direction -->
+        <line x1="80" y1="160" x2="380" y2="160" stroke="#999" stroke-width="1.5" marker-end="url(#arrowSW)"/>
+        <text x="230" y="180" font-family="DM Sans" font-size="11" fill="#999">window slides right →</text>
+        <defs><marker id="arrowSW" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#999"/></marker></defs>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 3. Variable-Size Window ─── -->
+  <h2>Variable-Size Window</h2>
+  <p>When the window size isn't fixed, you expand and contract it dynamically. The general template:</p>
+
+  <div class="pattern-box">
+    <h4>Variable Window Template</h4>
+    <pre><code><span class="kw">function</span> <span class="fn">variableWindow</span>(input: <span class="tp">string</span> | <span class="tp">number</span>[]): <span class="tp">number</span> {
+  <span class="kw">let</span> left = <span class="num">0</span>;
+  <span class="kw">let</span> result = <span class="num">0</span>;  <span class="cm">// or Infinity, depending on min/max</span>
+
+  <span class="kw">for</span> (<span class="kw">let</span> right = <span class="num">0</span>; right &lt; input.length; right++) {
+    <span class="cm">// 1. Expand: add input[right] to window state</span>
+
+    <span class="cm">// 2. Contract: while window is invalid, shrink from left</span>
+    <span class="kw">while</span> (<span class="cm">/* window is invalid */</span>) {
+      <span class="cm">// Remove input[left] from window state</span>
+      left++;
+    }
+
+    <span class="cm">// 3. Update result with current valid window</span>
+    result = <span class="fn">Math</span>.<span class="fn">max</span>(result, right - left + <span class="num">1</span>);
+  }
+
+  <span class="kw">return</span> result;
+}</code></pre>
+  </div>
+
+  <p>The outer loop moves <code>right</code> forward. The inner <code>while</code> shrinks the window by advancing <code>left</code> until the window satisfies the constraint again. Despite the nested loop, each element is added and removed at most once, so the total work is O(n).</p>
+
+  <!-- ─── 4. Longest Substring Without Repeating Characters ─── -->
+  <h2>Longest Substring Without Repeating Characters</h2>
+  <p>Given a string, find the length of the longest substring that contains no duplicate characters. This is the classic variable-window problem — expand right to include new characters, and contract left whenever a duplicate enters the window.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">lengthOfLongestSubstring</span>(s: <span class="tp">string</span>): <span class="tp">number</span> {
+  <span class="kw">const</span> seen = <span class="kw">new</span> <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt;(); <span class="cm">// char → most recent index</span>
+  <span class="kw">let</span> left = <span class="num">0</span>;
+  <span class="kw">let</span> maxLen = <span class="num">0</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> right = <span class="num">0</span>; right &lt; s.length; right++) {
+    <span class="kw">const</span> char = s[right];
+
+    <span class="cm">// If char was seen and is within current window, jump left past it</span>
+    <span class="kw">if</span> (seen.<span class="fn">has</span>(char) &amp;&amp; seen.<span class="fn">get</span>(char)! &gt;= left) {
+      left = seen.<span class="fn">get</span>(char)! + <span class="num">1</span>;
+    }
+
+    seen.<span class="fn">set</span>(char, right);
+    maxLen = <span class="fn">Math</span>.<span class="fn">max</span>(maxLen, right - left + <span class="num">1</span>);
+  }
+
+  <span class="kw">return</span> maxLen;
+}
+
+<span class="cm">// lengthOfLongestSubstring("abcabcbb") → 3 ("abc")</span>
+<span class="cm">// lengthOfLongestSubstring("bbbbb")    → 1 ("b")</span>
+<span class="cm">// lengthOfLongestSubstring("pwwkew")   → 3 ("wke")</span></code></pre>
+
+  <div class="tip">
+    <h4>Why a Map instead of a Set?</h4>
+    <p>A Set only tells you <em>whether</em> a character is in the window. A Map storing the character's <em>index</em> lets you jump <code>left</code> directly to the position after the duplicate, avoiding a costly inner while loop that removes characters one by one.</p>
+  </div>
+
+  <!-- ─── 5. Minimum Window Substring ─── -->
+  <h2>Minimum Window Substring</h2>
+  <p>Given strings <code>s</code> and <code>t</code>, find the smallest substring of <code>s</code> that contains all characters of <code>t</code> (including duplicates). This is one of the hardest sliding window problems because you need to track <em>frequency counts</em>, not just presence.</p>
+
+  <h3>Strategy</h3>
+  <ol>
+    <li>Build a frequency map of <code>t</code>.</li>
+    <li>Expand the window right, decrementing the count for each character. When a character's count hits zero, you've satisfied that character.</li>
+    <li>Once all characters are satisfied, contract from the left to find the minimum window.</li>
+    <li>When contracting causes a character to become unsatisfied, stop and expand again.</li>
+  </ol>
+
+  <pre><code><span class="kw">function</span> <span class="fn">minWindow</span>(s: <span class="tp">string</span>, t: <span class="tp">string</span>): <span class="tp">string</span> {
+  <span class="kw">if</span> (t.length &gt; s.length) <span class="kw">return</span> <span class="str">""</span>;
+
+  <span class="kw">const</span> need = <span class="kw">new</span> <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt;();
+  <span class="kw">for</span> (<span class="kw">const</span> c <span class="kw">of</span> t) {
+    need.<span class="fn">set</span>(c, (need.<span class="fn">get</span>(c) ?? <span class="num">0</span>) + <span class="num">1</span>);
+  }
+
+  <span class="kw">let</span> required = need.size;  <span class="cm">// distinct chars we still need</span>
+  <span class="kw">let</span> formed = <span class="num">0</span>;           <span class="cm">// distinct chars fully satisfied</span>
+  <span class="kw">const</span> windowCounts = <span class="kw">new</span> <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt;();
+
+  <span class="kw">let</span> left = <span class="num">0</span>;
+  <span class="kw">let</span> minLen = <span class="tp">Infinity</span>;
+  <span class="kw">let</span> minStart = <span class="num">0</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> right = <span class="num">0</span>; right &lt; s.length; right++) {
+    <span class="kw">const</span> char = s[right];
+    windowCounts.<span class="fn">set</span>(char, (windowCounts.<span class="fn">get</span>(char) ?? <span class="num">0</span>) + <span class="num">1</span>);
+
+    <span class="kw">if</span> (need.<span class="fn">has</span>(char) &amp;&amp; windowCounts.<span class="fn">get</span>(char) === need.<span class="fn">get</span>(char)) {
+      formed++;
+    }
+
+    <span class="cm">// Contract from the left while window is valid</span>
+    <span class="kw">while</span> (formed === required) {
+      <span class="kw">const</span> windowLen = right - left + <span class="num">1</span>;
+      <span class="kw">if</span> (windowLen &lt; minLen) {
+        minLen = windowLen;
+        minStart = left;
+      }
+
+      <span class="kw">const</span> leftChar = s[left];
+      windowCounts.<span class="fn">set</span>(leftChar, windowCounts.<span class="fn">get</span>(leftChar)! - <span class="num">1</span>);
+      <span class="kw">if</span> (need.<span class="fn">has</span>(leftChar) &amp;&amp; windowCounts.<span class="fn">get</span>(leftChar)! &lt; need.<span class="fn">get</span>(leftChar)!) {
+        formed--;
+      }
+      left++;
+    }
+  }
+
+  <span class="kw">return</span> minLen === <span class="tp">Infinity</span> ? <span class="str">""</span> : s.<span class="fn">slice</span>(minStart, minStart + minLen);
+}
+
+<span class="cm">// minWindow("ADOBECODEBANC", "ABC") → "BANC"</span></code></pre>
+
+  <div class="key-concept">
+    <strong>The "formed vs required" trick:</strong> Instead of comparing entire frequency maps on every iteration (which would be O(|t|)), we track how many <em>distinct</em> characters have been fully satisfied. Updating this count is O(1) per character.
+  </div>
+
+  <!-- ─── 6. Permutation in String ─── -->
+  <h2>Permutation in String</h2>
+  <p>Given strings <code>s1</code> and <code>s2</code>, return true if <code>s2</code> contains a <strong>permutation</strong> of <code>s1</code>. A permutation is any rearrangement, so we're really asking: does <code>s2</code> contain a contiguous substring with the same character frequencies as <code>s1</code>?</p>
+  <p>This is a fixed-size window (size = <code>s1.length</code>) with frequency matching.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">checkInclusion</span>(s1: <span class="tp">string</span>, s2: <span class="tp">string</span>): <span class="tp">boolean</span> {
+  <span class="kw">if</span> (s1.length &gt; s2.length) <span class="kw">return</span> <span class="kw">false</span>;
+
+  <span class="kw">const</span> k = s1.length;
+  <span class="kw">const</span> s1Freq = <span class="kw">new</span> <span class="fn">Array</span>(<span class="num">26</span>).<span class="fn">fill</span>(<span class="num">0</span>);
+  <span class="kw">const</span> winFreq = <span class="kw">new</span> <span class="fn">Array</span>(<span class="num">26</span>).<span class="fn">fill</span>(<span class="num">0</span>);
+
+  <span class="kw">const</span> <span class="fn">idx</span> = (c: <span class="tp">string</span>) =&gt; c.<span class="fn">charCodeAt</span>(<span class="num">0</span>) - <span class="num">97</span>;
+
+  <span class="cm">// Build frequency for s1 and the first window in s2</span>
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; k; i++) {
+    s1Freq[<span class="fn">idx</span>(s1[i])]++;
+    winFreq[<span class="fn">idx</span>(s2[i])]++;
+  }
+
+  <span class="kw">let</span> matches = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="num">26</span>; i++) {
+    <span class="kw">if</span> (s1Freq[i] === winFreq[i]) matches++;
+  }
+
+  <span class="kw">for</span> (<span class="kw">let</span> right = k; right &lt; s2.length; right++) {
+    <span class="kw">if</span> (matches === <span class="num">26</span>) <span class="kw">return</span> <span class="kw">true</span>;
+
+    <span class="cm">// Add new right character</span>
+    <span class="kw">const</span> rIdx = <span class="fn">idx</span>(s2[right]);
+    winFreq[rIdx]++;
+    <span class="kw">if</span> (winFreq[rIdx] === s1Freq[rIdx]) matches++;
+    <span class="kw">else if</span> (winFreq[rIdx] === s1Freq[rIdx] + <span class="num">1</span>) matches--;
+
+    <span class="cm">// Remove leftmost character of previous window</span>
+    <span class="kw">const</span> lIdx = <span class="fn">idx</span>(s2[right - k]);
+    winFreq[lIdx]--;
+    <span class="kw">if</span> (winFreq[lIdx] === s1Freq[lIdx]) matches++;
+    <span class="kw">else if</span> (winFreq[lIdx] === s1Freq[lIdx] - <span class="num">1</span>) matches--;
+  }
+
+  <span class="kw">return</span> matches === <span class="num">26</span>;
+}
+
+<span class="cm">// checkInclusion("ab", "eidbaooo") → true ("ba" is a permutation of "ab")</span>
+<span class="cm">// checkInclusion("ab", "eidboaoo") → false</span></code></pre>
+
+  <div class="tip">
+    <h4>The Matches Counter</h4>
+    <p>Instead of comparing all 26 frequency slots each iteration, we maintain a <code>matches</code> counter that tracks how many character slots have equal frequency between <code>s1</code> and the current window. When <code>matches === 26</code>, every character frequency matches — the window is a permutation.</p>
+  </div>
+
+  <!-- ─── 7. Complexity Summary ─── -->
+  <h2>Complexity Summary</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Problem</th>
+        <th>Time</th>
+        <th>Space</th>
+        <th>Window Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Max Sum Subarray (size k)</td>
+        <td><span class="complexity good">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+        <td>Fixed</td>
+      </tr>
+      <tr>
+        <td>Longest Substring No Repeat</td>
+        <td><span class="complexity good">O(n)</span></td>
+        <td><span class="complexity ok">O(min(n, m))</span></td>
+        <td>Variable</td>
+      </tr>
+      <tr>
+        <td>Minimum Window Substring</td>
+        <td><span class="complexity ok">O(n + m)</span></td>
+        <td><span class="complexity ok">O(n + m)</span></td>
+        <td>Variable</td>
+      </tr>
+      <tr>
+        <td>Permutation in String</td>
+        <td><span class="complexity good">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+        <td>Fixed</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="key-concept">
+    <strong>Why sliding window is O(n):</strong> Each element is processed at most twice — once when <code>right</code> adds it and once when <code>left</code> removes it. Two passes through n elements is still O(n). The nested <code>while</code> loop is deceptive; it doesn't restart from the beginning each time.
+  </div>
+
+  <!-- ─── 8. Interactive Visualisation ─── -->
+  <h2>Interactive: Sliding Window</h2>
+  <p>Watch a sliding window move across an array. Use the buttons to slide, expand, or contract the window. The highlighted cells show the current window, and the running sum updates in real time.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls">
+      <button class="viz-btn" onclick="swSlide()">Slide →</button>
+      <button class="viz-btn secondary" onclick="swExpand()">Expand</button>
+      <button class="viz-btn secondary" onclick="swContract()">Contract</button>
+      <button class="viz-btn secondary" onclick="swReset()">Reset</button>
+    </div>
+    <div class="viz-display" id="sw-display" style="padding: 0.5rem 0;"></div>
+    <p id="sw-status" style="font-size:0.82rem; color:#999; margin-top:0.75rem; margin-bottom:0;"></p>
+  </div>
+
+  <script>
+  (function() {
+    const DATA = [2, 7, 1, 5, 3, 8, 4, 9, 6, 2];
+    let left = 0;
+    let right = 2;
+    const display = document.getElementById('sw-display');
+    const status = document.getElementById('sw-status');
+
+    function windowSum() {
+      let s = 0;
+      for (let i = left; i <= right; i++) s += DATA[i];
+      return s;
+    }
+
+    function render() {
+      display.innerHTML = '';
+      DATA.forEach((val, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'array-cell';
+        if (i >= left && i <= right) {
+          cell.classList.add('highlight');
+        }
+        cell.textContent = val;
+
+        const idx = document.createElement('span');
+        idx.className = 'cell-index';
+        idx.textContent = i;
+        cell.appendChild(idx);
+        display.appendChild(cell);
+      });
+
+      const size = right - left + 1;
+      const sum = windowSum();
+      status.textContent = `Window [${left}..${right}]  |  size = ${size}  |  sum = ${sum}  |  elements: [${DATA.slice(left, right + 1).join(', ')}]`;
+    }
+
+    window.swSlide = function() {
+      if (right < DATA.length - 1) {
+        left++;
+        right++;
+      }
+      render();
+    };
+
+    window.swExpand = function() {
+      if (right < DATA.length - 1) {
+        right++;
+      }
+      render();
+    };
+
+    window.swContract = function() {
+      if (left < right) {
+        left++;
+      }
+      render();
+    };
+
+    window.swReset = function() {
+      left = 0;
+      right = 2;
+      render();
+    };
+
+    render();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Sliding Window — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

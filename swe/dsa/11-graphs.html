@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graphs — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Graphs</h1>
+  <p class="subtitle">Model relationships between objects — from social networks to shortest paths, graphs are the universal data structure for connected data</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">BFS/DFS</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. What is a Graph? ─── -->
+  <h2>What is a Graph?</h2>
+  <p>A <strong>graph</strong> G = (V, E) is a set of <strong>vertices</strong> (nodes) connected by <strong>edges</strong>. Unlike trees, graphs can have cycles, multiple paths between nodes, and disconnected components.</p>
+
+  <h3>Key Terminology</h3>
+  <ul>
+    <li><strong>Directed vs Undirected:</strong> In a directed graph (digraph), edges have direction (A → B ≠ B → A). In undirected graphs, edges are bidirectional.</li>
+    <li><strong>Weighted vs Unweighted:</strong> Edges may carry a cost/distance (weighted) or not (unweighted, implicitly weight 1).</li>
+    <li><strong>Degree:</strong> Number of edges touching a node. For directed graphs: in-degree (incoming) and out-degree (outgoing).</li>
+    <li><strong>Path:</strong> A sequence of vertices connected by edges. A <strong>cycle</strong> is a path that starts and ends at the same vertex.</li>
+    <li><strong>Connected:</strong> An undirected graph where every vertex is reachable from every other. For directed graphs: <strong>strongly connected</strong>.</li>
+    <li><strong>DAG:</strong> Directed Acyclic Graph — a directed graph with no cycles. Critical for topological sorting.</li>
+  </ul>
+
+  <div class="key-concept">
+    <strong>Trees are a special case of graphs</strong> — a tree is a connected, acyclic, undirected graph. Every tree with n nodes has exactly n − 1 edges. Many graph algorithms (DFS, BFS) are generalisations of tree traversals.
+  </div>
+
+  <!-- ─── 2. Graph Representations ─── -->
+  <h2>Graph Representations</h2>
+  <p>The two standard ways to store a graph in code. The right choice depends on graph density.</p>
+
+  <h3>Adjacency List</h3>
+  <p>Map each vertex to its list of neighbours. Space-efficient for sparse graphs (most real-world graphs).</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">GraphAdjList</span> {
+  <span class="kw">private</span> adj: <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>[]&gt; = <span class="kw">new</span> <span class="fn">Map</span>();
+
+  <span class="fn">addVertex</span>(v: <span class="tp">string</span>): <span class="kw">void</span> {
+    <span class="kw">if</span> (!<span class="kw">this</span>.adj.<span class="fn">has</span>(v)) <span class="kw">this</span>.adj.<span class="fn">set</span>(v, []);
+  }
+
+  <span class="fn">addEdge</span>(from: <span class="tp">string</span>, to: <span class="tp">string</span>): <span class="kw">void</span> {
+    <span class="kw">this</span>.<span class="fn">addVertex</span>(from);
+    <span class="kw">this</span>.<span class="fn">addVertex</span>(to);
+    <span class="kw">this</span>.adj.<span class="fn">get</span>(from)!.<span class="fn">push</span>(to);
+  }
+
+  <span class="fn">neighbours</span>(v: <span class="tp">string</span>): <span class="tp">string</span>[] {
+    <span class="kw">return</span> <span class="kw">this</span>.adj.<span class="fn">get</span>(v) ?? [];
+  }
+
+  <span class="fn">vertices</span>(): <span class="tp">string</span>[] {
+    <span class="kw">return</span> [...<span class="kw">this</span>.adj.<span class="fn">keys</span>()];
+  }
+}</code></pre>
+
+  <h3>Adjacency Matrix</h3>
+  <p>A 2D boolean/number array where <code>matrix[i][j]</code> indicates an edge from i to j. Fast O(1) edge lookup, but O(V²) space.</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">GraphAdjMatrix</span> {
+  <span class="kw">private</span> matrix: <span class="tp">number</span>[][];
+  <span class="kw">private</span> size: <span class="tp">number</span>;
+
+  <span class="kw">constructor</span>(numVertices: <span class="tp">number</span>) {
+    <span class="kw">this</span>.size = numVertices;
+    <span class="kw">this</span>.matrix = Array.<span class="fn">from</span>(
+      { length: numVertices },
+      () => <span class="kw">new</span> <span class="fn">Array</span>(numVertices).<span class="fn">fill</span>(<span class="num">0</span>)
+    );
+  }
+
+  <span class="fn">addEdge</span>(from: <span class="tp">number</span>, to: <span class="tp">number</span>, weight = <span class="num">1</span>): <span class="kw">void</span> {
+    <span class="kw">this</span>.matrix[from][to] = weight;
+  }
+
+  <span class="fn">hasEdge</span>(from: <span class="tp">number</span>, to: <span class="tp">number</span>): <span class="tp">boolean</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.matrix[from][to] !== <span class="num">0</span>;
+  }
+
+  <span class="fn">getWeight</span>(from: <span class="tp">number</span>, to: <span class="tp">number</span>): <span class="tp">number</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.matrix[from][to];
+  }
+}</code></pre>
+
+  <h3>Comparison</h3>
+  <table>
+    <thead>
+      <tr><th>Operation</th><th>Adjacency List</th><th>Adjacency Matrix</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Space</td><td><span class="complexity ok">O(V + E)</span></td><td><span class="complexity bad">O(V²)</span></td></tr>
+      <tr><td>Add edge</td><td><span class="complexity good">O(1)</span></td><td><span class="complexity good">O(1)</span></td></tr>
+      <tr><td>Check edge</td><td><span class="complexity ok">O(degree)</span></td><td><span class="complexity good">O(1)</span></td></tr>
+      <tr><td>List neighbours</td><td><span class="complexity good">O(degree)</span></td><td><span class="complexity ok">O(V)</span></td></tr>
+      <tr><td>Best for</td><td>Sparse graphs</td><td>Dense graphs, fast edge lookup</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─── 3. Graph Diagram ─── -->
+  <h2>Directed Graph Example</h2>
+
+  <div class="diagram">
+    <svg viewBox="0 0 480 300" xmlns="http://www.w3.org/2000/svg" style="max-width:480px;">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#c0614a"/>
+        </marker>
+      </defs>
+      <g font-family="JetBrains Mono, monospace" font-size="13" text-anchor="middle">
+        <!-- Edges with arrows -->
+        <line x1="90" y1="60" x2="215" y2="55" stroke="#c0614a" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <line x1="90" y1="80" x2="90" y2="175" stroke="#c0614a" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <line x1="240" y1="70" x2="240" y2="175" stroke="#c0614a" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <line x1="240" y1="68" x2="375" y2="175" stroke="#c0614a" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <line x1="110" y1="195" x2="215" y2="195" stroke="#c0614a" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <line x1="260" y1="205" x2="375" y2="248" stroke="#c0614a" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <line x1="390" y1="185" x2="390" y2="240" stroke="#c0614a" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <!-- Vertices -->
+        <circle cx="80" cy="55" r="22" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="80" y="60" fill="#4a7050" font-weight="600">A</text>
+
+        <circle cx="240" cy="55" r="22" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="240" y="60">B</text>
+
+        <circle cx="80" cy="195" r="22" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="80" y="200">C</text>
+
+        <circle cx="240" cy="195" r="22" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="240" y="200">D</text>
+
+        <circle cx="390" cy="195" r="22" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="390" y="200">E</text>
+
+        <circle cx="390" cy="260" r="22" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="390" y="265">F</text>
+
+        <!-- Legend -->
+        <text x="240" y="290" font-family="DM Sans" font-size="10" fill="#999">Directed graph: A→B, A→C, B→D, B→E, C→D, D→F, E→F</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 4. Depth-First Search ─── -->
+  <h2>Depth-First Search (DFS)</h2>
+  <p>DFS explores as deep as possible along each branch before backtracking. It uses a stack (explicit or the call stack via recursion).</p>
+
+  <h3>Recursive DFS</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">dfsRecursive</span>(
+  graph: <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>[]&gt;,
+  start: <span class="tp">string</span>
+): <span class="tp">string</span>[] {
+  <span class="kw">const</span> visited = <span class="kw">new</span> <span class="fn">Set</span>&lt;<span class="tp">string</span>&gt;();
+  <span class="kw">const</span> order: <span class="tp">string</span>[] = [];
+
+  <span class="kw">function</span> <span class="fn">dfs</span>(node: <span class="tp">string</span>): <span class="kw">void</span> {
+    <span class="kw">if</span> (visited.<span class="fn">has</span>(node)) <span class="kw">return</span>;
+    visited.<span class="fn">add</span>(node);
+    order.<span class="fn">push</span>(node);
+
+    <span class="kw">for</span> (<span class="kw">const</span> neighbour <span class="kw">of</span> (graph.<span class="fn">get</span>(node) ?? [])) {
+      <span class="fn">dfs</span>(neighbour);
+    }
+  }
+
+  <span class="fn">dfs</span>(start);
+  <span class="kw">return</span> order;
+}</code></pre>
+
+  <h3>Iterative DFS (with explicit stack)</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">dfsIterative</span>(
+  graph: <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>[]&gt;,
+  start: <span class="tp">string</span>
+): <span class="tp">string</span>[] {
+  <span class="kw">const</span> visited = <span class="kw">new</span> <span class="fn">Set</span>&lt;<span class="tp">string</span>&gt;();
+  <span class="kw">const</span> stack: <span class="tp">string</span>[] = [start];
+  <span class="kw">const</span> order: <span class="tp">string</span>[] = [];
+
+  <span class="kw">while</span> (stack.length > <span class="num">0</span>) {
+    <span class="kw">const</span> node = stack.<span class="fn">pop</span>()!;
+    <span class="kw">if</span> (visited.<span class="fn">has</span>(node)) <span class="kw">continue</span>;
+
+    visited.<span class="fn">add</span>(node);
+    order.<span class="fn">push</span>(node);
+
+    <span class="kw">for</span> (<span class="kw">const</span> neighbour <span class="kw">of</span> (graph.<span class="fn">get</span>(node) ?? []).<span class="fn">reverse</span>()) {
+      <span class="kw">if</span> (!visited.<span class="fn">has</span>(neighbour)) stack.<span class="fn">push</span>(neighbour);
+    }
+  }
+
+  <span class="kw">return</span> order;
+}</code></pre>
+
+  <div class="tip">
+    <h4>Why reverse neighbours?</h4>
+    <p>A stack processes last-in-first-out. Reversing the neighbour list ensures we visit them in the same order as the recursive version. Without reversing, the iterative DFS visits neighbours in reverse order — functionally correct, but the traversal order differs.</p>
+  </div>
+
+  <!-- ─── 5. Breadth-First Search ─── -->
+  <h2>Breadth-First Search (BFS)</h2>
+  <p>BFS explores all neighbours at the current depth before moving deeper. It uses a <strong>queue</strong> and naturally finds the shortest path in unweighted graphs.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">bfs</span>(
+  graph: <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>[]&gt;,
+  start: <span class="tp">string</span>
+): <span class="tp">string</span>[] {
+  <span class="kw">const</span> visited = <span class="kw">new</span> <span class="fn">Set</span>&lt;<span class="tp">string</span>&gt;([start]);
+  <span class="kw">const</span> queue: <span class="tp">string</span>[] = [start];
+  <span class="kw">const</span> order: <span class="tp">string</span>[] = [];
+
+  <span class="kw">while</span> (queue.length > <span class="num">0</span>) {
+    <span class="kw">const</span> node = queue.<span class="fn">shift</span>()!;
+    order.<span class="fn">push</span>(node);
+
+    <span class="kw">for</span> (<span class="kw">const</span> neighbour <span class="kw">of</span> (graph.<span class="fn">get</span>(node) ?? [])) {
+      <span class="kw">if</span> (!visited.<span class="fn">has</span>(neighbour)) {
+        visited.<span class="fn">add</span>(neighbour);
+        queue.<span class="fn">push</span>(neighbour);
+      }
+    }
+  }
+
+  <span class="kw">return</span> order;
+}</code></pre>
+
+  <div class="key-concept">
+    <strong>DFS vs BFS:</strong> DFS uses a stack, goes deep, finds any path — good for cycle detection, topological sort, and exhaustive search. BFS uses a queue, goes wide, finds the <em>shortest</em> path in unweighted graphs — good for shortest path, level-order traversal, and finding connected components.
+  </div>
+
+  <!-- ─── 6. Topological Sort ─── -->
+  <h2>Topological Sort</h2>
+  <p>A topological ordering of a DAG is a linear sequence where for every edge u → v, u comes before v. Think "task ordering" — if A depends on B, B must appear first.</p>
+
+  <p><strong>Kahn's Algorithm</strong> (BFS-based): Start with all zero-in-degree nodes, process them, and reduce in-degrees of their neighbours. When a neighbour hits zero, add it to the queue.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">topologicalSort</span>(
+  graph: <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>[]&gt;
+): <span class="tp">string</span>[] {
+  <span class="kw">const</span> inDegree = <span class="kw">new</span> <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt;();
+  <span class="kw">for</span> (<span class="kw">const</span> v <span class="kw">of</span> graph.<span class="fn">keys</span>()) inDegree.<span class="fn">set</span>(v, <span class="num">0</span>);
+
+  <span class="kw">for</span> (<span class="kw">const</span> neighbours <span class="kw">of</span> graph.<span class="fn">values</span>()) {
+    <span class="kw">for</span> (<span class="kw">const</span> n <span class="kw">of</span> neighbours) {
+      inDegree.<span class="fn">set</span>(n, (inDegree.<span class="fn">get</span>(n) ?? <span class="num">0</span>) + <span class="num">1</span>);
+    }
+  }
+
+  <span class="kw">const</span> queue: <span class="tp">string</span>[] = [];
+  <span class="kw">for</span> (<span class="kw">const</span> [v, deg] <span class="kw">of</span> inDegree) {
+    <span class="kw">if</span> (deg === <span class="num">0</span>) queue.<span class="fn">push</span>(v);
+  }
+
+  <span class="kw">const</span> order: <span class="tp">string</span>[] = [];
+
+  <span class="kw">while</span> (queue.length > <span class="num">0</span>) {
+    <span class="kw">const</span> node = queue.<span class="fn">shift</span>()!;
+    order.<span class="fn">push</span>(node);
+
+    <span class="kw">for</span> (<span class="kw">const</span> neighbour <span class="kw">of</span> (graph.<span class="fn">get</span>(node) ?? [])) {
+      <span class="kw">const</span> newDeg = inDegree.<span class="fn">get</span>(neighbour)! - <span class="num">1</span>;
+      inDegree.<span class="fn">set</span>(neighbour, newDeg);
+      <span class="kw">if</span> (newDeg === <span class="num">0</span>) queue.<span class="fn">push</span>(neighbour);
+    }
+  }
+
+  <span class="kw">if</span> (order.length !== graph.size) {
+    <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">"Cycle detected — no topological ordering exists"</span>);
+  }
+
+  <span class="kw">return</span> order;
+}</code></pre>
+
+  <div class="tip">
+    <h4>Real-world uses</h4>
+    <p><strong>Build systems</strong> (compile dependencies in order), <strong>task schedulers</strong> (prerequisites before courses), <strong>package managers</strong> (install dependencies before dependents). If a cycle is detected, the dependency graph is invalid.</p>
+  </div>
+
+  <!-- ─── 7. Union-Find ─── -->
+  <h2>Union-Find (Disjoint Set)</h2>
+  <p>Union-Find tracks which elements belong to the same group. Two optimisations — <strong>union by rank</strong> and <strong>path compression</strong> — make operations nearly O(1) amortised.</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">UnionFind</span> {
+  <span class="kw">private</span> parent: <span class="tp">number</span>[];
+  <span class="kw">private</span> rank: <span class="tp">number</span>[];
+  <span class="kw">public</span> components: <span class="tp">number</span>;
+
+  <span class="kw">constructor</span>(n: <span class="tp">number</span>) {
+    <span class="kw">this</span>.parent = Array.<span class="fn">from</span>({ length: n }, (_, i) => i);
+    <span class="kw">this</span>.rank = <span class="kw">new</span> <span class="fn">Array</span>(n).<span class="fn">fill</span>(<span class="num">0</span>);
+    <span class="kw">this</span>.components = n;
+  }
+
+  <span class="fn">find</span>(x: <span class="tp">number</span>): <span class="tp">number</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>.parent[x] !== x) {
+      <span class="kw">this</span>.parent[x] = <span class="kw">this</span>.<span class="fn">find</span>(<span class="kw">this</span>.parent[x]); <span class="cm">// path compression</span>
+    }
+    <span class="kw">return</span> <span class="kw">this</span>.parent[x];
+  }
+
+  <span class="fn">union</span>(x: <span class="tp">number</span>, y: <span class="tp">number</span>): <span class="tp">boolean</span> {
+    <span class="kw">const</span> rootX = <span class="kw">this</span>.<span class="fn">find</span>(x);
+    <span class="kw">const</span> rootY = <span class="kw">this</span>.<span class="fn">find</span>(y);
+    <span class="kw">if</span> (rootX === rootY) <span class="kw">return false</span>;
+
+    <span class="kw">if</span> (<span class="kw">this</span>.rank[rootX] &lt; <span class="kw">this</span>.rank[rootY]) {
+      <span class="kw">this</span>.parent[rootX] = rootY;
+    } <span class="kw">else if</span> (<span class="kw">this</span>.rank[rootX] > <span class="kw">this</span>.rank[rootY]) {
+      <span class="kw">this</span>.parent[rootY] = rootX;
+    } <span class="kw">else</span> {
+      <span class="kw">this</span>.parent[rootY] = rootX;
+      <span class="kw">this</span>.rank[rootX]++;
+    }
+    <span class="kw">this</span>.components--;
+    <span class="kw">return true</span>;
+  }
+
+  <span class="fn">connected</span>(x: <span class="tp">number</span>, y: <span class="tp">number</span>): <span class="tp">boolean</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.<span class="fn">find</span>(x) === <span class="kw">this</span>.<span class="fn">find</span>(y);
+  }
+}</code></pre>
+
+  <div class="key-concept">
+    <strong>Path compression</strong> flattens the tree so future finds are O(1). <strong>Union by rank</strong> attaches the shorter tree under the taller one. Together, they make each operation O(α(n)) — the inverse Ackermann function, effectively constant.
+  </div>
+
+  <!-- ─── 8. Number of Islands ─── -->
+  <h2>Number of Islands</h2>
+  <p>Given a 2D grid of '1's (land) and '0's (water), count the number of islands. An island is a group of adjacent '1's connected horizontally or vertically.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">numIslands</span>(grid: <span class="tp">string</span>[][]): <span class="tp">number</span> {
+  <span class="kw">if</span> (grid.length === <span class="num">0</span>) <span class="kw">return</span> <span class="num">0</span>;
+  <span class="kw">const</span> rows = grid.length;
+  <span class="kw">const</span> cols = grid[<span class="num">0</span>].length;
+  <span class="kw">let</span> count = <span class="num">0</span>;
+
+  <span class="kw">function</span> <span class="fn">dfs</span>(r: <span class="tp">number</span>, c: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">if</span> (r &lt; <span class="num">0</span> || r >= rows || c &lt; <span class="num">0</span> || c >= cols) <span class="kw">return</span>;
+    <span class="kw">if</span> (grid[r][c] !== <span class="str">"1"</span>) <span class="kw">return</span>;
+
+    grid[r][c] = <span class="str">"0"</span>; <span class="cm">// mark visited by sinking</span>
+
+    <span class="fn">dfs</span>(r + <span class="num">1</span>, c);
+    <span class="fn">dfs</span>(r - <span class="num">1</span>, c);
+    <span class="fn">dfs</span>(r, c + <span class="num">1</span>);
+    <span class="fn">dfs</span>(r, c - <span class="num">1</span>);
+  }
+
+  <span class="kw">for</span> (<span class="kw">let</span> r = <span class="num">0</span>; r &lt; rows; r++) {
+    <span class="kw">for</span> (<span class="kw">let</span> c = <span class="num">0</span>; c &lt; cols; c++) {
+      <span class="kw">if</span> (grid[r][c] === <span class="str">"1"</span>) {
+        count++;
+        <span class="fn">dfs</span>(r, c); <span class="cm">// sink the entire island</span>
+      }
+    }
+  }
+
+  <span class="kw">return</span> count;
+}
+
+<span class="cm">// numIslands([</span>
+<span class="cm">//   ["1","1","0","0","0"],</span>
+<span class="cm">//   ["1","1","0","0","0"],</span>
+<span class="cm">//   ["0","0","1","0","0"],</span>
+<span class="cm">//   ["0","0","0","1","1"]</span>
+<span class="cm">// ]) → 3</span></code></pre>
+
+  <!-- ─── 9. Dijkstra's Algorithm ─── -->
+  <h2>Shortest Path (Dijkstra's Algorithm)</h2>
+  <p>Dijkstra's finds the shortest path from a source to all other vertices in a <strong>weighted graph with non-negative edges</strong>. It greedily picks the closest unvisited vertex, then relaxes its neighbours.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">dijkstra</span>(
+  graph: <span class="fn">Map</span>&lt;<span class="tp">string</span>, [<span class="tp">string</span>, <span class="tp">number</span>][]&gt;,
+  source: <span class="tp">string</span>
+): <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt; {
+  <span class="kw">const</span> dist = <span class="kw">new</span> <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt;();
+  <span class="kw">for</span> (<span class="kw">const</span> v <span class="kw">of</span> graph.<span class="fn">keys</span>()) dist.<span class="fn">set</span>(v, <span class="num">Infinity</span>);
+  dist.<span class="fn">set</span>(source, <span class="num">0</span>);
+
+  <span class="cm">// Simple priority queue (min-heap would be faster for large graphs)</span>
+  <span class="kw">const</span> pq: [<span class="tp">string</span>, <span class="tp">number</span>][] = [[source, <span class="num">0</span>]];
+
+  <span class="kw">while</span> (pq.length > <span class="num">0</span>) {
+    pq.<span class="fn">sort</span>((a, b) => a[<span class="num">1</span>] - b[<span class="num">1</span>]);
+    <span class="kw">const</span> [node, d] = pq.<span class="fn">shift</span>()!;
+
+    <span class="kw">if</span> (d > dist.<span class="fn">get</span>(node)!) <span class="kw">continue</span>; <span class="cm">// stale entry</span>
+
+    <span class="kw">for</span> (<span class="kw">const</span> [neighbour, weight] <span class="kw">of</span> (graph.<span class="fn">get</span>(node) ?? [])) {
+      <span class="kw">const</span> newDist = d + weight;
+      <span class="kw">if</span> (newDist &lt; dist.<span class="fn">get</span>(neighbour)!) {
+        dist.<span class="fn">set</span>(neighbour, newDist);
+        pq.<span class="fn">push</span>([neighbour, newDist]);
+      }
+    }
+  }
+
+  <span class="kw">return</span> dist;
+}
+
+<span class="cm">// const g = new Map([</span>
+<span class="cm">//   ["A", [["B", 4], ["C", 2]]],</span>
+<span class="cm">//   ["B", [["D", 3], ["C", 1]]],</span>
+<span class="cm">//   ["C", [["B", 1], ["D", 5]]],</span>
+<span class="cm">//   ["D", []]</span>
+<span class="cm">// ]);</span>
+<span class="cm">// dijkstra(g, "A") → Map { A→0, B→3, C→2, D→6 }</span></code></pre>
+
+  <div class="warning">
+    <h4>Limitations</h4>
+    <p>Dijkstra's does <strong>not</strong> work with negative edge weights — use Bellman-Ford for that. The sort-based PQ above is O(V²) total; a proper min-heap brings it to O((V + E) log V).</p>
+  </div>
+
+  <!-- ─── 10. Complexity Table ─── -->
+  <h2>Complexity Summary</h2>
+
+  <table>
+    <thead>
+      <tr><th>Algorithm</th><th>Time</th><th>Space</th><th>Use Case</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>DFS</td><td><span class="complexity ok">O(V + E)</span></td><td><span class="complexity ok">O(V)</span></td><td>Cycle detection, paths, connectivity</td></tr>
+      <tr><td>BFS</td><td><span class="complexity ok">O(V + E)</span></td><td><span class="complexity ok">O(V)</span></td><td>Shortest path (unweighted), levels</td></tr>
+      <tr><td>Topological Sort</td><td><span class="complexity ok">O(V + E)</span></td><td><span class="complexity ok">O(V)</span></td><td>Task scheduling, build order</td></tr>
+      <tr><td>Union-Find</td><td><span class="complexity good">O(α(n))</span></td><td><span class="complexity ok">O(V)</span></td><td>Connected components, Kruskal's MST</td></tr>
+      <tr><td>Dijkstra's</td><td><span class="complexity ok">O((V+E) log V)</span></td><td><span class="complexity ok">O(V)</span></td><td>Shortest path (weighted, no neg.)</td></tr>
+      <tr><td>Number of Islands</td><td><span class="complexity ok">O(M × N)</span></td><td><span class="complexity ok">O(M × N)</span></td><td>Grid-based connected components</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─── 11. Interactive Visualisation ─── -->
+  <h2>Interactive: DFS vs BFS Traversal</h2>
+  <p>Click DFS or BFS to watch the traversal animate through the graph. Nodes highlight in order of visitation.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls">
+      <button class="viz-btn" id="graph-dfs-btn">Run DFS</button>
+      <button class="viz-btn" id="graph-bfs-btn">Run BFS</button>
+      <button class="viz-btn secondary" id="graph-reset-btn">Reset</button>
+    </div>
+    <div style="text-align:center; padding:0.5rem 0;">
+      <svg id="graph-svg" viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg" style="max-width:500px; min-height:250px;"></svg>
+    </div>
+    <p id="graph-status" style="font-size:0.82rem; color:#999; margin-top:0.5rem; margin-bottom:0;">Traversal order will appear here.</p>
+  </div>
+
+  <script>
+  (function() {
+    const svg = document.getElementById('graph-svg');
+    const statusEl = document.getElementById('graph-status');
+    let animating = false;
+
+    const nodes = {
+      A: { x: 80,  y: 60 },
+      B: { x: 250, y: 40 },
+      C: { x: 80,  y: 200 },
+      D: { x: 250, y: 200 },
+      E: { x: 420, y: 120 },
+      F: { x: 420, y: 250 }
+    };
+
+    const edges = [
+      ['A', 'B'], ['A', 'C'], ['B', 'D'], ['B', 'E'],
+      ['C', 'D'], ['D', 'F'], ['E', 'F']
+    ];
+
+    const adjList = new Map();
+    for (const n of Object.keys(nodes)) adjList.set(n, []);
+    for (const [u, v] of edges) adjList.get(u).push(v);
+
+    let visited = new Set();
+    let currentNode = null;
+
+    function render() {
+      let html = '';
+      html += '<defs><marker id="ah2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#c0614a"/></marker></defs>';
+
+      for (const [u, v] of edges) {
+        const a = nodes[u], b = nodes[v];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const len = Math.sqrt(dx*dx + dy*dy);
+        const ux = dx/len, uy = dy/len;
+        const x1 = a.x + ux*24, y1 = a.y + uy*24;
+        const x2 = b.x - ux*24, y2 = b.y - uy*24;
+        html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c0614a" stroke-width="2" marker-end="url(#ah2)"/>`;
+      }
+
+      for (const [name, pos] of Object.entries(nodes)) {
+        let fill, stroke, textFill;
+        if (name === currentNode) {
+          fill = '#c0614a'; stroke = '#c0614a'; textFill = '#fff';
+        } else if (visited.has(name)) {
+          fill = '#e8f3e9'; stroke = '#7a9e7e'; textFill = '#4a7050';
+        } else {
+          fill = '#faf6f0'; stroke = '#2c2c2c'; textFill = '#2c2c2c';
+        }
+        html += `<circle cx="${pos.x}" cy="${pos.y}" r="22" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+        html += `<text x="${pos.x}" y="${pos.y + 5}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" fill="${textFill}" font-weight="600">${name}</text>`;
+      }
+
+      svg.innerHTML = html;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    async function runTraversal(type) {
+      if (animating) return;
+      animating = true;
+      visited = new Set();
+      currentNode = null;
+      render();
+
+      const order = [];
+
+      if (type === 'dfs') {
+        const stack = ['A'];
+        const seen = new Set(['A']);
+        while (stack.length > 0) {
+          const node = stack.pop();
+          if (visited.has(node)) continue;
+          order.push(node);
+          visited.add(node);
+          currentNode = node;
+          statusEl.textContent = `DFS visiting: ${node} | Order: [${order.join(', ')}]`;
+          statusEl.style.color = '#c0614a';
+          render();
+          await sleep(700);
+
+          const neighbours = (adjList.get(node) || []).slice().reverse();
+          for (const n of neighbours) {
+            if (!visited.has(n)) {
+              stack.push(n);
+              seen.add(n);
+            }
+          }
+        }
+      } else {
+        const queue = ['A'];
+        visited.add('A');
+        while (queue.length > 0) {
+          const node = queue.shift();
+          order.push(node);
+          currentNode = node;
+          statusEl.textContent = `BFS visiting: ${node} | Order: [${order.join(', ')}]`;
+          statusEl.style.color = '#c0614a';
+          render();
+          await sleep(700);
+
+          for (const n of (adjList.get(node) || [])) {
+            if (!visited.has(n)) {
+              visited.add(n);
+              queue.push(n);
+            }
+          }
+        }
+      }
+
+      currentNode = null;
+      render();
+      statusEl.textContent = `${type.toUpperCase()} complete: [${order.join(', ')}]`;
+      statusEl.style.color = '#4a7050';
+      animating = false;
+    }
+
+    document.getElementById('graph-dfs-btn').addEventListener('click', () => runTraversal('dfs'));
+    document.getElementById('graph-bfs-btn').addEventListener('click', () => runTraversal('bfs'));
+    document.getElementById('graph-reset-btn').addEventListener('click', () => {
+      if (animating) return;
+      visited = new Set();
+      currentNode = null;
+      statusEl.textContent = 'Traversal order will appear here.';
+      statusEl.style.color = '#999';
+      render();
+    });
+
+    render();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Graphs — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

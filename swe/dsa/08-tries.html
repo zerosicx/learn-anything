@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tries — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Tries</h1>
+  <p class="subtitle">Prefix trees for lightning-fast string operations — autocomplete, spell check, and word search in O(m) time</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Strings</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. What is a Trie? ─── -->
+  <h2>What is a Trie?</h2>
+  <p>A <strong>trie</strong> (pronounced "try", from re<em>trie</em>val) is a tree-like data structure where each node represents a single character. Paths from the root to marked nodes spell out stored words. Unlike a hash map that stores complete strings, a trie shares common prefixes — the word "car" and "card" share the path c → a → r.</p>
+
+  <p>This prefix-sharing property makes tries ideal for:</p>
+  <ul>
+    <li><strong>Autocomplete:</strong> Given a prefix, find all matching words by traversing to the prefix node and collecting descendants.</li>
+    <li><strong>Spell checking:</strong> Check if a word exists in a dictionary with O(m) lookups where m is word length.</li>
+    <li><strong>IP routing:</strong> Longest prefix matching in network routers.</li>
+    <li><strong>Word games:</strong> Efficiently validate words during board traversal (Boggle, Scrabble).</li>
+  </ul>
+
+  <div class="key-concept">
+    <strong>Trie vs HashMap for strings:</strong> A HashMap can check if a word exists in O(m) time too. The trie's advantage is <em>prefix operations</em> — finding all words with a given prefix is O(p + k) where p is prefix length and k is the number of results. With a HashMap, you'd need to iterate every stored key.
+  </div>
+
+  <!-- ─── 2. Trie Diagram ─── -->
+  <h2>Trie Structure</h2>
+  <p>Here's a trie containing the words: <strong>cat</strong>, <strong>car</strong>, <strong>card</strong>, <strong>care</strong>, <strong>do</strong>, <strong>dog</strong>.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 550 320" xmlns="http://www.w3.org/2000/svg" style="max-width:550px;">
+      <g font-family="JetBrains Mono, monospace" font-size="13" text-anchor="middle">
+        <!-- Edges -->
+        <line x1="220" y1="30" x2="130" y2="75" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="220" y1="30" x2="400" y2="75" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="130" y1="105" x2="130" y2="145" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="130" y1="175" x2="70"  y2="215" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="130" y1="175" x2="190" y2="215" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="190" y1="245" x2="140" y2="285" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="190" y1="245" x2="240" y2="285" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="400" y1="105" x2="400" y2="145" stroke="#e2ddd5" stroke-width="2"/>
+        <line x1="400" y1="175" x2="460" y2="215" stroke="#e2ddd5" stroke-width="2"/>
+
+        <!-- Edge labels -->
+        <text x="165" y="52"  font-size="11" fill="#c0614a" font-weight="600">c</text>
+        <text x="320" y="52"  font-size="11" fill="#c0614a" font-weight="600">d</text>
+        <text x="123" y="130" font-size="11" fill="#c0614a" font-weight="600">a</text>
+        <text x="90"  y="200" font-size="11" fill="#c0614a" font-weight="600">t</text>
+        <text x="170" y="200" font-size="11" fill="#c0614a" font-weight="600">r</text>
+        <text x="155" y="270" font-size="11" fill="#c0614a" font-weight="600">d</text>
+        <text x="225" y="270" font-size="11" fill="#c0614a" font-weight="600">e</text>
+        <text x="393" y="130" font-size="11" fill="#c0614a" font-weight="600">o</text>
+        <text x="440" y="200" font-size="11" fill="#c0614a" font-weight="600">g</text>
+
+        <!-- Root -->
+        <circle cx="220" cy="25" r="16" fill="#2c2c2c"/>
+        <text x="220" y="30" fill="#fff" font-size="10">root</text>
+
+        <!-- c -->
+        <circle cx="130" cy="90" r="16" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="130" y="95">c</text>
+
+        <!-- a -->
+        <circle cx="130" cy="160" r="16" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="130" y="165">a</text>
+
+        <!-- t (end: cat) -->
+        <circle cx="70" cy="230" r="16" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="70" y="235" fill="#4a7050" font-weight="600">t</text>
+        <text x="70" y="258" font-family="DM Sans" font-size="9" fill="#4a7050">cat</text>
+
+        <!-- r (end: car) -->
+        <circle cx="190" cy="230" r="16" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="190" y="235" fill="#4a7050" font-weight="600">r</text>
+        <text x="190" y="258" font-family="DM Sans" font-size="9" fill="#4a7050">car</text>
+
+        <!-- d (end: card) -->
+        <circle cx="140" cy="295" r="14" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="140" y="300" fill="#4a7050" font-weight="600" font-size="11">d</text>
+
+        <!-- e (end: care) -->
+        <circle cx="240" cy="295" r="14" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="240" y="300" fill="#4a7050" font-weight="600" font-size="11">e</text>
+
+        <!-- d -->
+        <circle cx="400" cy="90" r="16" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="400" y="95">d</text>
+
+        <!-- o (end: do) -->
+        <circle cx="400" cy="160" r="16" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="400" y="165" fill="#4a7050" font-weight="600">o</text>
+        <text x="400" y="188" font-family="DM Sans" font-size="9" fill="#4a7050">do</text>
+
+        <!-- g (end: dog) -->
+        <circle cx="460" cy="230" r="16" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="460" y="235" fill="#4a7050" font-weight="600">g</text>
+        <text x="460" y="258" font-family="DM Sans" font-size="9" fill="#4a7050">dog</text>
+
+        <!-- Legend -->
+        <circle cx="20" cy="15" r="8" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="60" y="19" font-family="DM Sans" font-size="10" fill="#999" text-anchor="start">= end of word</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 3. Trie Implementation ─── -->
+  <h2>Trie Node Implementation</h2>
+
+  <h3>TrieNode and Trie</h3>
+  <pre><code><span class="kw">class</span> <span class="tp">TrieNode</span> {
+  children: <span class="fn">Map</span>&lt;<span class="tp">string</span>, <span class="tp">TrieNode</span>&gt; = <span class="kw">new</span> <span class="fn">Map</span>();
+  isEnd = <span class="kw">false</span>;
+}
+
+<span class="kw">class</span> <span class="tp">Trie</span> {
+  <span class="kw">private</span> root = <span class="kw">new</span> <span class="tp">TrieNode</span>();
+
+  <span class="fn">insert</span>(word: <span class="tp">string</span>): <span class="kw">void</span> {
+    <span class="kw">let</span> node = <span class="kw">this</span>.root;
+    <span class="kw">for</span> (<span class="kw">const</span> char <span class="kw">of</span> word) {
+      <span class="kw">if</span> (!node.children.<span class="fn">has</span>(char)) {
+        node.children.<span class="fn">set</span>(char, <span class="kw">new</span> <span class="tp">TrieNode</span>());
+      }
+      node = node.children.<span class="fn">get</span>(char)!;
+    }
+    node.isEnd = <span class="kw">true</span>;
+  }
+
+  <span class="fn">search</span>(word: <span class="tp">string</span>): <span class="tp">boolean</span> {
+    <span class="kw">const</span> node = <span class="kw">this</span>.<span class="fn">_traverse</span>(word);
+    <span class="kw">return</span> node !== <span class="kw">null</span> &amp;&amp; node.isEnd;
+  }
+
+  <span class="fn">startsWith</span>(prefix: <span class="tp">string</span>): <span class="tp">boolean</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.<span class="fn">_traverse</span>(prefix) !== <span class="kw">null</span>;
+  }
+
+  <span class="kw">private</span> <span class="fn">_traverse</span>(str: <span class="tp">string</span>): <span class="tp">TrieNode</span> | <span class="kw">null</span> {
+    <span class="kw">let</span> node = <span class="kw">this</span>.root;
+    <span class="kw">for</span> (<span class="kw">const</span> char <span class="kw">of</span> str) {
+      <span class="kw">if</span> (!node.children.<span class="fn">has</span>(char)) <span class="kw">return null</span>;
+      node = node.children.<span class="fn">get</span>(char)!;
+    }
+    <span class="kw">return</span> node;
+  }
+}</code></pre>
+
+  <div class="tip">
+    <h4>Map vs Array for children</h4>
+    <p>Using a <code>Map&lt;string, TrieNode&gt;</code> is flexible — it handles any character set. For lowercase English only, you could use a fixed-size array of 26 slots (<code>children[char.charCodeAt(0) - 97]</code>) for slightly better cache performance. In interviews, either is acceptable.</p>
+  </div>
+
+  <!-- ─── 4. Word Search with Wildcards ─── -->
+  <h2>Word Search in a Trie</h2>
+  <p>A common extension: support <code>.</code> as a wildcard matching any single character. The <code>search</code> method becomes recursive — when encountering a dot, try all children.</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">WordDictionary</span> {
+  <span class="kw">private</span> root = <span class="kw">new</span> <span class="tp">TrieNode</span>();
+
+  <span class="fn">addWord</span>(word: <span class="tp">string</span>): <span class="kw">void</span> {
+    <span class="kw">let</span> node = <span class="kw">this</span>.root;
+    <span class="kw">for</span> (<span class="kw">const</span> char <span class="kw">of</span> word) {
+      <span class="kw">if</span> (!node.children.<span class="fn">has</span>(char)) {
+        node.children.<span class="fn">set</span>(char, <span class="kw">new</span> <span class="tp">TrieNode</span>());
+      }
+      node = node.children.<span class="fn">get</span>(char)!;
+    }
+    node.isEnd = <span class="kw">true</span>;
+  }
+
+  <span class="fn">search</span>(word: <span class="tp">string</span>): <span class="tp">boolean</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.<span class="fn">_search</span>(word, <span class="num">0</span>, <span class="kw">this</span>.root);
+  }
+
+  <span class="kw">private</span> <span class="fn">_search</span>(word: <span class="tp">string</span>, idx: <span class="tp">number</span>, node: <span class="tp">TrieNode</span>): <span class="tp">boolean</span> {
+    <span class="kw">if</span> (idx === word.length) <span class="kw">return</span> node.isEnd;
+
+    <span class="kw">const</span> char = word[idx];
+
+    <span class="kw">if</span> (char === <span class="str">"."</span>) {
+      <span class="cm">// Wildcard: try every child</span>
+      <span class="kw">for</span> (<span class="kw">const</span> child <span class="kw">of</span> node.children.<span class="fn">values</span>()) {
+        <span class="kw">if</span> (<span class="kw">this</span>.<span class="fn">_search</span>(word, idx + <span class="num">1</span>, child)) <span class="kw">return true</span>;
+      }
+      <span class="kw">return false</span>;
+    }
+
+    <span class="kw">const</span> next = node.children.<span class="fn">get</span>(char);
+    <span class="kw">if</span> (!next) <span class="kw">return false</span>;
+    <span class="kw">return</span> <span class="kw">this</span>.<span class="fn">_search</span>(word, idx + <span class="num">1</span>, next);
+  }
+}
+
+<span class="cm">// const dict = new WordDictionary();</span>
+<span class="cm">// dict.addWord("bad");  dict.addWord("dad");  dict.addWord("mad");</span>
+<span class="cm">// dict.search("pad")  → false</span>
+<span class="cm">// dict.search(".ad")  → true  (matches bad, dad, mad)</span>
+<span class="cm">// dict.search("b..")  → true  (matches bad)</span></code></pre>
+
+  <div class="warning">
+    <h4>Wildcard Complexity</h4>
+    <p>Without wildcards, trie search is O(m). With wildcards, the worst case is O(26^m) for a word of all dots — every path must be explored. In practice, most patterns have few dots, so performance is much better than the worst case.</p>
+  </div>
+
+  <!-- ─── 5. Autocomplete ─── -->
+  <h2>Autocomplete with a Trie</h2>
+  <p>Given a prefix, return all words in the trie that start with that prefix. Navigate to the prefix node, then do a DFS collecting all words from there.</p>
+
+  <pre><code><span class="kw">class</span> <span class="tp">AutocompleteTrie</span> <span class="kw">extends</span> <span class="tp">Trie</span> {
+  <span class="kw">private</span> root = <span class="kw">new</span> <span class="tp">TrieNode</span>();
+
+  <span class="fn">insert</span>(word: <span class="tp">string</span>): <span class="kw">void</span> {
+    <span class="kw">let</span> node = <span class="kw">this</span>.root;
+    <span class="kw">for</span> (<span class="kw">const</span> char <span class="kw">of</span> word) {
+      <span class="kw">if</span> (!node.children.<span class="fn">has</span>(char)) {
+        node.children.<span class="fn">set</span>(char, <span class="kw">new</span> <span class="tp">TrieNode</span>());
+      }
+      node = node.children.<span class="fn">get</span>(char)!;
+    }
+    node.isEnd = <span class="kw">true</span>;
+  }
+
+  <span class="fn">autocomplete</span>(prefix: <span class="tp">string</span>): <span class="tp">string</span>[] {
+    <span class="kw">let</span> node = <span class="kw">this</span>.root;
+    <span class="kw">for</span> (<span class="kw">const</span> char <span class="kw">of</span> prefix) {
+      <span class="kw">if</span> (!node.children.<span class="fn">has</span>(char)) <span class="kw">return</span> [];
+      node = node.children.<span class="fn">get</span>(char)!;
+    }
+
+    <span class="kw">const</span> results: <span class="tp">string</span>[] = [];
+    <span class="kw">this</span>.<span class="fn">_collect</span>(node, prefix, results);
+    <span class="kw">return</span> results;
+  }
+
+  <span class="kw">private</span> <span class="fn">_collect</span>(
+    node: <span class="tp">TrieNode</span>,
+    path: <span class="tp">string</span>,
+    results: <span class="tp">string</span>[]
+  ): <span class="kw">void</span> {
+    <span class="kw">if</span> (node.isEnd) results.<span class="fn">push</span>(path);
+
+    <span class="kw">for</span> (<span class="kw">const</span> [char, child] <span class="kw">of</span> node.children) {
+      <span class="kw">this</span>.<span class="fn">_collect</span>(child, path + char, results);
+    }
+  }
+}
+
+<span class="cm">// const trie = new AutocompleteTrie();</span>
+<span class="cm">// ["cat","car","card","care","do","dog"].forEach(w => trie.insert(w));</span>
+<span class="cm">// trie.autocomplete("car")  → ["car", "card", "care"]</span>
+<span class="cm">// trie.autocomplete("do")   → ["do", "dog"]</span>
+<span class="cm">// trie.autocomplete("b")    → []</span></code></pre>
+
+  <div class="key-concept">
+    <strong>The collect pattern:</strong> Navigating to the prefix node takes O(p). Then DFS from that node visits every descendant, taking O(k) where k is the total characters in all matching words. This is dramatically faster than scanning an entire dictionary.
+  </div>
+
+  <!-- ─── 6. Complexity Analysis ─── -->
+  <h2>Complexity Analysis</h2>
+  <p>How does a trie compare with other data structures for common string operations? Let <strong>m</strong> = word length, <strong>n</strong> = number of stored words, <strong>p</strong> = prefix length.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Operation</th>
+        <th>Trie</th>
+        <th>HashMap</th>
+        <th>Sorted Array</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Insert</td>
+        <td><span class="complexity good">O(m)</span></td>
+        <td><span class="complexity good">O(m)</span></td>
+        <td><span class="complexity ok">O(n log n)</span></td>
+      </tr>
+      <tr>
+        <td>Search exact word</td>
+        <td><span class="complexity good">O(m)</span></td>
+        <td><span class="complexity good">O(m)</span></td>
+        <td><span class="complexity ok">O(m log n)</span></td>
+      </tr>
+      <tr>
+        <td>Prefix check</td>
+        <td><span class="complexity good">O(p)</span></td>
+        <td><span class="complexity ok">O(n·m)</span></td>
+        <td><span class="complexity ok">O(m log n)</span></td>
+      </tr>
+      <tr>
+        <td>All words with prefix</td>
+        <td><span class="complexity good">O(p + k)</span></td>
+        <td><span class="complexity ok">O(n·m)</span></td>
+        <td><span class="complexity ok">O(m log n + k)</span></td>
+      </tr>
+      <tr>
+        <td>Wildcard search</td>
+        <td><span class="complexity ok">O(26^m)*</span></td>
+        <td><span class="complexity ok">O(n·m)</span></td>
+        <td><span class="complexity ok">O(n·m)</span></td>
+      </tr>
+      <tr>
+        <td>Space</td>
+        <td><span class="complexity ok">O(n·m·Σ)</span></td>
+        <td><span class="complexity ok">O(n·m)</span></td>
+        <td><span class="complexity ok">O(n·m)</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:0.8rem;color:#999;">* Worst-case; practical performance is much better. Σ = alphabet size (26 for lowercase English). k = total chars in matching results.</p>
+
+  <div class="tip">
+    <h4>When NOT to use a Trie</h4>
+    <p>Tries use more memory than hash maps due to per-node overhead. If you only need exact lookups (no prefix operations), a HashMap is simpler and more memory-efficient. Use a trie when prefix-based queries are a core requirement.</p>
+  </div>
+
+  <!-- ─── 7. Interactive Visualisation ─── -->
+  <h2>Interactive: Build a Trie</h2>
+  <p>Type a word and insert it into the trie. The tree structure updates in real time. Type a prefix to search and watch the matching path highlight.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls">
+      <input type="text" id="trie-input" placeholder="Type a word..." maxlength="10" style="width:140px; padding:0.4rem 0.6rem; border:1px solid #e2ddd5; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem;">
+      <button class="viz-btn" onclick="trieInsert()">Insert</button>
+      <button class="viz-btn secondary" onclick="trieSearch()">Search Prefix</button>
+      <button class="viz-btn secondary" onclick="trieReset()">Reset</button>
+    </div>
+    <div style="text-align:center; padding:0.5rem 0; overflow-x:auto;">
+      <svg id="trie-svg" viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg" style="max-width:600px; min-height:200px;">
+      </svg>
+    </div>
+    <p id="trie-status" style="font-size:0.82rem; color:#999; margin-top:0.5rem; margin-bottom:0;">Words: cat, car, card, care, do, dog</p>
+  </div>
+
+  <script>
+  (function() {
+    const input = document.getElementById('trie-input');
+    const svg = document.getElementById('trie-svg');
+    const status = document.getElementById('trie-status');
+
+    function makeNode() { return { children: {}, isEnd: false }; }
+
+    let root = makeNode();
+    let words = [];
+    let highlightPath = [];
+
+    function insertWord(word) {
+      word = word.toLowerCase().replace(/[^a-z]/g, '');
+      if (!word || words.includes(word)) return;
+      let node = root;
+      for (const ch of word) {
+        if (!node.children[ch]) node.children[ch] = makeNode();
+        node = node.children[ch];
+      }
+      node.isEnd = true;
+      words.push(word);
+    }
+
+    function searchPrefix(prefix) {
+      prefix = prefix.toLowerCase().replace(/[^a-z]/g, '');
+      highlightPath = [];
+      let node = root;
+      for (let i = 0; i < prefix.length; i++) {
+        if (!node.children[prefix[i]]) {
+          status.textContent = `Prefix "${prefix}" not found`;
+          status.style.color = '#c0614a';
+          renderTrie();
+          return;
+        }
+        highlightPath.push(prefix.slice(0, i + 1));
+        node = node.children[prefix[i]];
+      }
+      const matches = [];
+      collectWords(node, prefix, matches);
+      status.textContent = matches.length
+        ? `Matches for "${prefix}": ${matches.join(', ')}`
+        : `Prefix "${prefix}" exists but no complete words`;
+      status.style.color = '#4a7050';
+      renderTrie();
+    }
+
+    function collectWords(node, path, results) {
+      if (node.isEnd) results.push(path);
+      for (const [ch, child] of Object.entries(node.children).sort()) {
+        collectWords(child, path + ch, results);
+      }
+    }
+
+    function layoutTrie() {
+      const positions = [];
+      let nextX = 0;
+
+      function layout(node, depth, parentId, edgeChar) {
+        const keys = Object.keys(node.children).sort();
+        const id = positions.length;
+
+        if (keys.length === 0) {
+          positions.push({ id, x: nextX, y: depth, char: edgeChar, isEnd: node.isEnd, parentId, children: [] });
+          nextX++;
+          return id;
+        }
+
+        positions.push({ id, x: 0, y: depth, char: edgeChar, isEnd: node.isEnd, parentId, children: [] });
+        const childIds = [];
+        for (const ch of keys) {
+          const childId = layout(node.children[ch], depth + 1, id, ch);
+          childIds.push(childId);
+        }
+
+        positions[id].children = childIds;
+        const firstChild = positions[childIds[0]];
+        const lastChild = positions[childIds[childIds.length - 1]];
+        positions[id].x = (firstChild.x + lastChild.x) / 2;
+
+        return id;
+      }
+
+      layout(root, 0, -1, '');
+      return positions;
+    }
+
+    function renderTrie() {
+      const positions = layoutTrie();
+      if (positions.length <= 1 && Object.keys(root.children).length === 0) {
+        svg.innerHTML = '<text x="300" y="40" text-anchor="middle" font-family="DM Sans" font-size="13" fill="#999">Empty trie — insert a word</text>';
+        return;
+      }
+
+      const maxX = Math.max(...positions.map(p => p.x));
+      const maxY = Math.max(...positions.map(p => p.y));
+      const padX = 55;
+      const padY = 60;
+      const width = Math.max(400, (maxX + 1) * padX + 80);
+      const height = (maxY + 1) * padY + 60;
+      const offsetX = (width - maxX * padX) / 2;
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+      let html = '';
+
+      for (const pos of positions) {
+        if (pos.parentId >= 0) {
+          const parent = positions[pos.parentId];
+          const x1 = parent.x * padX + offsetX;
+          const y1 = parent.y * padY + 30;
+          const x2 = pos.x * padX + offsetX;
+          const y2 = pos.y * padY + 30;
+
+          let path = '';
+          let pn = pos;
+          while (pn.parentId >= 0) {
+            path = pn.char + path;
+            pn = positions[pn.parentId];
+          }
+          const isHighlighted = highlightPath.includes(path);
+
+          html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${isHighlighted ? '#c0614a' : '#e2ddd5'}" stroke-width="${isHighlighted ? 2.5 : 1.5}"/>`;
+        }
+      }
+
+      for (const pos of positions) {
+        const cx = pos.x * padX + offsetX;
+        const cy = pos.y * padY + 30;
+        const r = pos.y === 0 ? 16 : 14;
+
+        let path = '';
+        let pn = pos;
+        while (pn.parentId >= 0) {
+          path = pn.char + path;
+          pn = positions[pn.parentId];
+        }
+        const isHighlighted = highlightPath.includes(path);
+
+        let fill, stroke, textFill;
+        if (pos.y === 0) {
+          fill = '#2c2c2c'; stroke = '#2c2c2c'; textFill = '#fff';
+        } else if (isHighlighted) {
+          fill = '#c0614a'; stroke = '#c0614a'; textFill = '#fff';
+        } else if (pos.isEnd) {
+          fill = '#e8f3e9'; stroke = '#7a9e7e'; textFill = '#4a7050';
+        } else {
+          fill = '#faf6f0'; stroke = '#2c2c2c'; textFill = '#2c2c2c';
+        }
+
+        html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+        const label = pos.y === 0 ? '●' : pos.char;
+        html += `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="${pos.y === 0 ? 10 : 13}" fill="${textFill}" font-weight="${pos.isEnd ? 600 : 400}">${label}</text>`;
+      }
+
+      svg.innerHTML = html;
+    }
+
+    ['cat', 'car', 'card', 'care', 'do', 'dog'].forEach(w => insertWord(w));
+
+    window.trieInsert = function() {
+      const word = input.value.trim();
+      if (!word) return;
+      insertWord(word);
+      highlightPath = [];
+      status.textContent = `Words: ${words.join(', ')}`;
+      status.style.color = '#999';
+      renderTrie();
+      input.value = '';
+    };
+
+    window.trieSearch = function() {
+      const prefix = input.value.trim();
+      if (!prefix) return;
+      searchPrefix(prefix);
+    };
+
+    window.trieReset = function() {
+      root = makeNode();
+      words = [];
+      highlightPath = [];
+      ['cat', 'car', 'card', 'care', 'do', 'dog'].forEach(w => insertWord(w));
+      status.textContent = `Words: ${words.join(', ')}`;
+      status.style.color = '#999';
+      renderTrie();
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        if (e.shiftKey) trieSearch();
+        else trieInsert();
+      }
+    });
+
+    renderTrie();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Tries — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

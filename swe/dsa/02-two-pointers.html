@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Two Pointers — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Two Pointers</h1>
+  <p class="subtitle">Converging and diverging pointer techniques that turn O(n²) brute force into O(n) elegance</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Pattern</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. The Two Pointer Technique ─── -->
+  <h2>The Two Pointer Technique</h2>
+  <p>The two-pointer technique uses two indices that move through an array simultaneously, eliminating the need for nested loops. It's most commonly applied to <strong>sorted arrays</strong> or sequences where the relative position of elements matters.</p>
+  <p>The core insight: instead of checking every possible pair (O(n²)), we can use the sorted order to intelligently skip large portions of the search space. If the current sum is too small, move the left pointer right to increase it. Too large? Move the right pointer left to decrease it.</p>
+
+  <div class="tip">
+    <h4>When to Reach for Two Pointers</h4>
+    <p>Consider two pointers when you see: a sorted array, a problem involving pairs/triplets, palindrome checking, merging sorted arrays, or any problem where brute force would use nested loops over the same array.</p>
+  </div>
+
+  <!-- ─── 2. Converging Pointers ─── -->
+  <h2>Converging Pointers</h2>
+  <p>The most common variant: start with one pointer at the beginning and one at the end, then move them toward each other until they meet. At each step, the decision of which pointer to move is driven by the problem's constraints.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 600 140" xmlns="http://www.w3.org/2000/svg" style="max-width:600px;">
+      <g font-family="JetBrains Mono, monospace" font-size="14" text-anchor="middle">
+        <!-- Array cells -->
+        <rect x="30" y="40" width="50" height="50" rx="6" fill="#fde8e4" stroke="#c0614a" stroke-width="2"/>
+        <text x="55" y="71" fill="#c0614a" font-weight="500">1</text>
+
+        <rect x="90" y="40" width="50" height="50" rx="6" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="115" y="71" fill="#2c2c2c">3</text>
+
+        <rect x="150" y="40" width="50" height="50" rx="6" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="175" y="71" fill="#2c2c2c">5</text>
+
+        <rect x="210" y="40" width="50" height="50" rx="6" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="235" y="71" fill="#2c2c2c">7</text>
+
+        <rect x="270" y="40" width="50" height="50" rx="6" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="295" y="71" fill="#2c2c2c">9</text>
+
+        <rect x="330" y="40" width="50" height="50" rx="6" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="355" y="71" fill="#2c2c2c">11</text>
+
+        <rect x="390" y="40" width="50" height="50" rx="6" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1.5"/>
+        <text x="415" y="71" fill="#2c2c2c">14</text>
+
+        <rect x="450" y="40" width="50" height="50" rx="6" fill="#fdf4e0" stroke="#d4a843" stroke-width="2"/>
+        <text x="475" y="71" fill="#6b5a30" font-weight="500">18</text>
+
+        <!-- Left pointer -->
+        <polygon points="55,30 48,18 62,18" fill="#c0614a"/>
+        <text x="55" y="12" font-size="11" fill="#c0614a" font-family="DM Sans" font-weight="500">L</text>
+
+        <!-- Right pointer -->
+        <polygon points="475,30 468,18 482,18" fill="#d4a843"/>
+        <text x="475" y="12" font-size="11" fill="#6b5a30" font-family="DM Sans" font-weight="500">R</text>
+
+        <!-- Arrows showing movement -->
+        <line x1="80" y1="110" x2="250" y2="110" stroke="#c0614a" stroke-width="1.5" marker-end="url(#arrowR)"/>
+        <text x="165" y="130" font-size="10" fill="#c0614a" font-family="DM Sans">sum too small → move L right</text>
+
+        <line x1="430" y1="110" x2="310" y2="110" stroke="#d4a843" stroke-width="1.5" marker-end="url(#arrowL)"/>
+        <text x="370" y="130" font-size="10" fill="#6b5a30" font-family="DM Sans">sum too large → move R left</text>
+      </g>
+      <defs>
+        <marker id="arrowR" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#c0614a"/>
+        </marker>
+        <marker id="arrowL" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#d4a843"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- ─── 3. Two Sum II (Sorted) ─── -->
+  <h2>Two Sum II (Sorted)</h2>
+  <p>Given a <strong>1-indexed</strong> sorted array and a target, find two numbers that sum to the target. Because the array is sorted, we don't need a hash map — two pointers give us O(1) space.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">twoSumSorted</span>(nums: <span class="tp">number</span>[], target: <span class="tp">number</span>): [<span class="tp">number</span>, <span class="tp">number</span>] {
+  <span class="kw">let</span> left = <span class="num">0</span>;
+  <span class="kw">let</span> right = nums.length - <span class="num">1</span>;
+
+  <span class="kw">while</span> (left &lt; right) {
+    <span class="kw">const</span> sum = nums[left] + nums[right];
+
+    <span class="kw">if</span> (sum === target) {
+      <span class="kw">return</span> [left + <span class="num">1</span>, right + <span class="num">1</span>]; <span class="cm">// 1-indexed result</span>
+    }
+
+    <span class="kw">if</span> (sum &lt; target) {
+      left++;    <span class="cm">// Need a larger sum → move left pointer right</span>
+    } <span class="kw">else</span> {
+      right--;   <span class="cm">// Need a smaller sum → move right pointer left</span>
+    }
+  }
+
+  <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'No solution found'</span>);
+}</code></pre>
+
+  <div class="key-concept">
+    <strong>Why this works:</strong> Since the array is sorted, <code>nums[left]</code> is the smallest candidate and <code>nums[right]</code> is the largest. If their sum is too small, the only way to increase it is to pick a larger left value. If it's too large, pick a smaller right value. This guarantees we explore every relevant pair without nested loops.
+  </div>
+
+  <!-- ─── 4. Three Sum ─── -->
+  <h2>Three Sum</h2>
+  <p>Find all unique triplets that sum to zero. The strategy: sort the array, then for each element, run a two-pointer search on the remaining elements. Skip duplicates to avoid repeated triplets.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">threeSum</span>(nums: <span class="tp">number</span>[]): <span class="tp">number</span>[][] {
+  <span class="kw">const</span> result: <span class="tp">number</span>[][] = [];
+  nums.<span class="fn">sort</span>((a, b) =&gt; a - b);
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; nums.length - <span class="num">2</span>; i++) {
+    <span class="cm">// Skip duplicates for the first element</span>
+    <span class="kw">if</span> (i &gt; <span class="num">0</span> &amp;&amp; nums[i] === nums[i - <span class="num">1</span>]) <span class="kw">continue</span>;
+
+    <span class="cm">// Early exit: if smallest possible sum &gt; 0, no more triplets</span>
+    <span class="kw">if</span> (nums[i] &gt; <span class="num">0</span>) <span class="kw">break</span>;
+
+    <span class="kw">let</span> left = i + <span class="num">1</span>;
+    <span class="kw">let</span> right = nums.length - <span class="num">1</span>;
+
+    <span class="kw">while</span> (left &lt; right) {
+      <span class="kw">const</span> sum = nums[i] + nums[left] + nums[right];
+
+      <span class="kw">if</span> (sum === <span class="num">0</span>) {
+        result.<span class="fn">push</span>([nums[i], nums[left], nums[right]]);
+
+        <span class="cm">// Skip duplicates for both pointers</span>
+        <span class="kw">while</span> (left &lt; right &amp;&amp; nums[left] === nums[left + <span class="num">1</span>]) left++;
+        <span class="kw">while</span> (left &lt; right &amp;&amp; nums[right] === nums[right - <span class="num">1</span>]) right--;
+
+        left++;
+        right--;
+      } <span class="kw">else if</span> (sum &lt; <span class="num">0</span>) {
+        left++;
+      } <span class="kw">else</span> {
+        right--;
+      }
+    }
+  }
+
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// threeSum([-1, 0, 1, 2, -1, -4])</span>
+<span class="cm">// → [[-1, -1, 2], [-1, 0, 1]]</span></code></pre>
+
+  <div class="warning">
+    <h4>Duplicate Handling is Crucial</h4>
+    <p>Without the duplicate-skipping logic, <code>[-1, -1, 0, 1]</code> would produce <code>[-1, 0, 1]</code> twice. Always skip adjacent equal elements after finding a valid triplet and when iterating the outer loop.</p>
+  </div>
+
+  <!-- ─── 5. Container With Most Water ─── -->
+  <h2>Container With Most Water</h2>
+  <p>Given an array of heights, find two lines that together with the x-axis form a container holding the most water. The area between two lines at indices <code>i</code> and <code>j</code> is <code>min(height[i], height[j]) × (j − i)</code>.</p>
+  <p>The greedy insight: start with the widest container (pointers at both ends). Then always move the shorter line inward — because moving the taller one can only decrease the width without any guarantee of increasing the height.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 500 180" xmlns="http://www.w3.org/2000/svg" style="max-width:500px;">
+      <g font-family="DM Sans, sans-serif" font-size="11">
+        <!-- Bars -->
+        <rect x="40"  y="130" width="20" height="-30" fill="#b5cfb7" stroke="#7a9e7e" rx="2"/>
+        <rect x="80"  y="130" width="20" height="-80" fill="#c0614a" stroke="#a04030" rx="2"/>
+        <rect x="120" y="130" width="20" height="-50" fill="#b5cfb7" stroke="#7a9e7e" rx="2"/>
+        <rect x="160" y="130" width="20" height="-20" fill="#b5cfb7" stroke="#7a9e7e" rx="2"/>
+        <rect x="200" y="130" width="20" height="-60" fill="#b5cfb7" stroke="#7a9e7e" rx="2"/>
+        <rect x="240" y="130" width="20" height="-100" fill="#b5cfb7" stroke="#7a9e7e" rx="2"/>
+        <rect x="280" y="130" width="20" height="-40" fill="#b5cfb7" stroke="#7a9e7e" rx="2"/>
+        <rect x="320" y="130" width="20" height="-120" fill="#b5cfb7" stroke="#7a9e7e" rx="2"/>
+        <rect x="360" y="130" width="20" height="-70" fill="#d4a843" stroke="#b08a30" rx="2"/>
+
+        <!-- Water area -->
+        <rect x="80" y="60" width="300" height="70" fill="rgba(122,158,126,0.15)" stroke="none"/>
+        <line x1="80" y1="60" x2="380" y2="60" stroke="#7a9e7e" stroke-width="1" stroke-dasharray="4,3"/>
+
+        <!-- Pointer labels -->
+        <text x="90" y="155" text-anchor="middle" fill="#c0614a" font-weight="500" font-size="12">L</text>
+        <text x="370" y="155" text-anchor="middle" fill="#d4a843" font-weight="500" font-size="12">R</text>
+
+        <!-- Area label -->
+        <text x="230" y="100" text-anchor="middle" fill="#4a7050" font-size="12" font-weight="500">area = min(h[L], h[R]) × (R − L)</text>
+
+        <!-- X axis -->
+        <line x1="30" y1="130" x2="400" y2="130" stroke="#2c2c2c" stroke-width="1"/>
+      </g>
+    </svg>
+  </div>
+
+  <pre><code><span class="kw">function</span> <span class="fn">maxArea</span>(height: <span class="tp">number</span>[]): <span class="tp">number</span> {
+  <span class="kw">let</span> left = <span class="num">0</span>;
+  <span class="kw">let</span> right = height.length - <span class="num">1</span>;
+  <span class="kw">let</span> max = <span class="num">0</span>;
+
+  <span class="kw">while</span> (left &lt; right) {
+    <span class="kw">const</span> w = right - left;
+    <span class="kw">const</span> h = <span class="fn">Math</span>.<span class="fn">min</span>(height[left], height[right]);
+    max = <span class="fn">Math</span>.<span class="fn">max</span>(max, w * h);
+
+    <span class="cm">// Move the shorter line inward</span>
+    <span class="kw">if</span> (height[left] &lt; height[right]) {
+      left++;
+    } <span class="kw">else</span> {
+      right--;
+    }
+  }
+
+  <span class="kw">return</span> max;
+}</code></pre>
+
+  <!-- ─── 6. Fast and Slow Pointers ─── -->
+  <h2>Fast and Slow Pointers</h2>
+  <p>A variation where both pointers start at the same position but move at different speeds. The classic application is cycle detection in linked lists (Floyd's algorithm): the slow pointer moves one step at a time, the fast pointer moves two. If there's a cycle, they'll eventually meet.</p>
+
+  <div class="tip">
+    <h4>Coming Up</h4>
+    <p>We'll explore fast/slow pointers in depth in <a href="06-linked-lists.html" style="color:var(--terracotta);">Chapter 6: Linked Lists</a>, where cycle detection and finding the middle of a list are fundamental operations.</p>
+  </div>
+
+  <pre><code><span class="cm">// Preview: detecting a cycle in a linked list</span>
+<span class="kw">function</span> <span class="fn">hasCycle</span>(head: <span class="tp">ListNode</span> | <span class="tp">null</span>): <span class="tp">boolean</span> {
+  <span class="kw">let</span> slow = head;
+  <span class="kw">let</span> fast = head;
+
+  <span class="kw">while</span> (fast?.next) {
+    slow = slow!.next;
+    fast = fast.next.next;
+    <span class="kw">if</span> (slow === fast) <span class="kw">return</span> <span class="kw">true</span>;
+  }
+
+  <span class="kw">return</span> <span class="kw">false</span>;
+}</code></pre>
+
+  <!-- ─── 7. Complexity Summary ─── -->
+  <h2>Complexity Summary</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Problem</th>
+        <th>Technique</th>
+        <th>Time</th>
+        <th>Space</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Two Sum II (Sorted)</td>
+        <td>Converging pointers</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Three Sum</td>
+        <td>Sort + converging pointers</td>
+        <td><span class="complexity bad">O(n²)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Container With Most Water</td>
+        <td>Converging pointers</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Valid Palindrome</td>
+        <td>Converging pointers</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Linked List Cycle</td>
+        <td>Fast/slow pointers</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+      <tr>
+        <td>Remove Duplicates (sorted)</td>
+        <td>Read/write pointers</td>
+        <td><span class="complexity ok">O(n)</span></td>
+        <td><span class="complexity good">O(1)</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ─── 8. Interactive Visualisation ─── -->
+  <h2>Interactive: Two-Pointer Search</h2>
+  <p>Watch two pointers converge on a sorted array to find a pair that sums to the target. Click <strong>Step</strong> to advance, or <strong>Reset</strong> to start over.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls" id="tp-controls">
+      <label style="font-size:0.82rem; display:flex; align-items:center; gap:0.4rem;">
+        Target:
+        <input type="number" id="tp-target" value="14" min="0" max="50" style="width:60px; padding:0.4rem; border:1px solid #e2ddd5; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; text-align:center;">
+      </label>
+      <button class="viz-btn" onclick="tpStep()">Step</button>
+      <button class="viz-btn secondary" onclick="tpReset()">Reset</button>
+    </div>
+    <div class="viz-display" id="tp-display" style="padding: 1.5rem 0 0.5rem; position:relative;"></div>
+    <p id="tp-status" style="font-size:0.82rem; color:#999; margin-top:0.75rem; margin-bottom:0;"></p>
+  </div>
+
+  <script>
+  (function() {
+    const DATA = [1, 3, 5, 7, 9, 11, 14, 18];
+    let left, right, found, done;
+    const display = document.getElementById('tp-display');
+    const status = document.getElementById('tp-status');
+    const targetInput = document.getElementById('tp-target');
+
+    function getTarget() { return parseInt(targetInput.value) || 14; }
+
+    function render() {
+      display.innerHTML = '';
+      const target = getTarget();
+      DATA.forEach((val, i) => {
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;';
+
+        const label = document.createElement('div');
+        label.style.cssText = 'font-size:0.72rem;font-weight:600;min-height:18px;';
+        if (i === left && i === right) {
+          label.textContent = 'L/R';
+          label.style.color = '#c0614a';
+        } else if (i === left) {
+          label.textContent = 'L';
+          label.style.color = '#c0614a';
+        } else if (i === right) {
+          label.textContent = 'R';
+          label.style.color = '#3a72b0';
+        } else {
+          label.textContent = '';
+        }
+        wrapper.appendChild(label);
+
+        const cell = document.createElement('div');
+        cell.className = 'array-cell';
+        if (found && (i === left || i === right)) {
+          cell.classList.add('found');
+        } else if (i === left || i === right) {
+          cell.classList.add('compared');
+        } else if (done && !found && (i < left || i > right)) {
+          cell.style.opacity = '0.3';
+        }
+        cell.textContent = val;
+
+        const idx = document.createElement('span');
+        idx.className = 'cell-index';
+        idx.textContent = i;
+        cell.appendChild(idx);
+        wrapper.appendChild(cell);
+        display.appendChild(wrapper);
+      });
+
+      if (found) {
+        status.textContent = `Found! nums[${left}] + nums[${right}] = ${DATA[left]} + ${DATA[right]} = ${target}`;
+        status.style.color = '#4a7050';
+      } else if (done) {
+        status.textContent = `No pair found that sums to ${target}.`;
+        status.style.color = '#c0614a';
+      } else {
+        const sum = DATA[left] + DATA[right];
+        const cmp = sum < target ? '< target → move L right' : sum > target ? '> target → move R left' : '';
+        status.textContent = `sum = nums[${left}] + nums[${right}] = ${DATA[left]} + ${DATA[right]} = ${sum}  ${cmp}`;
+        status.style.color = '#999';
+      }
+    }
+
+    function reset() {
+      left = 0;
+      right = DATA.length - 1;
+      found = false;
+      done = false;
+      render();
+    }
+
+    window.tpStep = function() {
+      if (found || done) return;
+      const target = getTarget();
+      const sum = DATA[left] + DATA[right];
+
+      if (sum === target) {
+        found = true;
+      } else if (sum < target) {
+        left++;
+      } else {
+        right--;
+      }
+
+      if (left >= right && !found) done = true;
+      render();
+    };
+
+    window.tpReset = reset;
+    targetInput.addEventListener('change', reset);
+    reset();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Two Pointers — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

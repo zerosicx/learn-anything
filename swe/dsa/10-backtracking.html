@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backtracking — DSA Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Backtracking</h1>
+  <p class="subtitle">Systematically explore all possibilities by choosing, exploring, and un-choosing — the recursive engine behind combinatorial search</p>
+  <div class="badge-row">
+    <span class="badge">TypeScript</span>
+    <span class="badge">Recursion</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── 1. What is Backtracking? ─── -->
+  <h2>What is Backtracking?</h2>
+  <p>Backtracking is a refined brute force: instead of generating every possible solution and filtering, you build candidates incrementally and <strong>abandon a path as soon as it violates constraints</strong>. This "pruning" can reduce exponential work dramatically.</p>
+
+  <p>The core pattern has three steps at each decision point:</p>
+  <ol>
+    <li><strong>Choose:</strong> Add an element to the current partial solution.</li>
+    <li><strong>Explore:</strong> Recurse to make the next decision.</li>
+    <li><strong>Unchoose:</strong> Remove the element (backtrack) and try the next option.</li>
+  </ol>
+
+  <p>Think of it as walking a <strong>decision tree</strong>. Each internal node is a choice, each leaf is a complete candidate. Backtracking is a depth-first traversal of this tree, with pruning to skip entire subtrees that can't lead to valid solutions.</p>
+
+  <div class="key-concept">
+    <strong>When to use backtracking:</strong> Problems that ask you to "generate all...", "find all...", "count the number of ways...", or "is it possible to..." where the search space is a tree of choices. Classic signals: subsets, permutations, combinations, constraint satisfaction (N-Queens, Sudoku).
+  </div>
+
+  <!-- ─── 2. The Backtracking Template ─── -->
+  <h2>The Backtracking Template</h2>
+  <p>Nearly every backtracking problem follows this skeleton. Memorise it — the differences between problems are just what "choices" and "constraints" mean.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">backtrack</span>(
+  candidates: <span class="tp">T</span>[],
+  path: <span class="tp">T</span>[],
+  results: <span class="tp">T</span>[][],
+  start: <span class="tp">number</span>
+): <span class="kw">void</span> {
+  <span class="kw">if</span> (<span class="cm">/* goal condition */</span>) {
+    results.<span class="fn">push</span>([...path]); <span class="cm">// copy — path mutates</span>
+    <span class="kw">return</span>;
+  }
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = start; i &lt; candidates.length; i++) {
+    <span class="cm">// Choose</span>
+    path.<span class="fn">push</span>(candidates[i]);
+
+    <span class="cm">// Explore</span>
+    <span class="fn">backtrack</span>(candidates, path, results, i + <span class="num">1</span>);
+
+    <span class="cm">// Unchoose (backtrack)</span>
+    path.<span class="fn">pop</span>();
+  }
+}</code></pre>
+
+  <div class="tip">
+    <h4>Always copy the path</h4>
+    <p><code>[...path]</code> or <code>path.slice()</code> is essential when collecting results. The <code>path</code> array is mutated throughout recursion — if you push it directly into <code>results</code>, every entry will reference the same (eventually empty) array.</p>
+  </div>
+
+  <!-- ─── 3. Decision Tree Diagram ─── -->
+  <h2>Decision Tree: Subsets of [1, 2, 3]</h2>
+  <p>At each level, we decide whether to <strong>include</strong> or <strong>exclude</strong> the current element. The leaves are all 2³ = 8 possible subsets.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;">
+      <g font-family="DM Sans, sans-serif" font-size="11" text-anchor="middle">
+        <!-- Level labels -->
+        <text x="15" y="35" font-size="9" fill="#999" text-anchor="start">1?</text>
+        <text x="15" y="115" font-size="9" fill="#999" text-anchor="start">2?</text>
+        <text x="15" y="205" font-size="9" fill="#999" text-anchor="start">3?</text>
+
+        <!-- Root → include 1 -->
+        <line x1="350" y1="35" x2="180" y2="95" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="250" y="58" font-size="10" fill="#7a9e7e" font-weight="500">include 1</text>
+        <!-- Root → exclude 1 -->
+        <line x1="350" y1="35" x2="520" y2="95" stroke="#c0614a" stroke-width="2" stroke-dasharray="4"/>
+        <text x="450" y="58" font-size="10" fill="#c0614a" font-weight="500">exclude 1</text>
+
+        <!-- {1} → include 2 -->
+        <line x1="180" y1="115" x2="100" y2="185" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="130" y="148" font-size="9" fill="#7a9e7e">+2</text>
+        <!-- {1} → exclude 2 -->
+        <line x1="180" y1="115" x2="260" y2="185" stroke="#c0614a" stroke-width="1.5" stroke-dasharray="4"/>
+        <text x="230" y="148" font-size="9" fill="#c0614a">−2</text>
+
+        <!-- {} → include 2 -->
+        <line x1="520" y1="115" x2="440" y2="185" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="470" y="148" font-size="9" fill="#7a9e7e">+2</text>
+        <!-- {} → exclude 2 -->
+        <line x1="520" y1="115" x2="600" y2="185" stroke="#c0614a" stroke-width="1.5" stroke-dasharray="4"/>
+        <text x="570" y="148" font-size="9" fill="#c0614a">−2</text>
+
+        <!-- Level 3 edges (include/exclude 3) -->
+        <line x1="100" y1="205" x2="65" y2="270" stroke="#7a9e7e" stroke-width="1"/>
+        <line x1="100" y1="205" x2="135" y2="270" stroke="#c0614a" stroke-width="1" stroke-dasharray="3"/>
+        <line x1="260" y1="205" x2="225" y2="270" stroke="#7a9e7e" stroke-width="1"/>
+        <line x1="260" y1="205" x2="295" y2="270" stroke="#c0614a" stroke-width="1" stroke-dasharray="3"/>
+        <line x1="440" y1="205" x2="405" y2="270" stroke="#7a9e7e" stroke-width="1"/>
+        <line x1="440" y1="205" x2="475" y2="270" stroke="#c0614a" stroke-width="1" stroke-dasharray="3"/>
+        <line x1="600" y1="205" x2="565" y2="270" stroke="#7a9e7e" stroke-width="1"/>
+        <line x1="600" y1="205" x2="635" y2="270" stroke="#c0614a" stroke-width="1" stroke-dasharray="3"/>
+
+        <!-- Root node -->
+        <circle cx="350" cy="30" r="16" fill="#2c2c2c"/>
+        <text x="350" y="35" fill="#fff" font-size="10">{ }</text>
+
+        <!-- Level 1 nodes -->
+        <rect x="148" y="93" width="64" height="24" rx="6" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="180" y="110" fill="#4a7050" font-weight="500">{1}</text>
+        <rect x="488" y="93" width="64" height="24" rx="6" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="520" y="110">{ }</text>
+
+        <!-- Level 2 nodes -->
+        <rect x="63" y="183" width="74" height="24" rx="6" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="100" y="200" fill="#4a7050" font-weight="500">{1,2}</text>
+        <rect x="228" y="183" width="64" height="24" rx="6" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="260" y="200">{1}</text>
+        <rect x="408" y="183" width="64" height="24" rx="6" fill="#e8f3e9" stroke="#7a9e7e" stroke-width="1.5"/>
+        <text x="440" y="200" fill="#4a7050" font-weight="500">{2}</text>
+        <rect x="568" y="183" width="64" height="24" rx="6" fill="#faf6f0" stroke="#2c2c2c" stroke-width="1"/>
+        <text x="600" y="200">{ }</text>
+
+        <!-- Leaf nodes (subsets) -->
+        <rect x="28" y="270" width="76" height="22" rx="5" fill="#c0614a"/>
+        <text x="66" y="285" fill="#fff" font-size="10" font-weight="500">{1,2,3}</text>
+        <rect x="102" y="270" width="68" height="22" rx="5" fill="#c0614a"/>
+        <text x="136" y="285" fill="#fff" font-size="10" font-weight="500">{1,2}</text>
+        <rect x="192" y="270" width="68" height="22" rx="5" fill="#c0614a"/>
+        <text x="226" y="285" fill="#fff" font-size="10" font-weight="500">{1,3}</text>
+        <rect x="262" y="270" width="68" height="22" rx="5" fill="#c0614a"/>
+        <text x="296" y="285" fill="#fff" font-size="10" font-weight="500">{1}</text>
+        <rect x="372" y="270" width="68" height="22" rx="5" fill="#c0614a"/>
+        <text x="406" y="285" fill="#fff" font-size="10" font-weight="500">{2,3}</text>
+        <rect x="442" y="270" width="68" height="22" rx="5" fill="#c0614a"/>
+        <text x="476" y="285" fill="#fff" font-size="10" font-weight="500">{2}</text>
+        <rect x="532" y="270" width="68" height="22" rx="5" fill="#c0614a"/>
+        <text x="566" y="285" fill="#fff" font-size="10" font-weight="500">{3}</text>
+        <rect x="604" y="270" width="62" height="22" rx="5" fill="#c0614a"/>
+        <text x="635" y="285" fill="#fff" font-size="10" font-weight="500">{ }</text>
+
+        <!-- Legend -->
+        <line x1="30" y1="325" x2="55" y2="325" stroke="#7a9e7e" stroke-width="2"/>
+        <text x="62" y="329" font-size="9" fill="#999" text-anchor="start">include</text>
+        <line x1="120" y1="325" x2="145" y2="325" stroke="#c0614a" stroke-width="2" stroke-dasharray="4"/>
+        <text x="152" y="329" font-size="9" fill="#999" text-anchor="start">exclude</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ─── 4. Subsets ─── -->
+  <h2>Subsets</h2>
+  <p>Generate all subsets (the power set) of a given array. For each element, we either include it or skip it. This naturally maps to the decision tree above.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">subsets</span>(nums: <span class="tp">number</span>[]): <span class="tp">number</span>[][] {
+  <span class="kw">const</span> result: <span class="tp">number</span>[][] = [];
+
+  <span class="kw">function</span> <span class="fn">backtrack</span>(start: <span class="tp">number</span>, path: <span class="tp">number</span>[]): <span class="kw">void</span> {
+    result.<span class="fn">push</span>([...path]); <span class="cm">// every node is a valid subset</span>
+
+    <span class="kw">for</span> (<span class="kw">let</span> i = start; i &lt; nums.length; i++) {
+      path.<span class="fn">push</span>(nums[i]);       <span class="cm">// choose</span>
+      <span class="fn">backtrack</span>(i + <span class="num">1</span>, path);  <span class="cm">// explore</span>
+      path.<span class="fn">pop</span>();               <span class="cm">// unchoose</span>
+    }
+  }
+
+  <span class="fn">backtrack</span>(<span class="num">0</span>, []);
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// subsets([1, 2, 3])</span>
+<span class="cm">// → [[], [1], [1,2], [1,2,3], [1,3], [2], [2,3], [3]]</span></code></pre>
+
+  <p><strong>Walk-through with [1, 2, 3]:</strong></p>
+  <ol>
+    <li>Start with <code>[]</code> → collect it.</li>
+    <li>Choose 1 → path = <code>[1]</code> → collect. Choose 2 → <code>[1,2]</code> → collect. Choose 3 → <code>[1,2,3]</code> → collect. Backtrack to <code>[1,2]</code>, backtrack to <code>[1]</code>.</li>
+    <li>Choose 3 → <code>[1,3]</code> → collect. Backtrack to <code>[1]</code>, backtrack to <code>[]</code>.</li>
+    <li>Choose 2 → <code>[2]</code> → collect. Choose 3 → <code>[2,3]</code> → collect. Backtrack. Backtrack.</li>
+    <li>Choose 3 → <code>[3]</code> → collect. Done.</li>
+  </ol>
+
+  <div class="key-concept">
+    <strong>Time: O(n · 2ⁿ)</strong> — there are 2ⁿ subsets, and copying each takes up to O(n). <strong>Space: O(n)</strong> recursion depth (not counting the output).
+  </div>
+
+  <!-- ─── 5. Permutations ─── -->
+  <h2>Permutations</h2>
+  <p>Generate all orderings of the elements. The key difference from subsets: we only collect when the path has the same length as the input, and we can pick any unused element at each step (not just "from start onwards").</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">permutations</span>(nums: <span class="tp">number</span>[]): <span class="tp">number</span>[][] {
+  <span class="kw">const</span> result: <span class="tp">number</span>[][] = [];
+  <span class="kw">const</span> used = <span class="kw">new</span> <span class="fn">Array</span>&lt;<span class="tp">boolean</span>&gt;(nums.length).<span class="fn">fill</span>(<span class="kw">false</span>);
+
+  <span class="kw">function</span> <span class="fn">backtrack</span>(path: <span class="tp">number</span>[]): <span class="kw">void</span> {
+    <span class="kw">if</span> (path.length === nums.length) {
+      result.<span class="fn">push</span>([...path]);
+      <span class="kw">return</span>;
+    }
+
+    <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; nums.length; i++) {
+      <span class="kw">if</span> (used[i]) <span class="kw">continue</span>;
+
+      used[i] = <span class="kw">true</span>;
+      path.<span class="fn">push</span>(nums[i]);
+
+      <span class="fn">backtrack</span>(path);
+
+      path.<span class="fn">pop</span>();
+      used[i] = <span class="kw">false</span>;
+    }
+  }
+
+  <span class="fn">backtrack</span>([]);
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// permutations([1, 2, 3])</span>
+<span class="cm">// → [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]</span></code></pre>
+
+  <div class="warning">
+    <h4>Subsets vs Permutations</h4>
+    <p><strong>Subsets</strong> use <code>start</code> to avoid picking earlier elements (order doesn't matter → combinations). <strong>Permutations</strong> loop from 0 every time but skip <code>used</code> elements (order matters). Mixing these up is the #1 backtracking bug in interviews.</p>
+  </div>
+
+  <!-- ─── 6. Combination Sum ─── -->
+  <h2>Combination Sum</h2>
+  <p>Find all combinations of <code>candidates</code> that sum to <code>target</code>. Each candidate can be used <strong>unlimited times</strong>. The trick: instead of advancing <code>start</code> to <code>i + 1</code>, stay at <code>i</code> to allow reuse.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">combinationSum</span>(
+  candidates: <span class="tp">number</span>[],
+  target: <span class="tp">number</span>
+): <span class="tp">number</span>[][] {
+  <span class="kw">const</span> result: <span class="tp">number</span>[][] = [];
+
+  <span class="kw">function</span> <span class="fn">backtrack</span>(
+    start: <span class="tp">number</span>,
+    path: <span class="tp">number</span>[],
+    remaining: <span class="tp">number</span>
+  ): <span class="kw">void</span> {
+    <span class="kw">if</span> (remaining === <span class="num">0</span>) {
+      result.<span class="fn">push</span>([...path]);
+      <span class="kw">return</span>;
+    }
+
+    <span class="kw">for</span> (<span class="kw">let</span> i = start; i &lt; candidates.length; i++) {
+      <span class="kw">if</span> (candidates[i] > remaining) <span class="kw">continue</span>; <span class="cm">// prune</span>
+
+      path.<span class="fn">push</span>(candidates[i]);
+      <span class="fn">backtrack</span>(i, path, remaining - candidates[i]); <span class="cm">// i, not i+1</span>
+      path.<span class="fn">pop</span>();
+    }
+  }
+
+  candidates.<span class="fn">sort</span>((a, b) => a - b);
+  <span class="fn">backtrack</span>(<span class="num">0</span>, [], target);
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// combinationSum([2, 3, 6, 7], 7)</span>
+<span class="cm">// → [[2,2,3], [7]]</span></code></pre>
+
+  <div class="tip">
+    <h4>Sorting enables pruning</h4>
+    <p>Sorting candidates first lets you <code>break</code> (instead of <code>continue</code>) once a candidate exceeds the remaining target — all subsequent candidates are even larger, so the entire subtree is worthless.</p>
+  </div>
+
+  <!-- ─── 7. N-Queens ─── -->
+  <h2>N-Queens</h2>
+  <p>Place n queens on an n×n chessboard so no two attack each other. This is the classic constraint-satisfaction backtracking problem.</p>
+
+  <p>We place one queen per row. For each row, we try every column. A placement is valid if no queen exists in the same column, or on either diagonal. We track occupied columns and diagonals with sets.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">solveNQueens</span>(n: <span class="tp">number</span>): <span class="tp">string</span>[][] {
+  <span class="kw">const</span> results: <span class="tp">string</span>[][] = [];
+  <span class="kw">const</span> cols = <span class="kw">new</span> <span class="fn">Set</span>&lt;<span class="tp">number</span>&gt;();
+  <span class="kw">const</span> diag1 = <span class="kw">new</span> <span class="fn">Set</span>&lt;<span class="tp">number</span>&gt;(); <span class="cm">// row - col</span>
+  <span class="kw">const</span> diag2 = <span class="kw">new</span> <span class="fn">Set</span>&lt;<span class="tp">number</span>&gt;(); <span class="cm">// row + col</span>
+  <span class="kw">const</span> board: <span class="tp">number</span>[] = [];       <span class="cm">// board[row] = col</span>
+
+  <span class="kw">function</span> <span class="fn">backtrack</span>(row: <span class="tp">number</span>): <span class="kw">void</span> {
+    <span class="kw">if</span> (row === n) {
+      results.<span class="fn">push</span>(
+        board.<span class="fn">map</span>(col =>
+          <span class="str">"."</span>.<span class="fn">repeat</span>(col) + <span class="str">"Q"</span> + <span class="str">"."</span>.<span class="fn">repeat</span>(n - col - <span class="num">1</span>)
+        )
+      );
+      <span class="kw">return</span>;
+    }
+
+    <span class="kw">for</span> (<span class="kw">let</span> col = <span class="num">0</span>; col &lt; n; col++) {
+      <span class="kw">if</span> (cols.<span class="fn">has</span>(col) || diag1.<span class="fn">has</span>(row - col) || diag2.<span class="fn">has</span>(row + col)) {
+        <span class="kw">continue</span>;
+      }
+
+      cols.<span class="fn">add</span>(col);
+      diag1.<span class="fn">add</span>(row - col);
+      diag2.<span class="fn">add</span>(row + col);
+      board.<span class="fn">push</span>(col);
+
+      <span class="fn">backtrack</span>(row + <span class="num">1</span>);
+
+      board.<span class="fn">pop</span>();
+      cols.<span class="fn">delete</span>(col);
+      diag1.<span class="fn">delete</span>(row - col);
+      diag2.<span class="fn">delete</span>(row + col);
+    }
+  }
+
+  <span class="fn">backtrack</span>(<span class="num">0</span>);
+  <span class="kw">return</span> results;
+}
+
+<span class="cm">// solveNQueens(4) → [</span>
+<span class="cm">//   [".Q..","...Q","Q...","..Q."],</span>
+<span class="cm">//   ["..Q.","Q...","...Q",".Q.."]</span>
+<span class="cm">// ]</span></code></pre>
+
+  <div class="key-concept">
+    <strong>Diagonal trick:</strong> Two cells (r1, c1) and (r2, c2) share a diagonal when <code>r1 - c1 === r2 - c2</code> (↘ diagonal) or <code>r1 + c1 === r2 + c2</code> (↗ diagonal). Sets make this O(1) to check.
+  </div>
+
+  <!-- ─── 8. Word Search ─── -->
+  <h2>Word Search</h2>
+  <p>Given a 2D grid of characters and a target word, determine if the word exists in the grid by following adjacent cells (up, down, left, right). Each cell may be used only once per word.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">exist</span>(board: <span class="tp">string</span>[][], word: <span class="tp">string</span>): <span class="tp">boolean</span> {
+  <span class="kw">const</span> rows = board.length;
+  <span class="kw">const</span> cols = board[<span class="num">0</span>].length;
+
+  <span class="kw">function</span> <span class="fn">dfs</span>(r: <span class="tp">number</span>, c: <span class="tp">number</span>, idx: <span class="tp">number</span>): <span class="tp">boolean</span> {
+    <span class="kw">if</span> (idx === word.length) <span class="kw">return true</span>;
+    <span class="kw">if</span> (r &lt; <span class="num">0</span> || r >= rows || c &lt; <span class="num">0</span> || c >= cols) <span class="kw">return false</span>;
+    <span class="kw">if</span> (board[r][c] !== word[idx]) <span class="kw">return false</span>;
+
+    <span class="kw">const</span> saved = board[r][c];
+    board[r][c] = <span class="str">"#"</span>; <span class="cm">// mark visited</span>
+
+    <span class="kw">const</span> found =
+      <span class="fn">dfs</span>(r + <span class="num">1</span>, c, idx + <span class="num">1</span>) ||
+      <span class="fn">dfs</span>(r - <span class="num">1</span>, c, idx + <span class="num">1</span>) ||
+      <span class="fn">dfs</span>(r, c + <span class="num">1</span>, idx + <span class="num">1</span>) ||
+      <span class="fn">dfs</span>(r, c - <span class="num">1</span>, idx + <span class="num">1</span>);
+
+    board[r][c] = saved; <span class="cm">// unchoose</span>
+    <span class="kw">return</span> found;
+  }
+
+  <span class="kw">for</span> (<span class="kw">let</span> r = <span class="num">0</span>; r &lt; rows; r++) {
+    <span class="kw">for</span> (<span class="kw">let</span> c = <span class="num">0</span>; c &lt; cols; c++) {
+      <span class="kw">if</span> (<span class="fn">dfs</span>(r, c, <span class="num">0</span>)) <span class="kw">return true</span>;
+    }
+  }
+  <span class="kw">return false</span>;
+}
+
+<span class="cm">// const board = [</span>
+<span class="cm">//   ["A","B","C","E"],</span>
+<span class="cm">//   ["S","F","C","S"],</span>
+<span class="cm">//   ["A","D","E","E"]</span>
+<span class="cm">// ];</span>
+<span class="cm">// exist(board, "ABCCED") → true</span>
+<span class="cm">// exist(board, "SEE")    → true</span>
+<span class="cm">// exist(board, "ABCB")   → false</span></code></pre>
+
+  <div class="tip">
+    <h4>In-place visited marking</h4>
+    <p>Instead of a separate <code>visited</code> set, we temporarily replace the cell with <code>"#"</code> and restore it after. This saves O(mn) space and is a common grid-backtracking trick.</p>
+  </div>
+
+  <!-- ─── 9. Interactive Visualisation ─── -->
+  <h2>Interactive: Subset Generation</h2>
+  <p>Watch the backtracking algorithm generate all subsets of [1, 2, 3]. The decision tree grows as each branch is explored, with the current path highlighted.</p>
+
+  <div class="viz-container">
+    <div class="viz-controls">
+      <button class="viz-btn" id="bt-start-btn">Generate Subsets</button>
+      <button class="viz-btn secondary" id="bt-step-btn" disabled>Step</button>
+      <button class="viz-btn secondary" id="bt-auto-btn" disabled>Auto Play</button>
+      <button class="viz-btn secondary" id="bt-reset-btn">Reset</button>
+    </div>
+    <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
+      <div style="flex:1; min-width:320px; text-align:center; overflow-x:auto;">
+        <svg id="bt-svg" viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg" style="max-width:500px; min-height:240px;"></svg>
+      </div>
+      <div style="flex:0 0 180px;">
+        <p style="font-size:0.82rem; font-weight:500; margin-bottom:0.5rem;">Collected subsets:</p>
+        <div id="bt-results" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; line-height:1.8;"></div>
+      </div>
+    </div>
+    <p id="bt-status" style="font-size:0.82rem; color:#999; margin-top:0.75rem; margin-bottom:0;">Press "Generate Subsets" to begin.</p>
+  </div>
+
+  <script>
+  (function() {
+    const svg = document.getElementById('bt-svg');
+    const resultsDiv = document.getElementById('bt-results');
+    const statusEl = document.getElementById('bt-status');
+    const startBtn = document.getElementById('bt-start-btn');
+    const stepBtn = document.getElementById('bt-step-btn');
+    const autoBtn = document.getElementById('bt-auto-btn');
+    const resetBtn = document.getElementById('bt-reset-btn');
+
+    const INPUT = [1, 2, 3];
+    let steps = [];
+    let currentStep = 0;
+    let autoInterval = null;
+
+    function generateSteps() {
+      steps = [];
+      const collected = [];
+
+      function backtrack(start, path) {
+        const snapshot = [...path];
+        collected.push([...snapshot]);
+        steps.push({ type: 'collect', path: [...snapshot], collected: collected.map(s => [...s]), start });
+
+        for (let i = start; i < INPUT.length; i++) {
+          path.push(INPUT[i]);
+          steps.push({ type: 'choose', path: [...path], collected: collected.map(s => [...s]), start: i, chosen: INPUT[i] });
+          backtrack(i + 1, path);
+          path.pop();
+          steps.push({ type: 'unchoose', path: [...path], collected: collected.map(s => [...s]), start: i, unchosen: INPUT[i] });
+        }
+      }
+
+      backtrack(0, []);
+    }
+
+    function renderTree() {
+      if (currentStep === 0) {
+        svg.innerHTML = '<text x="250" y="160" text-anchor="middle" font-family="DM Sans" font-size="13" fill="#999">Decision tree will appear here</text>';
+        resultsDiv.innerHTML = '';
+        return;
+      }
+
+      const step = steps[Math.min(currentStep - 1, steps.length - 1)];
+
+      const nodeMap = new Map();
+      const nodeList = [];
+
+      function addNode(path, parent) {
+        const key = path.join(',');
+        if (nodeMap.has(key)) return;
+        nodeMap.set(key, { path: [...path], key, parent, children: [] });
+        nodeList.push(nodeMap.get(key));
+        if (parent !== null && nodeMap.has(parent)) {
+          nodeMap.get(parent).children.push(key);
+        }
+      }
+
+      addNode([], null);
+
+      for (let s = 0; s < currentStep && s < steps.length; s++) {
+        const st = steps[s];
+        if (st.type === 'choose' || st.type === 'collect') {
+          const p = [...st.path];
+          const parentKey = p.length > 0 ? p.slice(0, -1).join(',') : null;
+          if (p.length > 0 || !nodeMap.has('')) {
+            addNode(p, parentKey !== null ? parentKey : null);
+          }
+        }
+      }
+
+      if (nodeList.length === 0) return;
+
+      let nextX = 0;
+      const positions = new Map();
+
+      function layout(key) {
+        const node = nodeMap.get(key);
+        if (!node) return;
+        const depth = node.path.length;
+
+        if (node.children.length === 0) {
+          positions.set(key, { x: nextX, y: depth });
+          nextX++;
+          return;
+        }
+
+        for (const child of node.children) {
+          layout(child);
+        }
+
+        const firstPos = positions.get(node.children[0]);
+        const lastPos = positions.get(node.children[node.children.length - 1]);
+        positions.set(key, {
+          x: (firstPos.x + lastPos.x) / 2,
+          y: depth
+        });
+      }
+
+      layout('');
+
+      const maxX = Math.max(...[...positions.values()].map(p => p.x));
+      const maxY = Math.max(...[...positions.values()].map(p => p.y));
+      const padX = 65;
+      const padY = 70;
+      const width = Math.max(400, (maxX + 1) * padX + 60);
+      const height = (maxY + 1) * padY + 50;
+      const offsetX = (width - maxX * padX) / 2;
+
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+      let html = '';
+      const currentPath = step.path.join(',');
+
+      for (const node of nodeList) {
+        const key = node.key;
+        const pos = positions.get(key);
+        if (!pos) continue;
+
+        if (node.parent !== null && positions.has(node.parent)) {
+          const pPos = positions.get(node.parent);
+          const x1 = pPos.x * padX + offsetX;
+          const y1 = pPos.y * padY + 30;
+          const x2 = pos.x * padX + offsetX;
+          const y2 = pos.y * padY + 30;
+          html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#e2ddd5" stroke-width="1.5"/>`;
+        }
+      }
+
+      for (const node of nodeList) {
+        const key = node.key;
+        const pos = positions.get(key);
+        if (!pos) continue;
+
+        const cx = pos.x * padX + offsetX;
+        const cy = pos.y * padY + 30;
+        const isCurrent = key === currentPath;
+        const isOnPath = currentPath.startsWith(key) || key === currentPath;
+        const isCollected = step.collected.some(c => c.join(',') === key);
+
+        let fill, stroke, textFill;
+        if (isCurrent && step.type === 'collect') {
+          fill = '#7a9e7e'; stroke = '#4a7050'; textFill = '#fff';
+        } else if (isCurrent) {
+          fill = '#c0614a'; stroke = '#c0614a'; textFill = '#fff';
+        } else if (isCollected) {
+          fill = '#e8f3e9'; stroke = '#7a9e7e'; textFill = '#4a7050';
+        } else {
+          fill = '#faf6f0'; stroke = '#2c2c2c'; textFill = '#2c2c2c';
+        }
+
+        const r = 18;
+        html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+        const label = node.path.length === 0 ? '{ }' : `{${node.path.join(',')}}`;
+        const fontSize = label.length > 5 ? 8 : label.length > 3 ? 9 : 10;
+        html += `<text x="${cx}" y="${cy + 4}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="${fontSize}" fill="${textFill}" font-weight="500">${label}</text>`;
+      }
+
+      svg.innerHTML = html;
+
+      resultsDiv.innerHTML = step.collected
+        .map(s => `<span style="display:inline-block; background:#e8f3e9; border:1px solid #b5cfb7; border-radius:4px; padding:0.1rem 0.4rem; margin:0.1rem;">[${s.join(',')}]</span>`)
+        .join(' ');
+
+      if (step.type === 'collect') {
+        statusEl.textContent = `Collected subset: [${step.path.join(', ')}]`;
+        statusEl.style.color = '#4a7050';
+      } else if (step.type === 'choose') {
+        statusEl.textContent = `Choose ${step.chosen} → path = [${step.path.join(', ')}]`;
+        statusEl.style.color = '#c0614a';
+      } else {
+        statusEl.textContent = `Unchoose ${step.unchosen} → path = [${step.path.join(', ')}]`;
+        statusEl.style.color = '#999';
+      }
+    }
+
+    function advance() {
+      if (currentStep >= steps.length) {
+        if (autoInterval) { clearInterval(autoInterval); autoInterval = null; autoBtn.textContent = 'Auto Play'; }
+        statusEl.textContent = `Done! Generated ${steps[steps.length-1].collected.length} subsets.`;
+        statusEl.style.color = '#4a7050';
+        stepBtn.disabled = true;
+        autoBtn.disabled = true;
+        return;
+      }
+      currentStep++;
+      renderTree();
+    }
+
+    startBtn.addEventListener('click', () => {
+      generateSteps();
+      currentStep = 0;
+      stepBtn.disabled = false;
+      autoBtn.disabled = false;
+      statusEl.textContent = 'Use Step or Auto Play to walk through the algorithm.';
+      statusEl.style.color = '#999';
+      renderTree();
+    });
+
+    stepBtn.addEventListener('click', advance);
+
+    autoBtn.addEventListener('click', () => {
+      if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+        autoBtn.textContent = 'Auto Play';
+      } else {
+        autoBtn.textContent = 'Pause';
+        autoInterval = setInterval(advance, 600);
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if (autoInterval) { clearInterval(autoInterval); autoInterval = null; }
+      currentStep = 0;
+      steps = [];
+      stepBtn.disabled = true;
+      autoBtn.disabled = true;
+      autoBtn.textContent = 'Auto Play';
+      statusEl.textContent = 'Press "Generate Subsets" to begin.';
+      statusEl.style.color = '#999';
+      renderTree();
+    });
+
+    renderTree();
+  })();
+  </script>
+
+</main>
+
+<footer>
+  Backtracking — Part of Learn Anything by Hannah
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>
