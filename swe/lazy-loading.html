@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lazy Loading — Learn Anything</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #faf6f0;
+      --sage: #7a9e7e;
+      --sage-light: #b5cfb7;
+      --sage-dark: #4a7050;
+      --terracotta: #c0614a;
+      --terracotta-light: #fde8e4;
+      --amber: #d4a843;
+      --amber-light: #fdf4e0;
+      --charcoal: #2c2c2c;
+      --warm-white: #fffef9;
+      --green-light: #e8f3e9;
+      --border: #e2ddd5;
+      --code-bg: #2c2c2c;
+      --code-fg: #e8e8e8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--charcoal);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--terracotta);
+      color: var(--warm-white);
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: -40px;
+      width: 140px; height: 140px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      font-weight: 300;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      padding: 0.25rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--terracotta);
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #e8a090;
+    }
+
+    h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--charcoal);
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 1rem 0 0.5rem;
+      color: var(--charcoal);
+    }
+
+    p { margin-bottom: 0.75em; }
+    ul, ol { margin: 0.75em 0; padding-left: 1.5em; }
+    li { margin: 0.35em 0; }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-fg);
+      padding: 1.25rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      margin: 1rem 0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    pre .lang-label {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.75rem;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.35);
+      font-family: 'DM Sans', sans-serif;
+      pointer-events: none;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 0.85rem;
+      background: #f3f0ea;
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    pre code { background: none; padding: 0; }
+
+    .kw { color: #c792ea; }
+    .str { color: #c3e88d; }
+    .num { color: #f78c6c; }
+    .cm { color: #676e95; font-style: italic; }
+    .fn { color: #82aaff; }
+    .tp { color: #ffcb6b; }
+    .op { color: #89ddff; }
+    .tag { color: #f07178; }
+    .attr { color: #c792ea; }
+
+    .key-concept {
+      background: var(--green-light);
+      border-left: 4px solid var(--sage);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .key-concept strong { color: var(--sage-dark); }
+
+    .warning {
+      background: var(--amber-light);
+      border-left: 4px solid var(--amber);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .warning h4 { color: #6b5a30; margin-top: 0; }
+
+    .tip {
+      background: var(--green-light);
+      border-left: 4px solid var(--sage);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .tip h4 { color: var(--sage-dark); margin-top: 0; }
+
+    .analogy-box {
+      background: var(--warm-white);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .analogy-box h4 {
+      margin-top: 0;
+      color: var(--terracotta);
+      font-size: 1rem;
+    }
+
+    .analogy-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .analogy-col {
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+    }
+
+    .analogy-col.bad {
+      background: var(--terracotta-light);
+      border: 1px solid #e8a090;
+    }
+
+    .analogy-col.good {
+      background: var(--green-light);
+      border: 1px solid var(--sage-light);
+    }
+
+    .analogy-col h4 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .analogy-col.bad h4 { color: var(--terracotta); }
+    .analogy-col.good h4 { color: var(--sage-dark); }
+
+    .analogy-col p { font-size: 0.9rem; margin-bottom: 0; }
+
+    .diagram {
+      text-align: center;
+      margin: 1.5rem 0;
+      background: var(--warm-white);
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      overflow-x: auto;
+    }
+
+    .diagram svg { max-width: 100%; height: auto; }
+
+    .viz-container {
+      background: var(--warm-white);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .step-list {
+      counter-reset: step-counter;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .step-list li {
+      counter-increment: step-counter;
+      position: relative;
+      padding-left: 2.5rem;
+      margin: 0.75em 0;
+    }
+
+    .step-list li::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0.1em;
+      width: 1.6rem;
+      height: 1.6rem;
+      background: var(--terracotta);
+      color: var(--warm-white);
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .compare-card {
+      background: var(--warm-white);
+      border-radius: 10px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .compare-card h4 {
+      margin-top: 0;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .compare-card.eager h4 { color: var(--terracotta); }
+    .compare-card.lazy h4 { color: var(--sage-dark); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      margin: 1rem 0 1.5rem;
+      background: var(--warm-white);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    thead tr { background: var(--terracotta); color: var(--warm-white); }
+    thead th {
+      padding: 0.85rem 1rem;
+      text-align: left;
+      font-weight: 500;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f3f0ea; }
+    td { padding: 0.75rem 1rem; vertical-align: top; }
+    td:first-child { font-weight: 500; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.78rem;
+      color: #999;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    .tldr-box {
+      background: var(--charcoal);
+      color: var(--code-fg);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    .tldr-box strong { color: var(--sage-light); }
+
+    @media (max-width: 600px) {
+      main { padding: 1.5rem 1rem 3rem; }
+      pre { font-size: 0.75rem; padding: 1rem; }
+      .analogy-columns { grid-template-columns: 1fr; }
+      .compare-grid { grid-template-columns: 1fr; }
+      table { font-size: 0.8rem; }
+      td, th { padding: 0.6rem 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Lazy Loading</h1>
+  <p class="subtitle">Don't load stuff until you actually need it — faster apps, less bandwidth, happier users</p>
+  <div class="badge-row">
+    <span class="badge">JavaScript</span>
+    <span class="badge">React</span>
+    <span class="badge">Performance</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── The Analogy ─── -->
+  <h2>The Restaurant Analogy</h2>
+  <p>Imagine you walk into a restaurant. There are two ways they could serve you:</p>
+
+  <div class="analogy-box">
+    <div class="analogy-columns">
+      <div class="analogy-col bad">
+        <h4>Without lazy loading</h4>
+        <p>The kitchen cooks <em>every single dish on the menu</em> the moment you sit down. You only ordered a salad, but they also made 47 pasta dishes, 12 steaks, and a birthday cake. Your salad takes forever because the kitchen is swamped doing work nobody asked for.</p>
+      </div>
+      <div class="analogy-col good">
+        <h4>With lazy loading</h4>
+        <p>The kitchen only cooks your salad when you order it. If you later want dessert, they'll make it <em>then</em>. Fast, efficient, no wasted work.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="key-concept">
+    <strong>Core principle:</strong> Lazy loading = don't load stuff until you actually need it. Your app starts faster because it only downloads code (or images, or data) the user actually uses, right when they use it.
+  </div>
+
+  <!-- ─── Eager vs Lazy Imports ─── -->
+  <h2>Eager vs Lazy: Static <code>import</code></h2>
+  <p>Normally, when you <code>import</code> something at the top of a file, it gets loaded immediately when the page loads — even if the user never sees it. These are called <strong>static imports</strong> (or "eager" imports).</p>
+
+  <pre><code><span class="lang-label">TypeScript</span><span class="cm">// These are loaded IMMEDIATELY when this file runs — no matter what</span>
+<span class="kw">import</span> { Chart } <span class="kw">from</span> <span class="str">'chart.js'</span>;
+<span class="kw">import</span> { PDFExporter } <span class="kw">from</span> <span class="str">'./pdf-exporter'</span>;
+<span class="kw">import</span> { MarkdownEditor } <span class="kw">from</span> <span class="str">'./markdown-editor'</span>;
+<span class="kw">import</span> { VideoPlayer } <span class="kw">from</span> <span class="str">'./video-player'</span>;</code></pre>
+
+  <p>Even if the user never opens the chart, never exports a PDF, never writes markdown, and never plays a video — <em>all</em> that code is downloaded and parsed upfront. That's a lot of wasted work.</p>
+
+  <!-- ─── Dynamic import() ─── -->
+  <h2>Dynamic <code>import()</code></h2>
+  <p>JavaScript has a built-in solution: the dynamic <code>import()</code> expression. Instead of loading a module at the top of the file, you call <code>import()</code> as a function inside your code. It returns a <strong>Promise</strong> that resolves to the module when it's ready.</p>
+
+  <pre><code><span class="lang-label">TypeScript</span><span class="cm">// Nothing is loaded yet — this just defines a function</span>
+<span class="kw">async function</span> <span class="fn">openChartPanel</span>() {
+  <span class="cm">// NOW the chart code downloads — only when the user clicks "Show Chart"</span>
+  <span class="kw">const</span> { Chart } = <span class="kw">await</span> <span class="fn">import</span>(<span class="str">'chart.js'</span>);
+
+  <span class="kw">const</span> chart = <span class="kw">new</span> <span class="fn">Chart</span>(canvas, {
+    type: <span class="str">'bar'</span>,
+    data: salesData,
+  });
+}</code></pre>
+
+  <p>The key difference:</p>
+
+  <div class="compare-grid">
+    <div class="compare-card eager">
+      <h4>Static import (eager)</h4>
+      <pre><code><span class="kw">import</span> { Chart } <span class="kw">from</span> <span class="str">'chart.js'</span>;</code></pre>
+      <p style="font-size:0.85rem; margin-top:0.5rem;">Loaded immediately at page startup. Blocks rendering until downloaded and parsed.</p>
+    </div>
+    <div class="compare-card lazy">
+      <h4>Dynamic import (lazy)</h4>
+      <pre><code><span class="kw">const</span> { Chart } = <span class="kw">await</span> <span class="fn">import</span>(<span class="str">'chart.js'</span>);</code></pre>
+      <p style="font-size:0.85rem; margin-top:0.5rem;">Loaded on-demand when this line executes. The rest of the page loads instantly.</p>
+    </div>
+  </div>
+
+  <div class="tip">
+    <h4>How bundlers handle this</h4>
+    <p>When tools like Webpack or Vite see a dynamic <code>import()</code>, they automatically split that module into a <strong>separate chunk</strong> (a separate .js file). At runtime, the browser only fetches that chunk when the <code>import()</code> is called. This is called <strong>code splitting</strong>.</p>
+  </div>
+
+  <!-- ─── Practical Example: Feature Flags ─── -->
+  <h2>Practical Example: Settings Page</h2>
+  <p>Imagine a dashboard app with a settings page. The settings page has tabs: Profile, Notifications, Billing, and Admin (only for admins). Each tab has complex UI. Without lazy loading, every user downloads the code for every tab — including the Admin panel they'll never see.</p>
+
+  <pre><code><span class="lang-label">TypeScript</span><span class="cm">// settings-page.ts</span>
+
+<span class="kw">type</span> <span class="tp">TabName</span> = <span class="str">'profile'</span> | <span class="str">'notifications'</span> | <span class="str">'billing'</span> | <span class="str">'admin'</span>;
+
+<span class="kw">async function</span> <span class="fn">loadTab</span>(tab: <span class="tp">TabName</span>) {
+  <span class="kw">switch</span> (tab) {
+    <span class="kw">case</span> <span class="str">'profile'</span>:
+      <span class="kw">return</span> <span class="fn">import</span>(<span class="str">'./tabs/profile'</span>);
+    <span class="kw">case</span> <span class="str">'notifications'</span>:
+      <span class="kw">return</span> <span class="fn">import</span>(<span class="str">'./tabs/notifications'</span>);
+    <span class="kw">case</span> <span class="str">'billing'</span>:
+      <span class="kw">return</span> <span class="fn">import</span>(<span class="str">'./tabs/billing'</span>);
+    <span class="kw">case</span> <span class="str">'admin'</span>:
+      <span class="kw">return</span> <span class="fn">import</span>(<span class="str">'./tabs/admin'</span>);
+  }
+}
+
+<span class="cm">// When user clicks a tab:</span>
+tabButton.<span class="fn">addEventListener</span>(<span class="str">'click'</span>, <span class="kw">async</span> () <span class="kw">=></span> {
+  <span class="kw">const</span> module = <span class="kw">await</span> <span class="fn">loadTab</span>(<span class="str">'billing'</span>);
+  module.<span class="fn">render</span>(container);
+});</code></pre>
+
+  <p>Each tab's code lives in its own file. The bundler creates separate chunks. Users only download the tab they click on.</p>
+
+  <!-- ─── React: Suspense + lazy ─── -->
+  <h2>React: <code>React.lazy</code> + <code>Suspense</code></h2>
+  <p>React has a built-in pattern for lazy loading components. You wrap a dynamic <code>import()</code> with <code>React.lazy()</code>, and React handles the rest — including showing a fallback while the component downloads.</p>
+
+  <h3>Basic pattern</h3>
+  <pre><code><span class="lang-label">TSX</span><span class="kw">import</span> React, { Suspense, lazy } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="cm">// This does NOT load the chart code yet — just creates a lazy wrapper</span>
+<span class="kw">const</span> <span class="tp">ChartPanel</span> = <span class="fn">lazy</span>(() <span class="kw">=></span> <span class="fn">import</span>(<span class="str">'./ChartPanel'</span>));
+
+<span class="kw">function</span> <span class="fn">Dashboard</span>() {
+  <span class="kw">const</span> [showChart, setShowChart] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="kw">return</span> (
+    <span class="op">&lt;</span><span class="tag">div</span><span class="op">></span>
+      <span class="op">&lt;</span><span class="tag">button</span> <span class="attr">onClick</span>={() <span class="kw">=></span> <span class="fn">setShowChart</span>(<span class="kw">true</span>)}<span class="op">></span>Show Chart<span class="op">&lt;/</span><span class="tag">button</span><span class="op">></span>
+
+      {showChart <span class="op">&&</span> (
+        <span class="op">&lt;</span><span class="tp">Suspense</span> <span class="attr">fallback</span>={<span class="op">&lt;</span><span class="tag">p</span><span class="op">></span>Loading chart...<span class="op">&lt;/</span><span class="tag">p</span><span class="op">></span>}<span class="op">></span>
+          <span class="op">&lt;</span><span class="tp">ChartPanel</span> <span class="op">/></span>
+        <span class="op">&lt;/</span><span class="tp">Suspense</span><span class="op">></span>
+      )}
+    <span class="op">&lt;/</span><span class="tag">div</span><span class="op">></span>
+  );
+}</code></pre>
+
+  <p>What happens step by step:</p>
+
+  <ol class="step-list">
+    <li><code>React.lazy()</code> wraps the dynamic <code>import()</code> — the chart code <strong>is not loaded yet</strong></li>
+    <li>The user clicks "Show Chart" and <code>showChart</code> becomes <code>true</code></li>
+    <li>React tries to render <code>&lt;ChartPanel /&gt;</code> for the first time, triggering the download</li>
+    <li>While downloading, <code>&lt;Suspense fallback={...}&gt;</code> renders "Loading chart..." as a placeholder</li>
+    <li>Once the code arrives, the real <code>&lt;ChartPanel&gt;</code> renders and replaces the fallback</li>
+  </ol>
+
+  <h3>Skeleton placeholders</h3>
+  <p>Instead of showing text like "Loading...", you can show a skeleton that mimics the shape of the real content. This feels faster to users because they see the layout immediately.</p>
+
+  <pre><code><span class="lang-label">TSX</span><span class="kw">const</span> <span class="tp">UserProfile</span> = <span class="fn">lazy</span>(() <span class="kw">=></span> <span class="fn">import</span>(<span class="str">'./UserProfile'</span>));
+
+<span class="kw">function</span> <span class="fn">ProfileSkeleton</span>() {
+  <span class="kw">return</span> (
+    <span class="op">&lt;</span><span class="tag">div</span> <span class="attr">className</span>=<span class="str">"profile-skeleton"</span><span class="op">></span>
+      <span class="op">&lt;</span><span class="tag">div</span> <span class="attr">className</span>=<span class="str">"skeleton-avatar"</span> <span class="op">/></span>
+      <span class="op">&lt;</span><span class="tag">div</span> <span class="attr">className</span>=<span class="str">"skeleton-line wide"</span> <span class="op">/></span>
+      <span class="op">&lt;</span><span class="tag">div</span> <span class="attr">className</span>=<span class="str">"skeleton-line"</span> <span class="op">/></span>
+    <span class="op">&lt;/</span><span class="tag">div</span><span class="op">></span>
+  );
+}
+
+<span class="cm">// Skeleton shows instantly, real profile swaps in when ready</span>
+<span class="op">&lt;</span><span class="tp">Suspense</span> <span class="attr">fallback</span>={<span class="op">&lt;</span><span class="tp">ProfileSkeleton</span> <span class="op">/></span>}<span class="op">></span>
+  <span class="op">&lt;</span><span class="tp">UserProfile</span> <span class="attr">userId</span>={<span class="num">42</span>} <span class="op">/></span>
+<span class="op">&lt;/</span><span class="tp">Suspense</span><span class="op">></span></code></pre>
+
+  <div class="key-concept">
+    <strong>Fallback options:</strong> Use <code>fallback={null}</code> to show nothing (invisible loading), a spinner for generic loading states, or a skeleton component for the best perceived performance. Match the skeleton's shape to the real component's layout.
+  </div>
+
+  <!-- ─── Route-based Code Splitting ─── -->
+  <h2>Route-Based Code Splitting</h2>
+  <p>The most impactful place to lazy load is at the <strong>route level</strong>. Each page of your app becomes a separate chunk that only downloads when the user navigates to it.</p>
+
+  <pre><code><span class="lang-label">TSX</span><span class="kw">import</span> { BrowserRouter, Routes, Route } <span class="kw">from</span> <span class="str">'react-router-dom'</span>;
+<span class="kw">import</span> React, { Suspense, lazy } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="cm">// Each page is a lazy-loaded chunk</span>
+<span class="kw">const</span> <span class="tp">Home</span>       = <span class="fn">lazy</span>(() <span class="kw">=></span> <span class="fn">import</span>(<span class="str">'./pages/Home'</span>));
+<span class="kw">const</span> <span class="tp">Dashboard</span>  = <span class="fn">lazy</span>(() <span class="kw">=></span> <span class="fn">import</span>(<span class="str">'./pages/Dashboard'</span>));
+<span class="kw">const</span> <span class="tp">Settings</span>   = <span class="fn">lazy</span>(() <span class="kw">=></span> <span class="fn">import</span>(<span class="str">'./pages/Settings'</span>));
+<span class="kw">const</span> <span class="tp">AdminPanel</span> = <span class="fn">lazy</span>(() <span class="kw">=></span> <span class="fn">import</span>(<span class="str">'./pages/AdminPanel'</span>));
+
+<span class="kw">function</span> <span class="fn">App</span>() {
+  <span class="kw">return</span> (
+    <span class="op">&lt;</span><span class="tp">BrowserRouter</span><span class="op">></span>
+      <span class="op">&lt;</span><span class="tp">Suspense</span> <span class="attr">fallback</span>={<span class="op">&lt;</span><span class="tp">PageSpinner</span> <span class="op">/></span>}<span class="op">></span>
+        <span class="op">&lt;</span><span class="tp">Routes</span><span class="op">></span>
+          <span class="op">&lt;</span><span class="tp">Route</span> <span class="attr">path</span>=<span class="str">"/"</span>         <span class="attr">element</span>={<span class="op">&lt;</span><span class="tp">Home</span> <span class="op">/></span>} <span class="op">/></span>
+          <span class="op">&lt;</span><span class="tp">Route</span> <span class="attr">path</span>=<span class="str">"/dashboard"</span> <span class="attr">element</span>={<span class="op">&lt;</span><span class="tp">Dashboard</span> <span class="op">/></span>} <span class="op">/></span>
+          <span class="op">&lt;</span><span class="tp">Route</span> <span class="attr">path</span>=<span class="str">"/settings"</span>  <span class="attr">element</span>={<span class="op">&lt;</span><span class="tp">Settings</span> <span class="op">/></span>} <span class="op">/></span>
+          <span class="op">&lt;</span><span class="tp">Route</span> <span class="attr">path</span>=<span class="str">"/admin"</span>     <span class="attr">element</span>={<span class="op">&lt;</span><span class="tp">AdminPanel</span> <span class="op">/></span>} <span class="op">/></span>
+        <span class="op">&lt;/</span><span class="tp">Routes</span><span class="op">></span>
+      <span class="op">&lt;/</span><span class="tp">Suspense</span><span class="op">></span>
+    <span class="op">&lt;/</span><span class="tp">BrowserRouter</span><span class="op">></span>
+  );
+}</code></pre>
+
+  <p>A user who only visits the Home and Dashboard pages never downloads the Settings or Admin code at all.</p>
+
+  <!-- ─── Memoising the import ─── -->
+  <h2>Caching with <code>memoizePromise</code></h2>
+  <p>Once a lazy module is loaded, you don't want to re-download it on the second call. A common pattern is to wrap the <code>import()</code> in a memoiser that caches the promise:</p>
+
+  <pre><code><span class="lang-label">TypeScript</span><span class="kw">function</span> <span class="fn">memoizePromise</span>&lt;<span class="tp">T</span>&gt;(factory: () <span class="kw">=></span> <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;): () <span class="kw">=></span> <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">let</span> cached: <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt; | <span class="kw">null</span> = <span class="kw">null</span>;
+  <span class="kw">return</span> () <span class="kw">=></span> {
+    <span class="kw">if</span> (!cached) {
+      cached = <span class="fn">factory</span>();
+    }
+    <span class="kw">return</span> cached;
+  };
+}
+
+<span class="cm">// Usage: the PDF exporter only downloads once, no matter how many times called</span>
+<span class="kw">const</span> getPdfExporter = <span class="fn">memoizePromise</span>(() <span class="kw">=></span> <span class="fn">import</span>(<span class="str">'./pdf-exporter'</span>));
+
+exportButton.<span class="fn">addEventListener</span>(<span class="str">'click'</span>, <span class="kw">async</span> () <span class="kw">=></span> {
+  <span class="kw">const</span> { exportToPdf } = <span class="kw">await</span> <span class="fn">getPdfExporter</span>();
+  <span class="fn">exportToPdf</span>(document);
+});</code></pre>
+
+  <div class="tip">
+    <h4>Good news</h4>
+    <p><code>React.lazy()</code> and native <code>import()</code> already cache internally — the browser won't re-fetch a module it already has. The <code>memoizePromise</code> pattern is useful when you want to control caching yourself, e.g. in non-React code or when you need to pass the loaded module around.</p>
+  </div>
+
+  <!-- ─── Image Lazy Loading ─── -->
+  <h2>Image Lazy Loading</h2>
+  <p>Lazy loading isn't just for JavaScript. Images are often the heaviest assets on a page, and modern browsers have built-in support for deferring them.</p>
+
+  <h3>The <code>loading="lazy"</code> attribute</h3>
+  <pre><code><span class="lang-label">HTML</span><span class="cm">&lt;!-- This image only loads when it enters (or nears) the viewport --&gt;</span>
+<span class="op">&lt;</span><span class="tag">img</span>
+  <span class="attr">src</span>=<span class="str">"hero-photo.jpg"</span>
+  <span class="attr">alt</span>=<span class="str">"Mountain landscape"</span>
+  <span class="attr">loading</span>=<span class="str">"lazy"</span>
+  <span class="attr">width</span>=<span class="str">"800"</span>
+  <span class="attr">height</span>=<span class="str">"400"</span>
+<span class="op">/></span>
+
+<span class="cm">&lt;!-- Compare: this image loads immediately (default behaviour) --&gt;</span>
+<span class="op">&lt;</span><span class="tag">img</span>
+  <span class="attr">src</span>=<span class="str">"logo.png"</span>
+  <span class="attr">alt</span>=<span class="str">"Site logo"</span>
+  <span class="attr">loading</span>=<span class="str">"eager"</span>
+<span class="op">/></span></code></pre>
+
+  <div class="warning">
+    <h4>Don't lazy load above-the-fold images</h4>
+    <p>Images visible on initial page load (hero images, logos) should use <code>loading="eager"</code> (the default). Lazy loading them would make the page feel slower because the user sees a blank space before the image downloads.</p>
+  </div>
+
+  <h3>Intersection Observer (custom control)</h3>
+  <p>For more control — like triggering animations or loading data when an element scrolls into view — use the <code>IntersectionObserver</code> API:</p>
+
+  <pre><code><span class="lang-label">TypeScript</span><span class="kw">const</span> observer = <span class="kw">new</span> <span class="fn">IntersectionObserver</span>((entries) <span class="kw">=></span> {
+  entries.<span class="fn">forEach</span>((entry) <span class="kw">=></span> {
+    <span class="kw">if</span> (entry.isIntersecting) {
+      <span class="kw">const</span> img = entry.target <span class="kw">as</span> <span class="tp">HTMLImageElement</span>;
+      img.src = img.dataset.src!;
+      img.classList.<span class="fn">add</span>(<span class="str">'loaded'</span>);
+      observer.<span class="fn">unobserve</span>(img);
+    }
+  });
+}, { rootMargin: <span class="str">'200px'</span> }); <span class="cm">// Start loading 200px before it's visible</span>
+
+document.<span class="fn">querySelectorAll</span>(<span class="str">'img[data-src]'</span>).<span class="fn">forEach</span>((img) <span class="kw">=></span> {
+  observer.<span class="fn">observe</span>(img);
+});</code></pre>
+
+  <!-- ─── When NOT to lazy load ─── -->
+  <h2>When NOT to Lazy Load</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Why Not</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Small modules (&lt;5KB)</td>
+        <td>The HTTP request overhead costs more than just bundling it. The round-trip to fetch a tiny file can be slower than including it upfront.</td>
+      </tr>
+      <tr>
+        <td>Critical-path UI</td>
+        <td>Anything the user sees on first render (navigation, hero section, main content) should load eagerly. Lazy loading it creates a visible flicker.</td>
+      </tr>
+      <tr>
+        <td>Above-the-fold images</td>
+        <td>The logo and hero image should be <code>loading="eager"</code>. Deferring them makes the initial paint feel broken.</td>
+      </tr>
+      <tr>
+        <td>Frequently used features</td>
+        <td>If 95% of users use a feature on every visit, eager loading is simpler and avoids the loading state.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ─── Visualisation ─── -->
+  <h2>Interactive: Eager vs Lazy Loading</h2>
+  <p>Click the buttons to simulate how a page loads with and without lazy loading. Watch which modules download and when.</p>
+
+  <div class="viz-container">
+    <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+      <button onclick="simulateEager()" style="background:var(--terracotta); color:var(--warm-white); border:none; padding:0.5rem 1rem; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:0.85rem; cursor:pointer;">Simulate Eager Load</button>
+      <button onclick="simulateLazy()" style="background:var(--sage-dark); color:var(--warm-white); border:none; padding:0.5rem 1rem; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:0.85rem; cursor:pointer;">Simulate Lazy Load</button>
+      <button onclick="resetSim()" style="background:transparent; color:var(--charcoal); border:1px solid var(--border); padding:0.5rem 1rem; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:0.85rem; cursor:pointer;">Reset</button>
+    </div>
+    <div id="sim-modules" style="display:grid; grid-template-columns:1fr 120px 80px; gap:0.25rem 0.75rem; font-size:0.85rem;"></div>
+    <p id="sim-status" style="font-size:0.82rem; color:#999; margin-top:1rem; margin-bottom:0;"></p>
+  </div>
+
+  <script>
+  (function() {
+    const modules = [
+      { name: 'app-shell.js',      size: '45 KB',  critical: true },
+      { name: 'home-page.js',      size: '22 KB',  critical: true },
+      { name: 'chart-panel.js',    size: '180 KB', critical: false },
+      { name: 'pdf-exporter.js',   size: '95 KB',  critical: false },
+      { name: 'settings-page.js',  size: '38 KB',  critical: false },
+      { name: 'admin-panel.js',    size: '62 KB',  critical: false },
+      { name: 'video-player.js',   size: '120 KB', critical: false },
+    ];
+
+    const container = document.getElementById('sim-modules');
+    const status = document.getElementById('sim-status');
+    let animTimer = null;
+
+    function render(states) {
+      container.innerHTML = '';
+      modules.forEach((mod, i) => {
+        const nameEl = document.createElement('div');
+        nameEl.style.fontFamily = "'JetBrains Mono', monospace";
+        nameEl.style.fontSize = '0.8rem';
+        nameEl.textContent = mod.name;
+        if (states[i] === 'loaded') nameEl.style.fontWeight = '600';
+        if (states[i] === 'skipped') nameEl.style.opacity = '0.4';
+
+        const sizeEl = document.createElement('div');
+        sizeEl.style.color = '#999';
+        sizeEl.style.fontSize = '0.78rem';
+        sizeEl.textContent = mod.size;
+        if (states[i] === 'skipped') sizeEl.style.opacity = '0.4';
+
+        const statusEl = document.createElement('div');
+        statusEl.style.fontSize = '0.78rem';
+        statusEl.style.fontWeight = '500';
+        if (states[i] === 'pending') {
+          statusEl.textContent = '—';
+          statusEl.style.color = '#ccc';
+        } else if (states[i] === 'loading') {
+          statusEl.textContent = 'loading...';
+          statusEl.style.color = '#d4a843';
+        } else if (states[i] === 'loaded') {
+          statusEl.textContent = 'loaded';
+          statusEl.style.color = '#4a7050';
+        } else if (states[i] === 'skipped') {
+          statusEl.textContent = 'deferred';
+          statusEl.style.color = '#999';
+        }
+
+        container.appendChild(nameEl);
+        container.appendChild(sizeEl);
+        container.appendChild(statusEl);
+      });
+    }
+
+    function reset() {
+      if (animTimer) clearTimeout(animTimer);
+      render(modules.map(() => 'pending'));
+      status.textContent = '';
+    }
+
+    window.resetSim = reset;
+
+    window.simulateEager = function() {
+      reset();
+      const states = modules.map(() => 'loading');
+      render(states);
+      status.textContent = 'Downloading ALL modules at once...';
+
+      let totalKB = modules.reduce((sum, m) => sum + parseInt(m.size), 0);
+      animTimer = setTimeout(() => {
+        render(modules.map(() => 'loaded'));
+        status.textContent = 'All ' + totalKB + ' KB loaded upfront. Page ready after all modules downloaded.';
+      }, 2000);
+    };
+
+    window.simulateLazy = function() {
+      reset();
+      const states = modules.map((m) => m.critical ? 'loading' : 'skipped');
+      render(states);
+      let criticalKB = modules.filter(m => m.critical).reduce((sum, m) => sum + parseInt(m.size), 0);
+      status.textContent = 'Loading only critical modules (' + criticalKB + ' KB)...';
+
+      animTimer = setTimeout(() => {
+        const s2 = modules.map((m) => m.critical ? 'loaded' : 'skipped');
+        render(s2);
+        status.textContent = 'Page ready! Only ' + criticalKB + ' KB loaded. Other modules load on demand.';
+      }, 800);
+    };
+
+    reset();
+  })();
+  </script>
+
+  <!-- ─── Summary ─── -->
+  <h2>Why Bother?</h2>
+  <p>Real-world apps are massive. If they loaded every feature's code upfront — charts, PDF export, admin panels, video players, settings — the initial page load would be painfully slow. Lazy loading gives you:</p>
+
+  <ul>
+    <li><strong>Faster startup</strong> — only load the core shell and the current page</li>
+    <li><strong>Less bandwidth</strong> — users who never open settings never download its code</li>
+    <li><strong>Better perceived performance</strong> — show a placeholder instantly, swap in the real content when ready</li>
+    <li><strong>Smaller initial bundle</strong> — the JavaScript the browser needs to parse on first load shrinks dramatically</li>
+  </ul>
+
+  <div class="tldr-box">
+    <strong>TL;DR:</strong> Lazy loading = "I'll deal with it when I need to." Your app loads faster because it only downloads code the user actually uses, right when they use it.
+  </div>
+
+</main>
+
+<footer>
+  Lazy Loading — Part of Learn Anything by Hannah
+</footer>
+
+</body>
+</html>
