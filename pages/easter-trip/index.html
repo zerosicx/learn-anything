@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Good Friday 2026 — Wentworth Point → The Entrance</title>
+  <style>
+    :root {
+      --sand: #f7efe3;
+      --ocean: #2d6a7a;
+      --sky: #87c4d8;
+      --sun: #f4c95d;
+      --coral: #e07a5f;
+      --foam: #fffdf8;
+      --ink: #1e2d33;
+      --muted: #5c6f76;
+      --grey-stop: #8b9399;
+      --grey-line: #c5cdd1;
+      --purple-stop: #6b4c9a;
+      --amber-stop: #c9922e;
+      --cafe-stop: #e07a5f;
+      --hotel-stop: #3d8b6e;
+      --banner-bg: linear-gradient(135deg, #fff4e0 0%, #ffe8cc 50%, #fff0d6 100%);
+      --shadow: 0 8px 28px rgba(30, 45, 51, 0.08);
+      --radius: 14px;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--sand);
+      color: var(--ink);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    .hero {
+      background: linear-gradient(165deg, var(--ocean) 0%, #3a8fa3 45%, var(--sky) 100%);
+      color: var(--foam);
+      padding: clamp(1rem, 3vw, 1.25rem) clamp(1rem, 4vw, 2rem) clamp(2rem, 6vw, 3rem);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--foam);
+      text-decoration: none;
+      padding: 0.4rem 0.65rem;
+      margin-bottom: 0.85rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .back-link:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateX(-2px);
+    }
+
+    .back-link:focus-visible {
+      outline: 2px solid var(--sun);
+      outline-offset: 2px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      bottom: -2rem;
+      right: -3rem;
+      width: 12rem;
+      height: 12rem;
+      background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero h1 {
+      font-size: clamp(1.35rem, 4.5vw, 1.85rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      max-width: 20ch;
+    }
+
+    .hero .meta {
+      margin-top: 0.65rem;
+      font-size: 0.95rem;
+      opacity: 0.92;
+    }
+
+    .wrap {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 4vw, 1.5rem) 3rem;
+    }
+
+    .heads-up {
+      margin: -1.25rem 0 1.75rem;
+      background: var(--banner-bg);
+      border: 1px solid rgba(224, 122, 95, 0.25);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 1;
+    }
+
+    .heads-up strong {
+      display: block;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--coral);
+      margin-bottom: 0.45rem;
+    }
+
+    .heads-up p {
+      font-size: 0.88rem;
+      color: var(--ink);
+    }
+
+    .timeline-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .timeline-nav button {
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.45rem 0.65rem;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--foam);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+    }
+
+    .timeline-nav button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .timeline-nav button:focus-visible {
+      outline: 2px solid var(--ocean);
+      outline-offset: 2px;
+    }
+
+    .timeline-nav button.is-active {
+      box-shadow: 0 0 0 2px var(--foam), 0 4px 14px rgba(0,0,0,0.2);
+    }
+
+    .nav-grey { background: var(--grey-stop); }
+    .nav-purple { background: var(--purple-stop); }
+    .nav-amber { background: var(--amber-stop); }
+    .nav-cafe { background: var(--cafe-stop); }
+    .nav-green { background: var(--hotel-stop); }
+
+    .timeline {
+      position: relative;
+      padding-left: 0;
+    }
+
+    @media (min-width: 480px) {
+      .timeline { padding-left: 1.5rem; }
+      .timeline::before {
+        content: "";
+        position: absolute;
+        left: 0.55rem;
+        top: 0.5rem;
+        bottom: 0.5rem;
+        width: 3px;
+        background: linear-gradient(180deg, var(--grey-line), var(--sky));
+        border-radius: 3px;
+      }
+    }
+
+    .stop {
+      position: relative;
+      margin-bottom: 1.25rem;
+      scroll-margin-top: 1rem;
+    }
+
+    @media (min-width: 480px) {
+      .stop::before {
+        content: "";
+        position: absolute;
+        left: -1.5rem;
+        top: 1.35rem;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 3px solid var(--foam);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        z-index: 1;
+        transition: transform 0.2s ease;
+      }
+      .stop.is-inview::before { transform: scale(1.15); }
+      .stop--grey::before { background: var(--grey-stop); }
+      .stop--purple::before { background: var(--purple-stop); }
+      .stop--amber::before { background: var(--amber-stop); }
+      .stop--cafe::before { background: var(--cafe-stop); }
+      .stop--green::before { background: var(--hotel-stop); }
+    }
+
+    .card {
+      background: var(--foam);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(45, 106, 122, 0.08);
+    }
+
+    .card-head {
+      padding: 1rem 1.1rem 0.75rem;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .card-head-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .time-pill {
+      font-size: 0.8rem;
+      font-weight: 700;
+      white-space: nowrap;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(45, 106, 122, 0.1);
+      color: var(--ocean);
+    }
+
+    .card-body { padding: 0.9rem 1.1rem 1.1rem; }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.65rem;
+      color: var(--muted);
+    }
+
+    .row span { display: inline-flex; align-items: center; gap: 0.25rem; }
+
+    .stars { color: #b8860b; font-weight: 600; }
+
+    .address {
+      font-size: 0.84rem;
+      color: var(--ink);
+      margin-bottom: 0.65rem;
+      line-height: 1.45;
+    }
+
+    .desc {
+      font-size: 0.88rem;
+      color: var(--ink);
+      margin-bottom: 0.85rem;
+    }
+
+    .extras {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
+      padding-left: 1rem;
+      border-left: 3px solid rgba(135, 196, 216, 0.6);
+    }
+
+    .extras li { margin-bottom: 0.35rem; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.55rem 0.9rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--ocean);
+      color: var(--foam);
+    }
+
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(45, 106, 122, 0.35); }
+
+    .btn-secondary {
+      background: rgba(45, 106, 122, 0.08);
+      color: var(--ocean);
+    }
+
+    .btn-secondary:hover { background: rgba(45, 106, 122, 0.14); }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--sun);
+      outline-offset: 2px;
+    }
+
+    .backup {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed rgba(0,0,0,0.1);
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .backup a { color: var(--ocean); font-weight: 600; }
+
+    footer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <a class="back-link" href="../../index.html">← Back to Learn Anything</a>
+    <h1>Easter road trip — Good Friday</h1>
+    <p class="meta">Wentworth Point → The Entrance, NSW · 3 April 2026</p>
+  </header>
+
+  <div class="wrap">
+    <aside class="heads-up" role="note">
+      <strong>Good Friday heads up</strong>
+      <p>Cafés are exempt from NSW restricted trading laws, but call ahead to confirm hours. Expect around a 10–15% public holiday surcharge in many places. Both lookouts are free to visit and generally accessible whenever the roads are open; West Head is inside Ku-ring-gai Chase NP — allow <strong>$12 per vehicle</strong> park entry.</p>
+    </aside>
+
+    <nav class="timeline-nav" aria-label="Jump to stop">
+      <button type="button" class="nav-grey" data-target="stop-1">Depart</button>
+      <button type="button" class="nav-purple" data-target="stop-2">West Head</button>
+      <button type="button" class="nav-amber" data-target="stop-3">Painter's Rock</button>
+      <button type="button" class="nav-cafe" data-target="stop-4">Bellyfish</button>
+      <button type="button" class="nav-green" data-target="stop-5">Hotel</button>
+    </nav>
+
+    <ol class="timeline" style="list-style: none;">
+
+      <li id="stop-1" class="stop stop--grey" data-stop>
+        <article class="card" style="border-top: 4px solid var(--grey-stop);">
+          <div class="card-head">
+            <div class="card-head-top">
+              <h2>Depart Wentworth Point</h2>
+              <span class="time-pill">9:30 AM</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <span><strong>Duration</strong> — Start of day</span>
+              <span class="stars" aria-hidden="true">—</span>
+            </div>
+            <p class="address">Wentworth Point, Sydney NSW</p>
+            <p class="desc">Hit the road north — coastal vibes and lookouts ahead.</p>
+            <div class="actions">
+              <a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&query=Wentworth+Point+NSW+Australia" target="_blank" rel="noopener noreferrer">Get directions</a>
+            </div>
+          </div>
+        </article>
+      </li>
+
+      <li id="stop-2" class="stop stop--purple" data-stop>
+        <article class="card" style="border-top: 4px solid var(--purple-stop);">
+          <div class="card-head">
+            <div class="card-head-top">
+              <h2>West Head Lookout</h2>
+              <span class="time-pill">~10:30 AM</span>
+            </div>
+            <p style="font-size:0.8rem;color:var(--muted);margin-top:0.35rem;">Ku-ring-gai Chase National Park</p>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <span><strong>Stop</strong> — 25 min</span>
+              <span class="stars" aria-label="Rating 4.8 from 2502 reviews">⭐ 4.8 <span style="font-weight:400;color:var(--muted);">(2,502)</span></span>
+            </div>
+            <p class="address">End of West Head Rd, Ku-ring-gai Chase NSW 2084</p>
+            <p class="desc">Views over Pittwater, Broken Bay, and Barrenjoey Headland and Lighthouse.</p>
+            <ul class="extras">
+              <li><strong>$12</strong> per vehicle national park entry</li>
+              <li>~50 m walk from car park to lookout</li>
+              <li>Gates open from 6 AM during daylight saving</li>
+            </ul>
+            <div class="actions">
+              <a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&query=West+Head+Lookout+Ku-ring-gai+Chase+NSW+2084" target="_blank" rel="noopener noreferrer">Get directions</a>
+            </div>
+          </div>
+        </article>
+      </li>
+
+      <li id="stop-3" class="stop stop--amber" data-stop>
+        <article class="card" style="border-top: 4px solid var(--amber-stop);">
+          <div class="card-head">
+            <div class="card-head-top">
+              <h2>Painter's Rock Lookout</h2>
+              <span class="time-pill">~11:30 AM</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <span><strong>Stop</strong> — 25 min</span>
+              <span class="stars" aria-label="Rating 4.8 from 31 reviews">⭐ 4.8 <span style="font-weight:400;color:var(--muted);">(31)</span></span>
+            </div>
+            <p class="address">233 Morgans Rd, Marlow NSW 2775</p>
+            <p class="desc">Open Hawkesbury River views into wilderness — no walk required, right by the car park. Free entry, ~2 km off the M1.</p>
+            <div class="actions">
+              <a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&query=233+Morgans+Rd+Marlow+NSW+2775" target="_blank" rel="noopener noreferrer">Get directions</a>
+            </div>
+          </div>
+        </article>
+      </li>
+
+      <li id="stop-4" class="stop stop--cafe" data-stop>
+        <article class="card" style="border-top: 4px solid var(--cafe-stop);">
+          <div class="card-head">
+            <div class="card-head-top">
+              <h2>Bellyfish Cafe, Terrigal</h2>
+              <span class="time-pill">~12:15 PM</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <span><strong>Stop</strong> — 60 min</span>
+              <span class="stars" aria-label="Rating 4.5 from 932 reviews">⭐ 4.5 <span style="font-weight:400;color:var(--muted);">(932)</span></span>
+            </div>
+            <p class="address">Shops 3 &amp; 4/112 Terrigal Esplanade, Terrigal NSW 2260</p>
+            <p class="desc">Beachside spot with confirmed gluten-free options and staff attentive to dietary needs. Opens from 5 AM daily — Good Friday trading exempt under NSW law (still worth confirming).</p>
+            <div class="actions">
+              <a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&query=Bellyfish+Cafe+112+Terrigal+Esplanade+Terrigal+NSW+2260" target="_blank" rel="noopener noreferrer">Get directions</a>
+              <button type="button" class="btn btn-secondary" data-toggle="backup" aria-expanded="false" aria-controls="backup-panel">Backup cafe</button>
+            </div>
+            <div id="backup-panel" class="backup" hidden>
+              <p><strong>Tommy's Cafe</strong> — 1a Gertrude Pl, Gosford NSW 2250 · ⭐ 4.4 (1,027 reviews)</p>
+              <a href="https://www.google.com/maps/search/?api=1&query=Tommy%27s+Cafe+1a+Gertrude+Pl+Gosford+NSW+2250" target="_blank" rel="noopener noreferrer">Get directions to Tommy's</a>
+            </div>
+          </div>
+        </article>
+      </li>
+
+      <li id="stop-5" class="stop stop--green" data-stop>
+        <article class="card" style="border-top: 4px solid var(--hotel-stop);">
+          <div class="card-head">
+            <div class="card-head-top">
+              <h2>Arrive at hotel — The Entrance</h2>
+              <span class="time-pill">~1:30–2:00 PM</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <span><strong>Drive</strong> — ~20 min from Terrigal</span>
+              <span class="stars" aria-hidden="true">—</span>
+            </div>
+            <p class="address">The Entrance, Central Coast NSW</p>
+            <p class="desc">Roll in and settle — you've earned the afternoon by the water.</p>
+            <div class="actions">
+              <a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&query=The+Entrance+NSW+Australia" target="_blank" rel="noopener noreferrer">Get directions</a>
+            </div>
+          </div>
+        </article>
+      </li>
+
+    </ol>
+  </div>
+
+  <footer>
+    Good Friday 2026 · Personal itinerary · Check NP and venue sites before you go
+  </footer>
+
+  <script>
+    (function () {
+      var navButtons = document.querySelectorAll(".timeline-nav button[data-target]");
+      navButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var id = btn.getAttribute("data-target");
+          var el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+
+      var toggle = document.querySelector("[data-toggle=\"backup\"]");
+      var panel = document.getElementById("backup-panel");
+      if (toggle && panel) {
+        toggle.addEventListener("click", function () {
+          panel.hidden = !panel.hidden;
+          toggle.setAttribute("aria-expanded", String(!panel.hidden));
+        });
+      }
+
+      var stops = document.querySelectorAll("[data-stop]");
+      var navById = {};
+      navButtons.forEach(function (b) {
+        navById[b.getAttribute("data-target")] = b;
+      });
+
+      if ("IntersectionObserver" in window && stops.length) {
+        var obs = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              var id = entry.target.id;
+              entry.target.classList.toggle("is-inview", entry.isIntersecting);
+              if (entry.isIntersecting && navById[id]) {
+                navButtons.forEach(function (b) { b.classList.remove("is-active"); });
+                navById[id].classList.add("is-active");
+              }
+            });
+          },
+          { rootMargin: "-20% 0px -55% 0px", threshold: 0 }
+        );
+        stops.forEach(function (s) { obs.observe(s); });
+      }
+    })();
+  </script>
+</body>
+</html>
